@@ -63,17 +63,20 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {presetVolumes.map((preset) => (
-            <Button
-              key={preset}
-              variant={localVolume === preset ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleVolumeChange(preset)}
-              className="text-xs"
-            >
-              {Math.round(preset * 100)}%
-            </Button>
-          ))}
+          {presetVolumes.map((preset) => {
+            const isSelected = Math.abs(localVolume - preset) < 0.01; // Account for floating point precision
+            return (
+              <Button
+                key={preset}
+                variant={isSelected ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleVolumeChange(preset)}
+                className={`text-xs ${isSelected ? 'bg-primary text-primary-foreground' : ''}`}
+              >
+                {Math.round(preset * 100)}%
+              </Button>
+            );
+          })}
         </div>
       </div>
 

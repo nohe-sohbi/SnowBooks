@@ -148,6 +148,7 @@ const FileUploader = () => {
 
       // If white noise is loaded and volume > 0, create mixed preview
       if (whiteNoiseBlob && whiteNoiseVolume > 0) {
+        console.log('Creating mixed preview with volume:', whiteNoiseVolume);
         const mixedBlob = await createMixedAudioPreview(
           file.blob,
           whiteNoiseBlob,
@@ -155,8 +156,13 @@ const FileUploader = () => {
           30
         );
         if (mixedBlob) {
+          console.log('Mixed preview created successfully');
           audioBlob = mixedBlob;
+        } else {
+          console.log('Failed to create mixed preview, using original');
         }
+      } else {
+        console.log('Using original audio - white noise blob:', !!whiteNoiseBlob, 'volume:', whiteNoiseVolume);
       }
 
       const audio = new Audio();
@@ -207,12 +213,6 @@ const FileUploader = () => {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">SnowBooks Audio Processor</h1>
-        <p className="text-muted-foreground">
-          Upload a ZIP file with MP3 chapters, add white noise, and download the processed files
-        </p>
-      </div>
 
       <div className="space-y-4">
         <Dropzone
