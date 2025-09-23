@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, UploadIcon, PlayIcon, Square, FileAudioIcon, CheckIcon, XIcon } from 'lucide-react';
+import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, UploadIcon, PlayIcon, Square, FileAudioIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import JSZip from 'jszip';
 import { formatSize, formatDuration } from '@/utils/formatters';
@@ -60,8 +59,7 @@ const FileUploader = () => {
             name: fileName.split('/').pop() || fileName,
             size: blob.size,
             duration,
-            blob,
-            selected: true
+            blob
           });
         } catch (err) {
           console.warn(`Failed to process ${fileName}:`, err);
@@ -121,16 +119,7 @@ const FileUploader = () => {
     }
   };
 
-  const toggleSelection = (index: number) => {
-    setMp3Files(prev => prev.map((file, i) => 
-      i === index ? { ...file, selected: !file.selected } : file
-    ));
-  };
 
-  const toggleAll = () => {
-    const allSelected = mp3Files.every(file => file.selected);
-    setMp3Files(prev => prev.map(file => ({ ...file, selected: !allSelected })));
-  };
 
   const reset = () => {
     if (currentAudio) {
@@ -146,7 +135,7 @@ const FileUploader = () => {
     setPlayingIndex(null);
   };
 
-  const selectedCount = mp3Files.filter(file => file.selected).length;
+
 
   return (
     <div className="space-y-6">
@@ -212,43 +201,17 @@ const FileUploader = () => {
 
       {mp3Files.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center space-x-4">
-              <h3 className="font-semibold text-lg">MP3 Files ({mp3Files.length})</h3>
-              <span className="text-sm text-muted-foreground">{selectedCount} selected</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={toggleAll}>
-              {mp3Files.every(file => file.selected) ? (
-                <>
-                  <XIcon className="h-4 w-4 mr-2" />
-                  Deselect All
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="h-4 w-4 mr-2" />
-                  Select All
-                </>
-              )}
-            </Button>
+          <div className="p-4 bg-muted/50 rounded-lg">
+            <h3 className="font-semibold text-lg">MP3 Files ({mp3Files.length})</h3>
+            <p className="text-sm text-muted-foreground mt-1">All files will be processed with white noise</p>
           </div>
 
           <div className="space-y-3">
             {mp3Files.map((file, index) => (
               <div
                 key={index}
-                className={cn(
-                  "flex items-center gap-4 p-4 border rounded-lg transition-all hover:shadow-sm",
-                  file.selected
-                    ? "bg-primary/5 border-primary/20 shadow-sm"
-                    : "bg-background border-border hover:bg-muted/30"
-                )}
+                className="flex items-center gap-4 p-4 border rounded-lg bg-background hover:bg-muted/30 transition-colors"
               >
-                <Checkbox
-                  checked={file.selected}
-                  onCheckedChange={() => toggleSelection(index)}
-                  className="flex-shrink-0"
-                />
-
                 <FileAudioIcon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
 
                 <div className="flex-1 min-w-0">

@@ -3,5 +3,4 @@ export default interface MP3File {
     size: number;
     duration?: number;
     blob: Blob;
-    selected: boolean;
 }
