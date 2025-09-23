@@ -15,6 +15,10 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
   const [localVolume, setLocalVolume] = useState(volume);
 
   useEffect(() => {
+    setLocalVolume(volume);
+  }, [volume]);
+
+  useEffect(() => {
     const savedVolume = localStorage.getItem(STORAGE_KEY);
     if (savedVolume) {
       const parsedVolume = parseFloat(savedVolume);

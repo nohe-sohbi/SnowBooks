@@ -148,7 +148,6 @@ const FileUploader = () => {
 
       // If white noise is loaded and volume > 0, create mixed preview
       if (whiteNoiseBlob && whiteNoiseVolume > 0) {
-        console.log('Creating mixed preview with volume:', whiteNoiseVolume);
         const mixedBlob = await createMixedAudioPreview(
           file.blob,
           whiteNoiseBlob,
@@ -156,13 +155,8 @@ const FileUploader = () => {
           30
         );
         if (mixedBlob) {
-          console.log('Mixed preview created successfully');
           audioBlob = mixedBlob;
-        } else {
-          console.log('Failed to create mixed preview, using original');
         }
-      } else {
-        console.log('Using original audio - white noise blob:', !!whiteNoiseBlob, 'volume:', whiteNoiseVolume);
       }
 
       const audio = new Audio();
@@ -304,7 +298,11 @@ const FileUploader = () => {
           <div className="p-4 bg-muted/50 rounded-lg">
             <h3 className="font-semibold text-lg">MP3 Files ({mp3Files.length})</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Preview files with white noise mixed in at {Math.round(whiteNoiseVolume * 100)}% volume
+              {whiteNoiseVolume > 0 ? (
+                <>Preview files with white noise mixed in at <span className="font-semibold text-primary">{Math.round(whiteNoiseVolume * 100)}%</span> volume</>
+              ) : (
+                <>Preview original files (no white noise - volume is 0%)</>
+              )}
             </p>
           </div>
 
