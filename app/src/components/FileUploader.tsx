@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone';
 import { Button } from '@/components/ui/button';
 import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, UploadIcon, PlayIcon, Square, FileAudioIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import JSZip from 'jszip';
 import { formatSize, formatDuration } from '@/utils/formatters';
-import { getAudioDuration } from '@/utils/audio';
+import { getAudioDuration, createMixedAudioPreview } from '@/utils/audio';
 import type MP3File from "@/interface/MP3File.tsx";
 import { VolumeControl } from './VolumeControl';
+import whiteNoiseUrl from '@/assets/white-noise.mp3';
 
 type Status = 'idle' | 'extracting' | 'completed' | 'error';
 
@@ -22,6 +23,21 @@ const FileUploader = () => {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [whiteNoiseVolume, setWhiteNoiseVolume] = useState(0.3);
+  const [whiteNoiseBlob, setWhiteNoiseBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    const loadWhiteNoise = async () => {
+      try {
+        const response = await fetch(whiteNoiseUrl);
+        const blob = await response.blob();
+        setWhiteNoiseBlob(blob);
+      } catch (error) {
+        console.error('Failed to load white noise file:', error);
+      }
+    };
+
+    loadWhiteNoise();
+  }, []);
 
   const handleDrop = async (droppedFiles: File[]) => {
     if (droppedFiles.length === 0) return;
@@ -77,7 +93,7 @@ const FileUploader = () => {
     }
   };
 
-  const handlePreview = (fileIndex: number) => {
+  const handlePreview = async (fileIndex: number) => {
     const file = mp3Files[fileIndex];
 
     if (playingIndex === fileIndex && currentAudio) {
@@ -94,8 +110,23 @@ const FileUploader = () => {
     }
 
     try {
+      let audioBlob = file.blob;
+
+      // If white noise is loaded and volume > 0, create mixed preview
+      if (whiteNoiseBlob && whiteNoiseVolume > 0) {
+        const mixedBlob = await createMixedAudioPreview(
+          file.blob,
+          whiteNoiseBlob,
+          whiteNoiseVolume,
+          30
+        );
+        if (mixedBlob) {
+          audioBlob = mixedBlob;
+        }
+      }
+
       const audio = new Audio();
-      const url = URL.createObjectURL(file.blob);
+      const url = URL.createObjectURL(audioBlob);
       audio.src = url;
 
       setCurrentAudio(audio);
@@ -243,7 +274,13 @@ const FileUploader = () => {
                   size="sm"
                   onClick={() => handlePreview(index)}
                   className="flex-shrink-0 h-8 w-8 p-0"
-                  title={playingIndex === index ? "Stop preview" : "Preview audio (30s)"}
+                  title={
+                    playingIndex === index
+                      ? "Stop preview"
+                      : whiteNoiseVolume > 0
+                        ? "Preview with white noise (30s)"
+                        : "Preview audio (30s)"
+                  }
                 >
                   {playingIndex === index ? (
                     <Square className="h-4 w-4 fill-current" />
