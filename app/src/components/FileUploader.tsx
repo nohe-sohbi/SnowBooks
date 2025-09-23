@@ -9,6 +9,7 @@ import JSZip from 'jszip';
 import { formatSize, formatDuration } from '@/utils/formatters';
 import { getAudioDuration } from '@/utils/audio';
 import type MP3File from "@/interface/MP3File.tsx";
+import { VolumeControl } from './VolumeControl';
 
 type Status = 'idle' | 'extracting' | 'completed' | 'error';
 
@@ -20,6 +21,7 @@ const FileUploader = () => {
   const [progress, setProgress] = useState(0);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+  const [whiteNoiseVolume, setWhiteNoiseVolume] = useState(0.3);
 
   const handleDrop = async (droppedFiles: File[]) => {
     if (droppedFiles.length === 0) return;
@@ -198,6 +200,13 @@ const FileUploader = () => {
           </div>
         )}
       </div>
+
+      {mp3Files.length > 0 && (
+        <VolumeControl
+          volume={whiteNoiseVolume}
+          onVolumeChange={setWhiteNoiseVolume}
+        />
+      )}
 
       {mp3Files.length > 0 && (
         <div className="space-y-4">
