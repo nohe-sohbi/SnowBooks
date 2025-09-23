@@ -11,6 +11,7 @@ import { getAudioDuration, createMixedAudioPreview } from '@/utils/audio';
 import type MP3File from "@/interface/MP3File.tsx";
 import { VolumeControl } from './VolumeControl';
 import { AudioProcessor } from './AudioProcessor';
+import { ZipExporter } from './ZipExporter';
 import whiteNoiseUrl from '@/assets/white-noise.mp3';
 
 type Status = 'idle' | 'extracting' | 'completed' | 'error';
@@ -26,9 +27,7 @@ const FileUploader = () => {
   const [whiteNoiseVolume, setWhiteNoiseVolume] = useState(0.3);
   const [whiteNoiseBlob, setWhiteNoiseBlob] = useState<Blob | null>(null);
   const [processedFiles, setProcessedFiles] = useState<Array<{ name: string; blob: Blob }>>([]);
-
-  // Use processedFiles to avoid unused variable warning
-  console.log('Processed files count:', processedFiles.length);
+  const [originalZipName, setOriginalZipName] = useState<string>('');
 
   useEffect(() => {
     const loadWhiteNoise = async () => {
@@ -46,8 +45,9 @@ const FileUploader = () => {
 
   const handleDrop = async (droppedFiles: File[]) => {
     if (droppedFiles.length === 0) return;
-    
+
     const zipFile = droppedFiles[0];
+    setOriginalZipName(zipFile.name);
     setFiles([zipFile]);
     setStatus('extracting');
     setError('');
@@ -255,6 +255,13 @@ const FileUploader = () => {
           whiteNoiseBlob={whiteNoiseBlob}
           whiteNoiseVolume={whiteNoiseVolume}
           onProcessingComplete={handleProcessingComplete}
+        />
+      )}
+
+      {processedFiles.length > 0 && (
+        <ZipExporter
+          processedFiles={processedFiles}
+          originalZipName={originalZipName}
         />
       )}
 
