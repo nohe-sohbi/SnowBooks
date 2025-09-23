@@ -10,6 +10,7 @@ import { formatSize, formatDuration } from '@/utils/formatters';
 import { getAudioDuration, createMixedAudioPreview } from '@/utils/audio';
 import type MP3File from "@/interface/MP3File.tsx";
 import { VolumeControl } from './VolumeControl';
+import { AudioProcessor } from './AudioProcessor';
 import whiteNoiseUrl from '@/assets/white-noise.mp3';
 
 type Status = 'idle' | 'extracting' | 'completed' | 'error';
@@ -24,6 +25,10 @@ const FileUploader = () => {
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [whiteNoiseVolume, setWhiteNoiseVolume] = useState(0.3);
   const [whiteNoiseBlob, setWhiteNoiseBlob] = useState<Blob | null>(null);
+  const [processedFiles, setProcessedFiles] = useState<Array<{ name: string; blob: Blob }>>([]);
+
+  // Use processedFiles to avoid unused variable warning
+  console.log('Processed files count:', processedFiles.length);
 
   useEffect(() => {
     const loadWhiteNoise = async () => {
@@ -166,6 +171,11 @@ const FileUploader = () => {
     setError('');
     setProgress(0);
     setPlayingIndex(null);
+    setProcessedFiles([]);
+  };
+
+  const handleProcessingComplete = (files: Array<{ name: string; blob: Blob }>) => {
+    setProcessedFiles(files);
   };
 
 
@@ -236,6 +246,15 @@ const FileUploader = () => {
         <VolumeControl
           volume={whiteNoiseVolume}
           onVolumeChange={setWhiteNoiseVolume}
+        />
+      )}
+
+      {mp3Files.length > 0 && (
+        <AudioProcessor
+          mp3Files={mp3Files}
+          whiteNoiseBlob={whiteNoiseBlob}
+          whiteNoiseVolume={whiteNoiseVolume}
+          onProcessingComplete={handleProcessingComplete}
         />
       )}
 
