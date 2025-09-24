@@ -71,7 +71,7 @@ export const createMixedAudioPreview = async (
 
     // Convert buffer to blob
     const length = outputBuffer.length * outputBuffer.numberOfChannels * 2;
-    const arrayBuffer = new ArrayBuffer(length);
+    const arrayBuffer = new ArrayBuffer(44 + length); // Add 44 bytes for WAV header
     const view = new DataView(arrayBuffer);
 
     // Write WAV header
