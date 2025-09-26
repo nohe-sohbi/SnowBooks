@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoaderIcon, PlayIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon } from 'lucide-react';
-import { processAllMP3FilesWithWhiteNoise } from '@/utils/audioProcessor';
+import { processAllMP3FilesWithWhiteNoiseOptimized } from '@/utils/optimizedAudioProcessor';
+import { globalMemoryManager } from '@/utils/memoryManager';
 import type MP3File from "@/interface/MP3File.tsx";
 
 interface ProcessStepProps {
@@ -15,11 +16,11 @@ interface ProcessStepProps {
 
 type ProcessingStatus = 'idle' | 'processing' | 'completed' | 'error';
 
-export const ProcessStep = ({ 
-  mp3Files, 
-  whiteNoiseBlob, 
-  whiteNoiseVolume, 
-  onProcessingComplete 
+export const ProcessStep = ({
+  mp3Files,
+  whiteNoiseBlob,
+  whiteNoiseVolume,
+  onProcessingComplete
 }: ProcessStepProps) => {
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
@@ -27,6 +28,7 @@ export const ProcessStep = ({
   const [totalProgress, setTotalProgress] = useState(0);
   const [error, setError] = useState<string>('');
   const [processedCount, setProcessedCount] = useState(0);
+  const [memoryWarning, setMemoryWarning] = useState<boolean>(false);
 
   const startProcessing = async () => {
     if (!whiteNoiseBlob) {
@@ -48,9 +50,17 @@ export const ProcessStep = ({
       setCurrentFileProgress(0);
       setTotalProgress(0);
       setProcessedCount(0);
+      setMemoryWarning(false);
 
-      // Process all files with actual white noise mixing
-      const processedFiles = await processAllMP3FilesWithWhiteNoise(
+      // Check memory before starting (single check, not continuous monitoring)
+      const memoryInfo = globalMemoryManager.getMemoryInfo();
+      if (memoryInfo && memoryInfo.percentage > 85) {
+        setMemoryWarning(true);
+        console.warn(`High memory usage detected: ${memoryInfo.percentage}%`);
+      }
+
+      // Use optimized processor with simplified error handling
+      const processedFiles = await processAllMP3FilesWithWhiteNoiseOptimized(
         mp3Files.map(file => ({ name: file.name, blob: file.blob })),
         whiteNoiseBlob,
         whiteNoiseVolume,
@@ -58,7 +68,7 @@ export const ProcessStep = ({
           setCurrentFileIndex(fileIndex);
           setCurrentFileProgress(fileProgress);
           setTotalProgress(totalProgress);
-          
+
           // Update processed count when a file is completed
           if (fileProgress === 100) {
             setProcessedCount(fileIndex + 1);
@@ -72,8 +82,14 @@ export const ProcessStep = ({
 
     } catch (error) {
       console.error('Processing failed:', error);
-      setError(error instanceof Error ? error.message : 'Processing failed');
+      const errorMessage = error instanceof Error ? error.message : 'Processing failed';
+      setError(errorMessage);
       setStatus('error');
+
+      // Show memory warning if it's a memory-related error
+      if (errorMessage.toLowerCase().includes('memory')) {
+        setMemoryWarning(true);
+      }
     }
   };
 
@@ -159,6 +175,32 @@ export const ProcessStep = ({
               {getStatusText()}
             </p>
           </div>
+
+          {/* Memory Warning */}
+          {memoryWarning && (
+            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+                <AlertCircleIcon className="h-4 w-4" />
+                <div>
+                  <p className="text-sm font-medium">High Memory Usage</p>
+                  <p className="text-xs">Processing is using significant memory. Consider processing fewer files if issues occur.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Information */}
+          {status === 'error' && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                <AlertCircleIcon className="h-4 w-4" />
+                <div>
+                  <p className="text-sm font-medium">Processing Error</p>
+                  <p className="text-xs">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Progress Bars */}
           {isProcessing && (

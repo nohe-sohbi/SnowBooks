@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DownloadIcon, LoaderIcon, PackageIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon } from 'lucide-react';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import { createStreamingZip } from '@/utils/streamingZipExporter';
+import { globalMemoryManager } from '@/utils/memoryManager';
 import { formatSize } from '@/utils/formatters';
 
 interface DownloadStepProps {
@@ -13,12 +13,15 @@ interface DownloadStepProps {
   onStartOver: () => void;
 }
 
-type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error';
+type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error' | 'memory-warning';
 
 export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: DownloadStepProps) => {
   const [status, setStatus] = useState<ExportStatus>('idle');
   const [error, setError] = useState<string>('');
   const [downloadedFileName, setDownloadedFileName] = useState<string>('');
+  const [progress, setProgress] = useState<number>(0);
+  const [currentFile, setCurrentFile] = useState<string>('');
+  const [memoryWarning, setMemoryWarning] = useState<boolean>(false);
 
   const createAndDownloadZip = async () => {
     if (processedFiles.length === 0) {
@@ -30,42 +33,57 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
     try {
       setStatus('creating');
       setError('');
+      setProgress(0);
+      setCurrentFile('');
+      setMemoryWarning(false);
 
-      // Create new ZIP file
-      const zip = new JSZip();
-
-      // Add all processed files to the ZIP
-      for (const file of processedFiles) {
-        zip.file(file.name, file.blob);
+      // Check memory before starting
+      const memoryInfo = globalMemoryManager.getMemoryInfo();
+      if (memoryInfo && memoryInfo.percentage > 75) {
+        setMemoryWarning(true);
+        setStatus('memory-warning');
+        // Continue anyway but with warning
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Give user time to see warning
       }
-
-      setStatus('downloading');
-
-      // Generate ZIP blob
-      const zipBlob = await zip.generateAsync({ 
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: {
-          level: 6
-        }
-      });
 
       // Generate filename
       const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
-      const baseName = originalZipName 
-        ? originalZipName.replace(/\.zip$/i, '') 
+      const baseName = originalZipName
+        ? originalZipName.replace(/\.zip$/i, '')
         : 'processed-audiobook';
       const filename = `${baseName}-with-white-noise-${timestamp}.zip`;
 
-      // Download the file
-      saveAs(zipBlob, filename);
+      // Use streaming ZIP creation
+      await createStreamingZip(processedFiles, filename, {
+        compressionLevel: 6,
+        onProgress: (progressValue, fileName) => {
+          setProgress(progressValue);
+          setCurrentFile(fileName || '');
+
+          if (progressValue < 50) {
+            setStatus('creating');
+          } else if (progressValue < 90) {
+            setStatus('downloading');
+          }
+        },
+        onMemoryWarning: (memoryUsage) => {
+          console.warn(`Memory warning during ZIP creation: ${memoryUsage}MB`);
+          setMemoryWarning(true);
+        },
+        maxMemoryUsage: 400 // Conservative limit for ZIP creation
+      });
+
       setDownloadedFileName(filename);
       setStatus('completed');
+      setProgress(100);
 
     } catch (error) {
-      console.error('ZIP export failed:', error);
+      console.error('Streaming ZIP creation failed:', error);
       setError(error instanceof Error ? error.message : 'Export failed');
       setStatus('error');
+
+      // Perform cleanup on error
+      globalMemoryManager.performCleanup();
     }
   };
 
@@ -74,6 +92,8 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
       case 'creating':
       case 'downloading':
         return <LoaderIcon className="h-6 w-6 animate-spin text-blue-500" />;
+      case 'memory-warning':
+        return <AlertCircleIcon className="h-6 w-6 text-yellow-500" />;
       case 'completed':
         return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
       case 'error':
@@ -86,9 +106,11 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
   const getStatusText = () => {
     switch (status) {
       case 'creating':
-        return 'Creating ZIP file...';
+        return currentFile ? `Creating ZIP file... (${currentFile})` : 'Creating ZIP file...';
       case 'downloading':
         return 'Preparing download...';
+      case 'memory-warning':
+        return 'High memory usage detected - continuing with caution...';
       case 'completed':
         return `Successfully downloaded: ${downloadedFileName}`;
       case 'error':
@@ -98,7 +120,7 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
     }
   };
 
-  const isProcessing = status === 'creating' || status === 'downloading';
+  const isProcessing = status === 'creating' || status === 'downloading' || status === 'memory-warning';
   const totalSize = processedFiles.reduce((sum, file) => sum + file.blob.size, 0);
 
   return (
@@ -167,10 +189,44 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
 
           {/* Status */}
           <div className="mb-4">
-            <p className={`text-sm ${status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+            <p className={`text-sm ${status === 'error' ? 'text-red-600' : status === 'memory-warning' ? 'text-yellow-600' : 'text-muted-foreground'}`}>
               {getStatusText()}
             </p>
           </div>
+
+          {/* Progress Bar */}
+          {isProcessing && (
+            <div className="mb-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Progress</span>
+                <span className="font-mono">{progress}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              {currentFile && (
+                <p className="text-xs text-muted-foreground">
+                  Processing: {currentFile}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Memory Warning */}
+          {memoryWarning && (
+            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+                <AlertCircleIcon className="h-4 w-4" />
+                <div>
+                  <p className="text-sm font-medium">High Memory Usage</p>
+                  <p className="text-xs">The system is using significant memory. Large files may cause slowdowns.</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Completed State */}
           {status === 'completed' && (
