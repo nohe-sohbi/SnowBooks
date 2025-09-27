@@ -1,8 +1,10 @@
 # Development Dockerfile for SnowBooks Backend
 FROM node:18-alpine
 
-# Install FFmpeg
-RUN apk add --no-cache ffmpeg
+# Install FFmpeg and other dependencies
+RUN apk add --no-cache \
+    ffmpeg \
+    curl
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +19,10 @@ RUN npm ci
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p uploads temp
+RUN mkdir -p uploads temp assets
+
+# Copy white noise asset
+COPY assets/white-noise.mp3 assets/
 
 # Expose port
 EXPOSE 3001
