@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { LoaderIcon, PlayIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon, StopIcon } from 'lucide-react';
+import { LoaderIcon, PlayIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon, Square } from 'lucide-react';
 import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
 import type MP3File from "@/interface/MP3File.tsx";
 
@@ -113,7 +113,7 @@ export const ProcessStep = ({
       case 'error':
         return <AlertCircleIcon className="h-6 w-6 text-red-500" />;
       case 'cancelled':
-        return <StopIcon className="h-6 w-6 text-orange-500" />;
+        return <Square className="h-6 w-6 text-orange-500" />;
       default:
         return <PlayIcon className="h-6 w-6 text-primary" />;
     }
@@ -173,7 +173,7 @@ export const ProcessStep = ({
                 size="lg"
                 className="min-w-[140px]"
               >
-                <StopIcon className="h-5 w-5 mr-2" />
+                <Square className="h-5 w-5 mr-2" />
                 Cancel
               </Button>
             )}
