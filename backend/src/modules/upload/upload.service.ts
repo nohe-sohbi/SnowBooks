@@ -172,7 +172,7 @@ export class UploadService {
     await this.saveJobMetadata(jobData);
   }
 
-  private async cleanupJobDirectory(jobDir: string): Promise<void> {
+  async cleanupJobDirectory(jobDir: string): Promise<void> {
     try {
       await fs.rm(jobDir, { recursive: true, force: true });
     } catch (error) {
