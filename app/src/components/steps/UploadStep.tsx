@@ -34,14 +34,40 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
     try {
       const zipData = await JSZip.loadAsync(zipFile);
-      const mp3Entries = Object.keys(zipData.files).filter(
+      let mp3Entries = Object.keys(zipData.files).filter(
         fileName => fileName.toLowerCase().endsWith('.mp3') && !zipData.files[fileName].dir
       );
 
+      // If no MP3 files found, check for nested ZIP files
       if (mp3Entries.length === 0) {
-        setError('No MP3 files found in the ZIP archive');
+        const nestedZipEntries = Object.keys(zipData.files).filter(
+          fileName => fileName.toLowerCase().endsWith('.zip') && !zipData.files[fileName].dir
+        );
+
+        if (nestedZipEntries.length > 0) {
+          console.log(`Found ${nestedZipEntries.length} nested ZIP files, extracting...`);
+
+          // Extract the first nested ZIP and look for MP3s
+          const nestedZipFile = zipData.files[nestedZipEntries[0]];
+          const nestedZipBlob = await nestedZipFile.async('blob');
+          const nestedZipData = await JSZip.loadAsync(nestedZipBlob);
+
+          mp3Entries = Object.keys(nestedZipData.files).filter(
+            fileName => fileName.toLowerCase().endsWith('.mp3') && !nestedZipData.files[fileName].dir
+          );
+
+          if (mp3Entries.length > 0) {
+            // Use the nested ZIP data for extraction
+            zipData.files = nestedZipData.files;
+            console.log(`Found ${mp3Entries.length} MP3 files in nested ZIP`);
+          }
+        }
+      }
+
+      if (mp3Entries.length === 0) {
+        setError('No MP3 files found in the ZIP archive or nested ZIP files');
         setStatus('error');
-        onError('No MP3 files found in the ZIP archive');
+        onError('No MP3 files found in the ZIP archive or nested ZIP files');
         return;
       }
 

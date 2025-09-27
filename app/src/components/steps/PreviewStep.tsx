@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayIcon, Square, FileAudioIcon, VolumeXIcon, Volume2Icon } from 'lucide-react';
 import { formatSize, formatDuration } from '@/utils/formatters';
@@ -13,10 +13,17 @@ interface PreviewStepProps {
   whiteNoiseVolume: number;
 }
 
-export const PreviewStep = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: PreviewStepProps) => {
+const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: PreviewStepProps) => {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+
+  // Memoize expensive calculations to prevent unnecessary re-renders
+  const { totalSize, totalDuration } = useMemo(() => {
+    const totalSize = mp3Files.reduce((sum, file) => sum + file.size, 0);
+    const totalDuration = mp3Files.reduce((sum, file) => sum + (file.duration || 0), 0);
+    return { totalSize, totalDuration };
+  }, [mp3Files]);
 
   const handlePreview = async (fileIndex: number) => {
     const file = mp3Files[fileIndex];
@@ -81,9 +88,6 @@ export const PreviewStep = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Prev
       setLoadingIndex(null);
     }
   };
-
-  const totalSize = mp3Files.reduce((sum, file) => sum + file.size, 0);
-  const totalDuration = mp3Files.reduce((sum, file) => sum + (file.duration || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -196,3 +200,6 @@ export const PreviewStep = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Prev
     </div>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const PreviewStep = memo(PreviewStepComponent);
