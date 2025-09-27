@@ -1,10 +1,6 @@
 # Development overrides for Docker Compose
-version: '3.8'
-
 services:
   backend:
-    build:
-      target: development
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -16,8 +12,6 @@ services:
     command: npm run start:debug
 
   frontend:
-    build:
-      target: development
     volumes:
       - ./app:/app
       - /app/node_modules

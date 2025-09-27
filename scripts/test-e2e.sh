@@ -5,8 +5,18 @@ set -e
 
 echo "🧪 Running SnowBooks End-to-End Tests..."
 
+# Detect Docker Compose command
+if docker compose version &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+else
+    echo "❌ Docker Compose not found. Please install Docker Compose first."
+    exit 1
+fi
+
 # Check if services are running
-if ! docker-compose ps | grep -q "Up"; then
+if ! $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
     echo "❌ Services are not running. Please start them first with: ./scripts/dev-setup.sh"
     exit 1
 fi
@@ -26,7 +36,7 @@ fi
 
 # Test Redis connection
 echo "🔍 Testing Redis connection..."
-if docker-compose exec -T redis redis-cli ping | grep -q "PONG"; then
+if $DOCKER_COMPOSE_CMD exec -T redis redis-cli ping | grep -q "PONG"; then
     echo "✅ Redis is responding"
 else
     echo "❌ Redis connection failed"

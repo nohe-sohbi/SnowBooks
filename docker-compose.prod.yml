@@ -1,6 +1,4 @@
 # Production configuration for Docker Compose
-version: '3.8'
-
 services:
   redis:
     restart: unless-stopped

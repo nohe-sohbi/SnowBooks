@@ -11,11 +11,22 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Docker Compose is not installed. Please install Docker Compose first."
-    exit 1
+# Check if Docker Compose is installed (modern Docker includes compose as a subcommand)
+if ! docker compose version &> /dev/null; then
+    # Fallback to legacy docker-compose command
+    if ! command -v docker-compose &> /dev/null; then
+        echo "❌ Docker Compose is not installed. Please install Docker Compose first."
+        echo "   Modern Docker: 'docker compose' subcommand"
+        echo "   Legacy: 'docker-compose' standalone command"
+        exit 1
+    else
+        DOCKER_COMPOSE_CMD="docker-compose"
+    fi
+else
+    DOCKER_COMPOSE_CMD="docker compose"
 fi
+
+echo "✅ Using Docker Compose command: $DOCKER_COMPOSE_CMD"
 
 # Create necessary directories
 echo "📁 Creating necessary directories..."
@@ -34,9 +45,9 @@ fi
 
 # Build and start services
 echo "🐳 Building and starting Docker services..."
-docker-compose down --remove-orphans
-docker-compose build --no-cache
-docker-compose up -d
+$DOCKER_COMPOSE_CMD down --remove-orphans
+$DOCKER_COMPOSE_CMD build --no-cache
+$DOCKER_COMPOSE_CMD up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be ready..."
@@ -44,7 +55,7 @@ sleep 10
 
 # Check service health
 echo "🔍 Checking service health..."
-if docker-compose ps | grep -q "Up"; then
+if $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
     echo "✅ Services are running!"
     echo ""
     echo "🌐 Application URLs:"
@@ -54,13 +65,13 @@ if docker-compose ps | grep -q "Up"; then
     echo "   Redis:    localhost:6379"
     echo ""
     echo "📋 Useful commands:"
-    echo "   View logs:     docker-compose logs -f"
-    echo "   Stop services: docker-compose down"
-    echo "   Restart:       docker-compose restart"
-    echo "   Shell access:  docker-compose exec backend sh"
+    echo "   View logs:     $DOCKER_COMPOSE_CMD logs -f"
+    echo "   Stop services: $DOCKER_COMPOSE_CMD down"
+    echo "   Restart:       $DOCKER_COMPOSE_CMD restart"
+    echo "   Shell access:  $DOCKER_COMPOSE_CMD exec backend sh"
     echo ""
     echo "🎉 Development environment is ready!"
 else
-    echo "❌ Some services failed to start. Check logs with: docker-compose logs"
+    echo "❌ Some services failed to start. Check logs with: $DOCKER_COMPOSE_CMD logs"
     exit 1
 fi

@@ -65,17 +65,17 @@ A modern web application for processing audiobook files by mixing them with whit
 
 1. **Start services**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 2. **View logs**:
    ```bash
-   docker-compose logs -f
+   docker compose logs -f
    ```
 
 3. **Stop services**:
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 ## 🧪 Testing
@@ -160,10 +160,10 @@ VITE_NODE_ENV=development
 ### Using Docker Compose
 ```bash
 # Build and start production services
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 # With SSL/HTTPS
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d nginx
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d nginx
 ```
 
 ### Environment Setup
@@ -202,7 +202,7 @@ redis-server
 ### Debugging
 - Backend debugging port: 9229 (when using Docker)
 - Frontend hot reload: Enabled by default
-- Redis CLI: `docker-compose exec redis redis-cli`
+- Redis CLI: `docker compose exec redis redis-cli`
 
 ## 📊 Monitoring
 
@@ -214,12 +214,12 @@ redis-server
 ### Logs
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f redis
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f redis
 ```
 
 ## 🤝 Contributing

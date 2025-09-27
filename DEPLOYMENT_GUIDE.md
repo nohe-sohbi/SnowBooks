@@ -62,12 +62,12 @@ make deploy   # Production deployment
 ### Using Docker Compose Directly
 ```bash
 # Development
-docker-compose up -d
-docker-compose logs -f
-docker-compose down
+docker compose up -d
+docker compose logs -f
+docker compose down
 
 # Production
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ## 🏭 Production Deployment
@@ -108,7 +108,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 make deploy
 
 # Or manually
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 ## 📊 Monitoring
@@ -152,8 +152,8 @@ make status
 docker info
 
 # Rebuild containers
-docker-compose build --no-cache
-docker-compose up -d
+docker compose build --no-cache
+docker compose up -d
 ```
 
 #### Port Conflicts
@@ -173,7 +173,7 @@ sudo chown -R $USER:$USER backend/uploads backend/temp
 #### FFmpeg Issues
 ```bash
 # Test FFmpeg in container
-docker-compose exec backend ffmpeg -version
+docker compose exec backend ffmpeg -version
 ```
 
 ### Reset Everything
@@ -231,14 +231,14 @@ redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
 ### Useful Commands
 ```bash
 # Container shell access
-docker-compose exec backend sh
-docker-compose exec frontend sh
+docker compose exec backend sh
+docker compose exec frontend sh
 
 # Database access
-docker-compose exec redis redis-cli
+docker compose exec redis redis-cli
 
 # File system access
-docker-compose exec backend ls -la uploads/
+docker compose exec backend ls -la uploads/
 ```
 
 ## 🎯 Next Steps
