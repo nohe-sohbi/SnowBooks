@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone';
 import { Button } from '@/components/ui/button';
 import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, UploadIcon, RefreshCwIcon } from 'lucide-react';
-import JSZip from 'jszip';
-import { getAudioDuration } from '@/utils/audio';
+import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
 import type MP3File from "@/interface/MP3File.tsx";
 
 type UploadStatus = 'idle' | 'extracting' | 'ready' | 'error';
 
 interface UploadStepProps {
-  onFilesExtracted: (files: MP3File[], originalZipName: string) => void;
+  onFilesExtracted: (files: MP3File[], originalZipName: string, jobId: string) => void;
   onError: (error: string) => void;
 }
 
@@ -24,7 +23,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
   const handleDrop = async (droppedFiles: File[]) => {
     if (droppedFiles.length === 0) return;
-    
+
     const zipFile = droppedFiles[0];
     setFiles([zipFile]);
     setStatus('extracting');
@@ -33,88 +32,37 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
     setFileCount(0);
 
     try {
-      const zipData = await JSZip.loadAsync(zipFile);
-      let mp3Entries = Object.keys(zipData.files).filter(
-        fileName => fileName.toLowerCase().endsWith('.mp3') && !zipData.files[fileName].dir
-      );
+      // Upload to backend API
+      setProgress(10);
+      const uploadResponse: UploadResponse = await audioProcessingAPI.uploadZip(zipFile);
 
-      // If no MP3 files found, check for nested ZIP files
-      if (mp3Entries.length === 0) {
-        const nestedZipEntries = Object.keys(zipData.files).filter(
-          fileName => fileName.toLowerCase().endsWith('.zip') && !zipData.files[fileName].dir
-        );
+      setProgress(50);
+      setFileCount(uploadResponse.fileCount);
 
-        if (nestedZipEntries.length > 0) {
-          console.log(`Found ${nestedZipEntries.length} nested ZIP files, extracting...`);
+      // Get job details to extract MP3 file info
+      const jobData = await audioProcessingAPI.getJobStatus(uploadResponse.jobId);
 
-          // Extract the first nested ZIP and look for MP3s
-          const nestedZipFile = zipData.files[nestedZipEntries[0]];
-          const nestedZipBlob = await nestedZipFile.async('blob');
-          const nestedZipData = await JSZip.loadAsync(nestedZipBlob);
+      setProgress(80);
 
-          mp3Entries = Object.keys(nestedZipData.files).filter(
-            fileName => fileName.toLowerCase().endsWith('.mp3') && !nestedZipData.files[fileName].dir
-          );
-
-          if (mp3Entries.length > 0) {
-            // Use the nested ZIP data for extraction
-            zipData.files = nestedZipData.files;
-            console.log(`Found ${mp3Entries.length} MP3 files in nested ZIP`);
-          }
-        }
-      }
-
-      if (mp3Entries.length === 0) {
-        setError('No MP3 files found in the ZIP archive or nested ZIP files');
+      // Check if files were found
+      if (jobData.mp3Files.length === 0) {
+        setError('No MP3 files found in the ZIP archive');
         setStatus('error');
-        onError('No MP3 files found in the ZIP archive or nested ZIP files');
+        onError('No MP3 files found in the ZIP archive');
         return;
       }
 
-      setFileCount(mp3Entries.length);
-      const extractedFiles: MP3File[] = [];
-      
-      // Process files in chunks to prevent blocking the main thread
-      for (let i = 0; i < mp3Entries.length; i++) {
-        const fileName = mp3Entries[i];
-        const fileProgress = (i / mp3Entries.length) * 100;
-        setProgress(fileProgress);
-        
-        // Yield control to prevent blocking with requestIdleCallback fallback
-        await new Promise(resolve => {
-          if (window.requestIdleCallback) {
-            window.requestIdleCallback(resolve);
-          } else {
-            setTimeout(resolve, 0);
-          }
-        });
-        
-        try {
-          const fileData = zipData.files[fileName];
-          const blob = await fileData.async('blob');
-          const duration = await getAudioDuration(blob);
-          
-          extractedFiles.push({
-            name: fileName.split('/').pop() || fileName,
-            size: blob.size,
-            duration,
-            blob
-          });
-        } catch (err) {
-          console.warn(`Failed to process ${fileName}:`, err);
-        }
-      }
-
-      if (extractedFiles.length === 0) {
-        setError('Failed to extract any valid MP3 files');
-        setStatus('error');
-        onError('Failed to extract any valid MP3 files');
-        return;
-      }
+      // Convert backend MP3FileInfo to frontend MP3File format
+      const mp3Files: MP3File[] = jobData.mp3Files.map(fileInfo => ({
+        name: fileInfo.name,
+        size: fileInfo.size,
+        duration: fileInfo.duration,
+        blob: new Blob(), // Placeholder - files are now on backend
+      }));
 
       setProgress(100);
       setStatus('ready');
-      onFilesExtracted(extractedFiles, zipFile.name);
+      onFilesExtracted(mp3Files, uploadResponse.originalZipName, uploadResponse.jobId);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to process ZIP file';

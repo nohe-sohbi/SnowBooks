@@ -3,97 +3,60 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DownloadIcon, LoaderIcon, PackageIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon } from 'lucide-react';
-import { createStreamingZip } from '@/utils/streamingZipExporter';
-import { globalMemoryManager } from '@/utils/memoryManager';
+import { audioProcessingAPI } from '@/services/audioProcessingAPI';
 import { formatSize } from '@/utils/formatters';
 
 interface DownloadStepProps {
-  processedFiles: Array<{ name: string; blob: Blob }>;
+  jobId: string;
   originalZipName?: string;
   onStartOver: () => void;
 }
 
 type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error' | 'memory-warning';
 
-export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: DownloadStepProps) => {
+export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadStepProps) => {
   const [status, setStatus] = useState<ExportStatus>('idle');
   const [error, setError] = useState<string>('');
   const [downloadedFileName, setDownloadedFileName] = useState<string>('');
-  const [progress, setProgress] = useState<number>(0);
-  const [currentFile, setCurrentFile] = useState<string>('');
-  const [memoryWarning, setMemoryWarning] = useState<boolean>(false);
+  const [fileInfo, setFileInfo] = useState<any>(null);
 
-  const createAndDownloadZip = async () => {
-    if (processedFiles.length === 0) {
-      setError('No processed files to export');
-      setStatus('error');
-      return;
-    }
-
+  const downloadProcessedFiles = async () => {
     try {
-      setStatus('creating');
+      setStatus('downloading');
       setError('');
-      setProgress(0);
-      setCurrentFile('');
-      setMemoryWarning(false);
 
-      // Check memory before starting
-      const memoryInfo = globalMemoryManager.getMemoryInfo();
-      if (memoryInfo && memoryInfo.percentage > 75) {
-        setMemoryWarning(true);
-        setStatus('memory-warning');
-        // Continue anyway but with warning
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Give user time to see warning
-      }
+      // Get file info first
+      const info = await audioProcessingAPI.getDownloadInfo(jobId);
+      setFileInfo(info);
 
-      // Generate filename
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
-      const baseName = originalZipName
-        ? originalZipName.replace(/\.zip$/i, '')
-        : 'processed-audiobook';
-      const filename = `${baseName}-with-white-noise-${timestamp}.zip`;
+      // Download the processed ZIP file
+      const blob = await audioProcessingAPI.downloadResult(jobId);
 
-      // Use streaming ZIP creation
-      await createStreamingZip(processedFiles, filename, {
-        compressionLevel: 6,
-        onProgress: (progressValue, fileName) => {
-          setProgress(progressValue);
-          setCurrentFile(fileName || '');
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = info.fileName || `${originalZipName.replace(/\.zip$/i, '')}-with-white-noise.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
-          if (progressValue < 50) {
-            setStatus('creating');
-          } else if (progressValue < 90) {
-            setStatus('downloading');
-          }
-        },
-        onMemoryWarning: (memoryUsage) => {
-          console.warn(`Memory warning during ZIP creation: ${memoryUsage}MB`);
-          setMemoryWarning(true);
-        },
-        maxMemoryUsage: 400 // Conservative limit for ZIP creation
-      });
-
-      setDownloadedFileName(filename);
+      setDownloadedFileName(link.download);
       setStatus('completed');
-      setProgress(100);
 
     } catch (error) {
-      console.error('Streaming ZIP creation failed:', error);
-      setError(error instanceof Error ? error.message : 'Export failed');
+      console.error('Download failed:', error);
+      setError(error instanceof Error ? error.message : 'Download failed');
       setStatus('error');
 
-      // Perform cleanup on error
-      globalMemoryManager.performCleanup();
     }
   };
 
   const getStatusIcon = () => {
     switch (status) {
-      case 'creating':
       case 'downloading':
         return <LoaderIcon className="h-6 w-6 animate-spin text-blue-500" />;
-      case 'memory-warning':
-        return <AlertCircleIcon className="h-6 w-6 text-yellow-500" />;
       case 'completed':
         return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
       case 'error':
@@ -105,12 +68,8 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
 
   const getStatusText = () => {
     switch (status) {
-      case 'creating':
-        return currentFile ? `Creating ZIP file... (${currentFile})` : 'Creating ZIP file...';
       case 'downloading':
-        return 'Preparing download...';
-      case 'memory-warning':
-        return 'High memory usage detected - continuing with caution...';
+        return 'Downloading processed files...';
       case 'completed':
         return `Successfully downloaded: ${downloadedFileName}`;
       case 'error':
@@ -120,8 +79,7 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
     }
   };
 
-  const isProcessing = status === 'creating' || status === 'downloading' || status === 'memory-warning';
-  const totalSize = processedFiles.reduce((sum, file) => sum + file.blob.size, 0);
+  const isProcessing = status === 'downloading';
 
   return (
     <div className="space-y-6">
@@ -135,7 +93,7 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
                 Processing Complete!
               </h3>
               <p className="text-green-700 dark:text-green-300">
-                Your {processedFiles.length} MP3 files have been successfully processed with white noise.
+                Your MP3 files have been successfully processed with white noise.
               </p>
             </div>
           </div>
@@ -149,22 +107,22 @@ export const DownloadStep = ({ processedFiles, originalZipName, onStartOver }: D
               <div>
                 <h3 className="text-xl font-semibold">Download Processed Files</h3>
                 <p className="text-muted-foreground">
-                  {processedFiles.length} files • {formatSize(totalSize)} total
+                  {fileInfo ? `${formatSize(fileInfo.fileSize)} • ${fileInfo.fileName}` : 'Processed audio files ready'}
                 </p>
               </div>
             </div>
             
             {status !== 'completed' && (
               <Button
-                onClick={createAndDownloadZip}
-                disabled={isProcessing || processedFiles.length === 0}
+                onClick={downloadProcessedFiles}
+                disabled={isProcessing}
                 size="lg"
                 className="min-w-[140px]"
               >
                 {isProcessing ? (
                   <>
                     <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
-                    {status === 'creating' ? 'Creating...' : 'Downloading...'}
+                    Downloading...
                   </>
                 ) : (
                   <>

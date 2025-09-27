@@ -1,42 +1,41 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { LoaderIcon, PlayIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon } from 'lucide-react';
-import { processAllMP3FilesWithWhiteNoiseOptimized } from '@/utils/optimizedAudioProcessor';
-import { globalMemoryManager } from '@/utils/memoryManager';
+import { Progress } from '@/components/ui/progress';
+import { LoaderIcon, PlayIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon, StopIcon } from 'lucide-react';
+import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
 import type MP3File from "@/interface/MP3File.tsx";
 
 interface ProcessStepProps {
   mp3Files: MP3File[];
-  whiteNoiseBlob: Blob | null;
   whiteNoiseVolume: number;
-  onProcessingComplete: (processedFiles: Array<{ name: string; blob: Blob }>) => void;
+  jobId: string;
+  onProcessingComplete: (downloadUrl: string) => void;
 }
 
-type ProcessingStatus = 'idle' | 'processing' | 'completed' | 'error';
+type ProcessingStatus = 'idle' | 'processing' | 'completed' | 'error' | 'cancelled';
 
 export const ProcessStep = ({
   mp3Files,
-  whiteNoiseBlob,
   whiteNoiseVolume,
+  jobId,
   onProcessingComplete
 }: ProcessStepProps) => {
   const [status, setStatus] = useState<ProcessingStatus>('idle');
-  const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [currentFileProgress, setCurrentFileProgress] = useState(0);
-  const [totalProgress, setTotalProgress] = useState(0);
+  const [progress, setProgress] = useState<JobProgress | null>(null);
   const [error, setError] = useState<string>('');
-  const [processedCount, setProcessedCount] = useState(0);
-  const [memoryWarning, setMemoryWarning] = useState<boolean>(false);
+  const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
+  // Cleanup WebSocket subscription on unmount
+  useEffect(() => {
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [unsubscribe]);
 
   const startProcessing = async () => {
-    if (!whiteNoiseBlob) {
-      setError('White noise file not loaded');
-      setStatus('error');
-      return;
-    }
-
     if (mp3Files.length === 0) {
       setError('No MP3 files to process');
       setStatus('error');
@@ -46,60 +45,63 @@ export const ProcessStep = ({
     try {
       setStatus('processing');
       setError('');
-      setCurrentFileIndex(0);
-      setCurrentFileProgress(0);
-      setTotalProgress(0);
-      setProcessedCount(0);
-      setMemoryWarning(false);
+      setProgress(null);
 
-      // Check memory before starting (single check, not continuous monitoring)
-      const memoryInfo = globalMemoryManager.getMemoryInfo();
-      if (memoryInfo && memoryInfo.percentage > 85) {
-        setMemoryWarning(true);
-        console.warn(`High memory usage detected: ${memoryInfo.percentage}%`);
-      }
-
-      // Use optimized processor with simplified error handling
-      const processedFiles = await processAllMP3FilesWithWhiteNoiseOptimized(
-        mp3Files.map(file => ({ name: file.name, blob: file.blob })),
-        whiteNoiseBlob,
-        whiteNoiseVolume,
-        (fileIndex, fileProgress, totalProgress) => {
-          setCurrentFileIndex(fileIndex);
-          setCurrentFileProgress(fileProgress);
-          setTotalProgress(totalProgress);
-
-          // Update processed count when a file is completed
-          if (fileProgress === 100) {
-            setProcessedCount(fileIndex + 1);
-          }
+      // Subscribe to progress updates
+      const unsubscribeFn = audioProcessingAPI.subscribeToProgress(
+        jobId,
+        (progressUpdate: JobProgress) => {
+          setProgress(progressUpdate);
+        },
+        (result: any) => {
+          setStatus('completed');
+          onProcessingComplete(result.downloadUrl || `/api/download/${jobId}`);
+        },
+        (errorMessage: string) => {
+          setError(errorMessage);
+          setStatus('error');
         }
       );
+      setUnsubscribe(() => unsubscribeFn);
 
-      setStatus('completed');
-      setProcessedCount(processedFiles.length);
-      onProcessingComplete(processedFiles);
+      // Start processing on backend
+      const config: ProcessingConfig = {
+        whiteNoiseVolume,
+        outputFormat: 'mp3',
+        quality: 'medium',
+      };
+
+      await audioProcessingAPI.startProcessing(jobId, config);
 
     } catch (error) {
       console.error('Processing failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Processing failed';
       setError(errorMessage);
       setStatus('error');
+    }
+  };
 
-      // Show memory warning if it's a memory-related error
-      if (errorMessage.toLowerCase().includes('memory')) {
-        setMemoryWarning(true);
+  const cancelProcessing = async () => {
+    try {
+      await audioProcessingAPI.cancelJob(jobId);
+      setStatus('cancelled');
+      if (unsubscribe) {
+        unsubscribe();
+        setUnsubscribe(null);
       }
+    } catch (error) {
+      console.error('Failed to cancel processing:', error);
     }
   };
 
   const reset = () => {
     setStatus('idle');
     setError('');
-    setCurrentFileIndex(0);
-    setCurrentFileProgress(0);
-    setTotalProgress(0);
-    setProcessedCount(0);
+    setProgress(null);
+    if (unsubscribe) {
+      unsubscribe();
+      setUnsubscribe(null);
+    }
   };
 
   const getStatusIcon = () => {
@@ -110,6 +112,8 @@ export const ProcessStep = ({
         return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
       case 'error':
         return <AlertCircleIcon className="h-6 w-6 text-red-500" />;
+      case 'cancelled':
+        return <StopIcon className="h-6 w-6 text-orange-500" />;
       default:
         return <PlayIcon className="h-6 w-6 text-primary" />;
     }
@@ -118,9 +122,14 @@ export const ProcessStep = ({
   const getStatusText = () => {
     switch (status) {
       case 'processing':
-        return `Processing ${mp3Files[currentFileIndex]?.name || 'file'}... (${processedCount}/${mp3Files.length})`;
+        if (progress) {
+          return `Processing ${progress.currentFileName}... (${progress.processedFiles}/${progress.totalFiles})`;
+        }
+        return 'Starting processing...';
       case 'completed':
-        return `Successfully processed ${processedCount} files with white noise`;
+        return `Successfully processed ${mp3Files.length} files with white noise`;
+      case 'cancelled':
+        return 'Processing was cancelled';
       case 'error':
         return `Error: ${error}`;
       default:
@@ -157,7 +166,19 @@ export const ProcessStep = ({
               </Button>
             )}
 
-            {status === 'error' && (
+            {status === 'processing' && (
+              <Button
+                onClick={cancelProcessing}
+                variant="outline"
+                size="lg"
+                className="min-w-[140px]"
+              >
+                <StopIcon className="h-5 w-5 mr-2" />
+                Cancel
+              </Button>
+            )}
+
+            {(status === 'error' || status === 'cancelled') && (
               <Button
                 onClick={reset}
                 variant="outline"
@@ -176,16 +197,26 @@ export const ProcessStep = ({
             </p>
           </div>
 
-          {/* Memory Warning */}
-          {memoryWarning && (
-            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
-                <AlertCircleIcon className="h-4 w-4" />
-                <div>
-                  <p className="text-sm font-medium">High Memory Usage</p>
-                  <p className="text-xs">Processing is using significant memory. Consider processing fewer files if issues occur.</p>
-                </div>
+          {/* Progress Information */}
+          {progress && status === 'processing' && (
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span>Overall Progress</span>
+                <span>{Math.round(progress.totalProgress)}%</span>
               </div>
+              <Progress value={progress.totalProgress} className="h-2" />
+
+              <div className="flex justify-between text-sm">
+                <span>Current File</span>
+                <span>{Math.round(progress.fileProgress)}%</span>
+              </div>
+              <Progress value={progress.fileProgress} className="h-1" />
+
+              {progress.estimatedTimeRemaining && (
+                <p className="text-xs text-muted-foreground">
+                  Estimated time remaining: {Math.round(progress.estimatedTimeRemaining / 1000)}s
+                </p>
+              )}
             </div>
           )}
 
@@ -202,36 +233,7 @@ export const ProcessStep = ({
             </div>
           )}
 
-          {/* Progress Bars */}
-          {isProcessing && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Current file progress</span>
-                  <span className="font-mono">{currentFileProgress}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${currentFileProgress}%` }}
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Total progress</span>
-                  <span className="font-mono">{totalProgress}%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-3">
-                  <div
-                    className="bg-primary h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${totalProgress}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Completed State */}
           {status === 'completed' && (
@@ -247,6 +249,8 @@ export const ProcessStep = ({
           )}
         </div>
 
+
+
         {/* Processing Info */}
         <div className="p-4 border rounded-lg bg-muted/10">
           <h4 className="font-medium mb-3">Processing Details</h4>
@@ -261,11 +265,11 @@ export const ProcessStep = ({
             </div>
             <div className="flex justify-between">
               <span>Processing method:</span>
-              <span>Web Audio API mixing</span>
+              <span className="font-mono">Backend FFmpeg</span>
             </div>
             <div className="flex justify-between">
               <span>Output format:</span>
-              <span>WAV (high quality)</span>
+              <span>MP3 (high quality)</span>
             </div>
           </div>
         </div>
@@ -273,10 +277,11 @@ export const ProcessStep = ({
         {/* Processing Notes */}
         <div className="text-xs text-muted-foreground space-y-1 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <h5 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Processing Notes:</h5>
-          <p>• Files are processed sequentially to optimize memory usage</p>
-          <p>• White noise is mixed using Web Audio API for high quality results</p>
+          <p>• Files are processed on the backend using native FFmpeg</p>
+          <p>• White noise is mixed with high quality audio processing</p>
           <p>• Original audio quality is preserved during mixing</p>
-          <p>• Processing time depends on file size and duration</p>
+          <p>• Processing time depends on file size and server load</p>
+          <p>• Real-time progress updates via WebSocket connection</p>
         </div>
       </div>
     </div>

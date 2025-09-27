@@ -19,6 +19,7 @@ const FileUploader = () => {
   const [whiteNoiseBlob, setWhiteNoiseBlob] = useState<Blob | null>(null);
   const [processedFiles, setProcessedFiles] = useState<Array<{ name: string; blob: Blob }>>([]);
   const [originalZipName, setOriginalZipName] = useState<string>('');
+  const [jobId, setJobId] = useState<string>('');
   const [stepCompletions, setStepCompletions] = useState<boolean[]>([false, false, false, false, false]);
 
   // Load white noise file on component mount
@@ -62,9 +63,10 @@ const FileUploader = () => {
   };
 
   // Memoized step event handlers to prevent unnecessary re-renders
-  const handleFilesExtracted = useCallback((files: MP3File[], zipName: string) => {
+  const handleFilesExtracted = useCallback((files: MP3File[], zipName: string, uploadJobId: string) => {
     setMp3Files(files);
     setOriginalZipName(zipName);
+    setJobId(uploadJobId);
     markStepComplete(0);
     setCurrentStep(1); // Move to configure step
   }, []);
@@ -78,8 +80,9 @@ const FileUploader = () => {
     markStepComplete(1); // Mark configure step as complete when volume is set
   }, []);
 
-  const handleProcessingComplete = useCallback((files: Array<{ name: string; blob: Blob }>) => {
-    setProcessedFiles(files);
+  const handleProcessingComplete = useCallback((downloadUrl: string) => {
+    // Store download URL instead of processed files
+    setProcessedFiles([{ name: 'processed-files.zip', blob: new Blob() }]); // Placeholder
     markStepComplete(3); // Mark process step as complete
     setCurrentStep(4); // Move to download step
   }, []);
@@ -164,8 +167,8 @@ const FileUploader = () => {
       component: (
         <ProcessStep
           mp3Files={mp3Files}
-          whiteNoiseBlob={whiteNoiseBlob}
           whiteNoiseVolume={whiteNoiseVolume}
+          jobId={jobId}
           onProcessingComplete={handleProcessingComplete}
         />
       ),
@@ -177,7 +180,7 @@ const FileUploader = () => {
       description: 'Get your processed files',
       component: (
         <DownloadStep
-          processedFiles={processedFiles}
+          jobId={jobId}
           originalZipName={originalZipName}
           onStartOver={handleStartOver}
         />
