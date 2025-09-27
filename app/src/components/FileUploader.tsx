@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { StepWizard } from './StepWizard';
 import { UploadStep } from './steps/UploadStep';
 import { ConfigureStep } from './steps/ConfigureStep';
@@ -9,6 +9,8 @@ import { ProcessStep } from './steps/ProcessStep';
 import { DownloadStep } from './steps/DownloadStep';
 import type MP3File from "@/interface/MP3File.tsx";
 import whiteNoiseUrl from '@/assets/white-noise.mp3';
+import { cleanupAudioContext } from '@/utils/audio';
+import { cleanupAudioWorker } from '@/utils/audioWorkerManager';
 
 const FileUploader = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -42,6 +44,14 @@ const FileUploader = () => {
     }
   }, []);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupAudioContext();
+      cleanupAudioWorker();
+    };
+  }, []);
+
   // Step completion handlers
   const markStepComplete = (stepIndex: number) => {
     setStepCompletions(prev => {
@@ -51,36 +61,36 @@ const FileUploader = () => {
     });
   };
 
-  // Step event handlers
-  const handleFilesExtracted = (files: MP3File[], zipName: string) => {
+  // Memoized step event handlers to prevent unnecessary re-renders
+  const handleFilesExtracted = useCallback((files: MP3File[], zipName: string) => {
     setMp3Files(files);
     setOriginalZipName(zipName);
     markStepComplete(0);
     setCurrentStep(1); // Move to configure step
-  };
+  }, []);
 
-  const handleUploadError = (error: string) => {
+  const handleUploadError = useCallback((error: string) => {
     console.error('Upload error:', error);
-  };
+  }, []);
 
-  const handleVolumeChange = (volume: number) => {
+  const handleVolumeChange = useCallback((volume: number) => {
     setWhiteNoiseVolume(volume);
     markStepComplete(1); // Mark configure step as complete when volume is set
-  };
+  }, []);
 
-  const handleProcessingComplete = (files: Array<{ name: string; blob: Blob }>) => {
+  const handleProcessingComplete = useCallback((files: Array<{ name: string; blob: Blob }>) => {
     setProcessedFiles(files);
     markStepComplete(3); // Mark process step as complete
     setCurrentStep(4); // Move to download step
-  };
+  }, []);
 
-  const handleStartOver = () => {
+  const handleStartOver = useCallback(() => {
     setCurrentStep(0);
     setMp3Files([]);
     setProcessedFiles([]);
     setOriginalZipName('');
     setStepCompletions([false, false, false, false, false]);
-  };
+  }, []);
 
   // Navigation handlers
   const handleNext = () => {
@@ -106,8 +116,8 @@ const FileUploader = () => {
     }
   };
 
-  // Define the steps for the wizard
-  const steps = [
+  // Memoize the steps array to prevent unnecessary re-renders
+  const steps = useMemo(() => [
     {
       id: 'upload',
       title: 'Upload',
@@ -174,7 +184,19 @@ const FileUploader = () => {
       ),
       isComplete: stepCompletions[4]
     }
-  ];
+  ], [
+    mp3Files,
+    whiteNoiseBlob,
+    whiteNoiseVolume,
+    processedFiles,
+    originalZipName,
+    stepCompletions,
+    handleFilesExtracted,
+    handleUploadError,
+    handleVolumeChange,
+    handleProcessingComplete,
+    handleStartOver
+  ]);
 
   return (
     <div className="space-y-8">
