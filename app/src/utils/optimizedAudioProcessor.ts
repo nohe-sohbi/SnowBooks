@@ -37,7 +37,7 @@ export const processMP3WithWhiteNoiseOptimized = async (
     audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
     // Load both audio files
-    const [mp3Buffer, whiteNoiseBuffer] = await Promise.all([
+    const [mp3Buffer, whiteNoiseBufferFull] = await Promise.all([
       mp3Blob.arrayBuffer().then(buffer => audioContext!.decodeAudioData(buffer)),
       whiteNoiseBlob.arrayBuffer().then(buffer => audioContext!.decodeAudioData(buffer))
     ]);
@@ -46,12 +46,36 @@ export const processMP3WithWhiteNoiseOptimized = async (
       onProgress(30);
     }
 
-    // Use the full duration of the MP3 file
-    const duration = mp3Buffer.duration;
+    // Use the MP3 file duration (this is the key fix)
+    const mp3Duration = mp3Buffer.duration;
     const sampleRate = audioContext.sampleRate;
-    const frameCount = duration * sampleRate;
+    const frameCount = mp3Duration * sampleRate;
 
-    // Create output buffer
+    // Create trimmed white noise buffer that matches MP3 duration
+    const whiteNoiseDurationNeeded = Math.min(mp3Duration, whiteNoiseBufferFull.duration);
+    const whiteNoiseFrameCount = whiteNoiseDurationNeeded * sampleRate;
+
+    // Create a trimmed white noise buffer with only the duration we need
+    const whiteNoiseBuffer = audioContext.createBuffer(
+      whiteNoiseBufferFull.numberOfChannels,
+      whiteNoiseFrameCount,
+      sampleRate
+    );
+
+    // Copy only the needed duration from the full white noise buffer
+    for (let channel = 0; channel < whiteNoiseBuffer.numberOfChannels; channel++) {
+      const sourceData = whiteNoiseBufferFull.getChannelData(Math.min(channel, whiteNoiseBufferFull.numberOfChannels - 1));
+      const targetData = whiteNoiseBuffer.getChannelData(channel);
+
+      for (let i = 0; i < whiteNoiseFrameCount; i++) {
+        targetData[i] = i < sourceData.length ? sourceData[i] : 0;
+      }
+    }
+
+    console.log(`Audio processing: MP3 duration: ${mp3Duration.toFixed(1)}s, White noise duration used: ${whiteNoiseDurationNeeded.toFixed(1)}s`);
+    console.log(`Memory optimization: Original white noise: ${whiteNoiseBufferFull.duration.toFixed(1)}s, Trimmed to: ${whiteNoiseDurationNeeded.toFixed(1)}s (${((whiteNoiseDurationNeeded / whiteNoiseBufferFull.duration) * 100).toFixed(1)}% of original)`);
+
+    // Create output buffer with MP3 duration
     const outputBuffer = audioContext.createBuffer(
       Math.max(mp3Buffer.numberOfChannels, whiteNoiseBuffer.numberOfChannels),
       frameCount,
@@ -79,9 +103,10 @@ export const processMP3WithWhiteNoiseOptimized = async (
         // Mix the audio samples for this chunk
         for (let i = startIdx; i < endIdx; i++) {
           const mp3Sample = i < mp3Data.length ? mp3Data[i] : 0;
-          const whiteNoiseSample = i < whiteNoiseData.length
-            ? whiteNoiseData[i % whiteNoiseData.length]
-            : 0;
+
+          // Use trimmed white noise - no more modulo operation!
+          // If we've used all available white noise, use silence (0)
+          const whiteNoiseSample = i < whiteNoiseData.length ? whiteNoiseData[i] : 0;
 
           // Mix: original audio + white noise at specified volume
           outputData[i] = mp3Sample + (whiteNoiseSample * whiteNoiseVolume);

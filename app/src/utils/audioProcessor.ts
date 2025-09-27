@@ -25,7 +25,7 @@ export const processMP3WithWhiteNoise = async (
       // Load both audio files with memory monitoring
       globalMemoryManager.checkMemoryPressure();
 
-      const [mp3Buffer, whiteNoiseBuffer] = await Promise.all([
+      const [mp3Buffer, whiteNoiseBufferFull] = await Promise.all([
         mp3Blob.arrayBuffer().then(buffer => audioContext!.decodeAudioData(buffer)),
         whiteNoiseBlob.arrayBuffer().then(buffer => audioContext!.decodeAudioData(buffer))
       ]);
@@ -33,10 +33,30 @@ export const processMP3WithWhiteNoise = async (
       onProgress?.(30);
       globalMemoryManager.checkMemoryPressure();
 
-      // Use the full duration of the MP3 file
-      const duration = mp3Buffer.duration;
+      // Use the MP3 file duration (key fix for file size issue)
+      const mp3Duration = mp3Buffer.duration;
       const sampleRate = audioContext!.sampleRate;
-      const frameCount = duration * sampleRate;
+      const frameCount = mp3Duration * sampleRate;
+
+      // Create trimmed white noise buffer that matches MP3 duration
+      const whiteNoiseDurationNeeded = Math.min(mp3Duration, whiteNoiseBufferFull.duration);
+      const whiteNoiseFrameCount = whiteNoiseDurationNeeded * sampleRate;
+
+      const whiteNoiseBuffer = audioContext!.createBuffer(
+        whiteNoiseBufferFull.numberOfChannels,
+        whiteNoiseFrameCount,
+        sampleRate
+      );
+
+      // Copy only the needed duration from the full white noise buffer
+      for (let channel = 0; channel < whiteNoiseBuffer.numberOfChannels; channel++) {
+        const sourceData = whiteNoiseBufferFull.getChannelData(Math.min(channel, whiteNoiseBufferFull.numberOfChannels - 1));
+        const targetData = whiteNoiseBuffer.getChannelData(channel);
+
+        for (let i = 0; i < whiteNoiseFrameCount; i++) {
+          targetData[i] = i < sourceData.length ? sourceData[i] : 0;
+        }
+      }
 
       onProgress?.(40);
 
@@ -75,9 +95,9 @@ export const processMP3WithWhiteNoise = async (
           // Mix the audio samples for this chunk
           for (let i = startIdx; i < endIdx; i++) {
             const mp3Sample = i < mp3Data.length ? mp3Data[i] : 0;
-            const whiteNoiseSample = i < whiteNoiseData.length
-              ? whiteNoiseData[i % whiteNoiseData.length]
-              : 0;
+
+            // Use trimmed white noise - no more modulo operation!
+            const whiteNoiseSample = i < whiteNoiseData.length ? whiteNoiseData[i] : 0;
 
             // Mix: original audio + white noise at specified volume
             outputData[i] = mp3Sample + (whiteNoiseSample * whiteNoiseVolume);

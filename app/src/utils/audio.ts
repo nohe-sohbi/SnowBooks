@@ -1,17 +1,53 @@
-// Extract audio duration using Web Audio API
+// Singleton AudioContext manager to prevent memory leaks
+class AudioContextManager {
+  private static instance: AudioContextManager;
+  private audioContext: AudioContext | null = null;
+  private isClosing = false;
+
+  static getInstance(): AudioContextManager {
+    if (!AudioContextManager.instance) {
+      AudioContextManager.instance = new AudioContextManager();
+    }
+    return AudioContextManager.instance;
+  }
+
+  async getContext(): Promise<AudioContext> {
+    if (!this.audioContext || this.audioContext.state === 'closed' || this.isClosing) {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.isClosing = false;
+    }
+
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+    }
+
+    return this.audioContext;
+  }
+
+  async cleanup(): Promise<void> {
+    if (this.audioContext && !this.isClosing) {
+      this.isClosing = true;
+      await this.audioContext.close();
+      this.audioContext = null;
+      this.isClosing = false;
+    }
+  }
+}
+
+// Extract audio duration using shared AudioContext
 export const getAudioDuration = async (blob: Blob): Promise<number | undefined> => {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const manager = AudioContextManager.getInstance();
+    const audioContext = await manager.getContext();
     const arrayBuffer = await blob.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    await audioContext.close();
     return audioBuffer.duration;
   } catch {
     return undefined;
   }
 };
 
-// Create a mixed audio preview with white noise
+// Create a mixed audio preview with white noise using shared AudioContext
 export const createMixedAudioPreview = async (
   mp3Blob: Blob,
   whiteNoiseBlob: Blob,
@@ -19,7 +55,8 @@ export const createMixedAudioPreview = async (
   previewDuration: number = 30
 ): Promise<Blob | null> => {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const manager = AudioContextManager.getInstance();
+    const audioContext = await manager.getContext();
 
     // Load both audio files
     const [mp3Buffer, whiteNoiseBuffer] = await Promise.all([
@@ -105,11 +142,16 @@ export const createMixedAudioPreview = async (
       }
     }
 
-    await audioContext.close();
     return new Blob([arrayBuffer], { type: 'audio/wav' });
 
   } catch (error) {
     console.error('Failed to create mixed audio preview:', error);
     return null;
   }
+};
+
+// Export cleanup function for proper memory management
+export const cleanupAudioContext = async (): Promise<void> => {
+  const manager = AudioContextManager.getInstance();
+  await manager.cleanup();
 };
