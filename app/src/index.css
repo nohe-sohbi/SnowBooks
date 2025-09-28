@@ -1,109 +1,76 @@
 @import "tailwindcss";
+@import "./styles/design-tokens.css";
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* Winter Audio Studio Typography */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgb(15 23 42);
+  background-color: rgb(255 255 255);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: 255 255 255; /* Pure white */
+  --foreground: 15 23 42; /* Dark text */
+  --card: 255 255 255; /* White cards */
+  --card-foreground: 15 23 42; /* Dark text on cards */
+  --popover: 255 255 255; /* White popover */
+  --popover-foreground: 15 23 42; /* Dark text on popover */
+  --primary: 30 58 138; /* Deep winter blue #1e3a8a */
+  --primary-foreground: 248 250 252; /* Light text on primary */
+  --secondary: 59 130 246; /* Ice blue #3b82f6 */
+  --secondary-foreground: 15 23 42; /* Dark text on secondary */
+  --muted: 241 245 249; /* Light ice gray */
+  --muted-foreground: 100 116 139; /* Medium ice gray */
+  --accent: 245 158 11; /* Warm amber #f59e0b */
+  --accent-foreground: 15 23 42; /* Dark text on accent */
+  --destructive: 239 68 68; /* Rose red #ef4444 */
+  --border: 226 232 240; /* Light border with blue undertone */
+  --input: 226 232 240; /* Input border */
+  --ring: 59 130 246; /* Focus ring - ice blue */
+  --chart-1: 59 130 246; /* Ice blue */
+  --chart-2: 16 185 129; /* Success green */
+  --chart-3: 245 158 11; /* Warm amber */
+  --chart-4: 147 197 253; /* Light blue */
+  --chart-5: 251 191 36; /* Light amber */
+  --sidebar: 248 250 252; /* Light background */
+  --sidebar-foreground: 15 23 42; /* Dark text */
+  --sidebar-primary: 30 58 138; /* Deep winter blue */
+  --sidebar-primary-foreground: 248 250 252; /* Light text */
+  --sidebar-accent: 241 245 249; /* Light accent */
+  --sidebar-accent-foreground: 15 23 42; /* Dark text */
+  --sidebar-border: 226 232 240; /* Light border */
+  --sidebar-ring: 59 130 246; /* Ice blue ring */
+
+  /* Winter Audio Studio Theme Variables */
+  --winter-blue-50: 239 246 255;
+  --winter-blue-500: 59 130 246;
+  --winter-blue-900: 30 58 138;
+  --warm-amber-500: 245 158 11;
+  --ice-gray-100: 241 245 249;
+  --ice-gray-500: 100 116 139;
+  --success: 16 185 129;
+  --warning: 245 158 11;
+  --error: 239 68 68;
 }
 
+/* Winter Audio Studio Base Styles */
 a {
-  font-weight: 500;
-  color: #646cff;
+  @apply font-medium text-winter-blue-600 hover:text-winter-blue-700 transition-colors;
   text-decoration: inherit;
 }
-a:hover {
-  color: #535bf2;
-}
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+/* Remove old Vite styles - now handled by Tailwind and our design system */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -144,58 +111,113 @@ button:focus-visible {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: 15 23 42; /* Dark ice gray */
+  --foreground: 248 250 252; /* Light text */
+  --card: 30 41 59; /* Darker card background */
+  --card-foreground: 248 250 252; /* Light text on cards */
+  --popover: 30 41 59; /* Popover background */
+  --popover-foreground: 248 250 252; /* Light text on popover */
+  --primary: 147 197 253; /* Lighter blue for dark mode */
+  --primary-foreground: 15 23 42; /* Dark text on primary */
+  --secondary: 51 65 85; /* Darker secondary */
+  --secondary-foreground: 248 250 252; /* Light text on secondary */
+  --muted: 51 65 85; /* Muted background */
+  --muted-foreground: 148 163 184; /* Muted text */
+  --accent: 251 191 36; /* Lighter amber for dark mode */
+  --accent-foreground: 15 23 42; /* Dark text on accent */
+  --destructive: 248 113 113; /* Lighter red for dark mode */
+  --border: 51 65 85; /* Border with blue undertone */
+  --input: 71 85 105; /* Input border */
+  --ring: 147 197 253; /* Focus ring - lighter blue */
+  --chart-1: 147 197 253; /* Light blue for dark mode */
+  --chart-2: 52 211 153; /* Light green for dark mode */
+  --chart-3: 251 191 36; /* Light amber for dark mode */
+  --chart-4: 96 165 250; /* Medium blue for dark mode */
+  --chart-5: 252 211 77; /* Lighter amber for dark mode */
+  --sidebar: 30 41 59; /* Dark sidebar */
+  --sidebar-foreground: 248 250 252; /* Light text */
+  --sidebar-primary: 147 197 253; /* Light blue for dark mode */
+  --sidebar-primary-foreground: 15 23 42; /* Dark text on primary */
+  --sidebar-accent: 51 65 85; /* Dark accent */
+  --sidebar-accent-foreground: 248 250 252; /* Light text on accent */
+  --sidebar-border: 51 65 85; /* Dark border */
+  --sidebar-ring: 147 197 253; /* Light blue ring */
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  /* Typography Hierarchy */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-5xl;
+    line-height: 1.1;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-4xl;
+    line-height: 1.2;
+  }
+
+  h3 {
+    @apply text-2xl lg:text-3xl;
+    line-height: 1.3;
+  }
+
+  code, pre {
+    @apply font-mono text-sm;
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
   }
 }
 
-/* Custom slider styles */
+/* Winter Audio Studio Custom Styles */
+
+/* Custom slider styles with winter theme */
+.slider {
+  @apply bg-ice-gray-200 rounded-lg appearance-none cursor-pointer;
+  height: 8px;
+}
+
 .slider::-webkit-slider-thumb {
   appearance: none;
   height: 20px;
   width: 20px;
   border-radius: 50%;
-  background: hsl(var(--primary));
+  background: rgb(var(--primary));
   cursor: pointer;
-  border: 2px solid hsl(var(--background));
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgb(var(--background));
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: rgb(var(--primary));
+  cursor: pointer;
+  border: 2px solid rgb(var(--background));
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2);
 }
 
 .slider::-webkit-slider-track {
