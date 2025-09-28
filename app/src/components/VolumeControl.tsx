@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { VolumeXIcon, Volume1Icon, Volume2Icon } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { AudioIcon } from '@/components/ui/icon';
+import { VolumeX, Volume1, Volume2, Waves } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface VolumeControlProps {
   volume: number;
@@ -36,25 +39,76 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
   };
 
   const getVolumeIcon = () => {
-    if (localVolume === 0) return <VolumeXIcon className="h-4 w-4" />;
-    if (localVolume < 0.5) return <Volume1Icon className="h-4 w-4" />;
-    return <Volume2Icon className="h-4 w-4" />;
+    if (localVolume === 0) return <VolumeX className="h-5 w-5 text-ice-gray-400" />;
+    if (localVolume < 0.3) return <Volume1 className="h-5 w-5 text-winter-blue-500" />;
+    if (localVolume < 0.7) return <Volume2 className="h-5 w-5 text-winter-blue-600" />;
+    return <Volume2 className="h-5 w-5 text-warm-amber-500" />;
   };
 
-  const presetVolumes = [0, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0];
+  const getVolumeColor = () => {
+    if (localVolume === 0) return 'text-ice-gray-500';
+    if (localVolume < 0.3) return 'text-winter-blue-500';
+    if (localVolume < 0.7) return 'text-winter-blue-600';
+    return 'text-warm-amber-500';
+  };
+
+  const presetVolumes = [
+    { value: 0, label: '0%', color: 'ice-gray' },
+    { value: 0.1, label: '10%', color: 'winter-blue' },
+    { value: 0.3, label: '30%', color: 'winter-blue' },
+    { value: 0.5, label: '50%', color: 'winter-blue' },
+    { value: 0.7, label: '70%', color: 'warm-amber' },
+    { value: 1.0, label: '100%', color: 'warm-amber' }
+  ];
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
-      <div className="flex items-center gap-3">
-        {getVolumeIcon()}
-        <h3 className="font-semibold">White Noise Volume</h3>
-        <span className="text-sm text-muted-foreground">
-          {Math.round(localVolume * 100)}%
-        </span>
+    <div className="space-y-6 p-6 border-2 border-winter-blue-200 dark:border-winter-blue-800 rounded-xl bg-gradient-to-br from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <div className="p-2 rounded-full bg-winter-blue-100 dark:bg-winter-blue-900">
+          <Waves className="h-5 w-5 text-winter-blue-600 dark:text-winter-blue-400" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-winter-blue-900 dark:text-winter-blue-100">
+            White Noise Volume
+          </h3>
+          <div className="flex items-center gap-2 mt-1">
+            {getVolumeIcon()}
+            <span className={cn("text-lg font-bold tabular-nums", getVolumeColor())}>
+              {Math.round(localVolume * 100)}%
+            </span>
+          </div>
+        </div>
+        <AudioIcon size="lg" className="text-warm-amber-500" />
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
+      {/* Custom Slider */}
+      <div className="space-y-4">
+        <div className="relative">
+          {/* Slider Track with Waveform */}
+          <div className="relative h-3 bg-gradient-to-r from-ice-gray-200 to-ice-gray-300 dark:from-ice-gray-700 dark:to-ice-gray-600 rounded-full overflow-hidden">
+            {/* Progress Fill */}
+            <div
+              className="absolute left-0 top-0 h-full bg-gradient-to-r from-winter-blue-500 to-warm-amber-500 rounded-full transition-all duration-300"
+              style={{ width: `${localVolume * 100}%` }}
+            />
+
+            {/* Waveform Pattern */}
+            <div className="absolute inset-0 flex items-center px-1">
+              {Array.from({ length: 15 }, (_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 h-0.5 mx-0.5 bg-white/30 rounded-full"
+                  style={{
+                    opacity: i / 15 <= localVolume ? 0.8 : 0.3,
+                    height: `${Math.sin((i / 15) * Math.PI * 2) * 2 + 3}px`
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Slider Input */}
           <input
             type="range"
             min="0"
@@ -62,31 +116,61 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
             step="0.01"
             value={localVolume}
             onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-            className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            aria-label={`Volume slider, currently ${Math.round(localVolume * 100)}%`}
           />
+
+          {/* Slider Thumb */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white dark:bg-ice-gray-100 border-2 border-winter-blue-500 rounded-full shadow-md transition-all duration-200 hover:scale-110 cursor-pointer"
+            style={{ left: `calc(${localVolume * 100}% - 10px)` }}
+          >
+            <div className="absolute inset-0.5 bg-gradient-to-br from-winter-blue-400 to-warm-amber-400 rounded-full" />
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {presetVolumes.map((preset) => {
-            const isSelected = Math.abs(localVolume - preset) < 0.01; // Account for floating point precision
-            return (
-              <Button
-                key={preset}
-                variant={isSelected ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleVolumeChange(preset)}
-                className={`text-xs ${isSelected ? 'bg-primary text-primary-foreground' : ''}`}
-              >
-                {Math.round(preset * 100)}%
-              </Button>
-            );
-          })}
-        </div>
+        {/* Progress Indicator */}
+        <Progress
+          value={localVolume * 100}
+          variant="audio"
+          className="h-2"
+        />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Volume setting is automatically saved and will be remembered for future sessions.
-      </p>
+      {/* Preset Buttons */}
+      <div className="flex flex-wrap gap-2">
+        {presetVolumes.map((preset) => {
+          const isSelected = Math.abs(localVolume - preset.value) < 0.01;
+          const colorClass = preset.color === 'ice-gray' ? 'ice-gray' :
+                           preset.color === 'warm-amber' ? 'warm-amber' : 'winter-blue';
+
+          return (
+            <Button
+              key={preset.value}
+              variant={isSelected ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleVolumeChange(preset.value)}
+              className={cn(
+                "text-xs font-medium transition-all duration-200",
+                isSelected
+                  ? `bg-${colorClass}-500 text-white hover:bg-${colorClass}-600 shadow-md`
+                  : `border-${colorClass}-300 dark:border-${colorClass}-600 text-${colorClass}-600 dark:text-${colorClass}-400 hover:bg-${colorClass}-50 dark:hover:bg-${colorClass}-950`
+              )}
+            >
+              {preset.label}
+            </Button>
+          );
+        })}
+      </div>
+
+      {/* Info */}
+      <div className="text-xs text-winter-blue-600 dark:text-winter-blue-400 bg-winter-blue-100 dark:bg-winter-blue-900 rounded-lg p-3">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="font-medium">Auto-saved:</span>
+          <span>Volume setting is remembered for future sessions</span>
+        </div>
+      </div>
     </div>
   );
 };
