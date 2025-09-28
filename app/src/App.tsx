@@ -4,19 +4,11 @@ import FileUploader from "./components/FileUploader.tsx";
 function App() {
   return (
     <div className="min-h-screen gradient-winter-bg">
-      {/* Skip Links for Keyboard Navigation */}
-      <a href="#main-content" className="skip-link focus-winter">
-        Skip to main content
-      </a>
-      <a href="#audio-controls" className="skip-link focus-winter">
-        Skip to audio controls
-      </a>
-
-      {/* Screen Reader Announcements */}
-      <div aria-live="polite" aria-atomic="true" className="aria-live-region" id="announcements">
+      {/* Screen Reader Announcements - Hidden from visual users */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only" id="announcements">
         {/* Dynamic announcements will be inserted here */}
       </div>
-      <div aria-live="assertive" aria-atomic="true" className="aria-live-region" id="urgent-announcements">
+      <div aria-live="assertive" aria-atomic="true" className="sr-only" id="urgent-announcements">
         {/* Urgent announcements will be inserted here */}
       </div>
 
