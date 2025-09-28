@@ -362,7 +362,7 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
             </div>
           </div>
         </AudioCard>
-        </div>
+      </div>
 
         {/* Settings Summary */}
         <ProcessingCard className="p-8">
@@ -437,6 +437,5 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
           </div>
         </ProcessingCard>
       </div>
-    </div>
   );
 };
