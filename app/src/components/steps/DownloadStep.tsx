@@ -427,7 +427,6 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
             )}
           </div>
         </ProcessingCard>
-        </div>
 
         {/* Error State */}
         {status === 'error' && (
