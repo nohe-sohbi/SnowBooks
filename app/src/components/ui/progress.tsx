@@ -69,12 +69,13 @@ interface ProgressProps
   extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>,
     VariantProps<typeof progressVariants> {
   indicatorClassName?: string
+  indeterminate?: boolean
 }
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   ProgressProps
->(({ className, variant, size, value, indicatorClassName, ...props }, ref) => (
+>(({ className, variant, size, value, indicatorClassName, indeterminate = false, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(progressVariants({ variant, size }), className)}
@@ -83,9 +84,14 @@ const Progress = React.forwardRef<
     <ProgressPrimitive.Indicator
       className={cn(
         progressIndicatorVariants({ variant }),
+        indeterminate && "animate-[indeterminate_2s_ease-in-out_infinite]",
         indicatorClassName
       )}
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      style={{
+        transform: indeterminate
+          ? "translateX(-100%)"
+          : `translateX(-${100 - (value || 0)}%)`
+      }}
     />
 
     {/* Audio waveform effect overlay */}
