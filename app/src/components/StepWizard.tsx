@@ -86,18 +86,18 @@ export const StepWizard = ({
           }}
         />
 
-        <div className="flex items-center justify-between relative z-10">
+        <div className="flex items-center justify-between relative z-10 px-2 sm:px-0 overflow-x-auto">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep || step.isComplete;
             const isCurrent = index === currentStep;
             const isPending = index > currentStep && !step.isComplete;
 
             return (
-              <div key={step.id} className="flex flex-col items-center">
+              <div key={step.id} className="flex flex-col items-center min-w-0 flex-shrink-0">
                 {/* Step Circle */}
                 <div
                   className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full border-2 state-transition shadow-lg relative",
+                    "flex items-center justify-center w-8 sm:w-10 md:w-12 h-8 sm:h-10 md:h-12 rounded-full border-2 state-transition shadow-lg relative",
                     "scale-hover cursor-pointer",
                     isCompleted && "bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 border-winter-blue-500 glow-winter",
                     isCurrent && "bg-gradient-to-br from-warm-amber-500 to-warm-amber-600 border-warm-amber-500 glow-audio pulse-audio",
@@ -130,30 +130,31 @@ export const StepWizard = ({
       </div>
 
       {/* Winter Audio Studio Step Labels */}
-      <div className="flex items-start justify-between mt-4">
+      <div className="flex items-start justify-between mt-3 sm:mt-4 px-2 sm:px-0 overflow-x-auto">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep || step.isComplete;
           const isCurrent = index === currentStep;
           const isPending = index > currentStep && !step.isComplete;
 
           return (
-            <div key={`${step.id}-label`} className="flex flex-col items-center text-center max-w-[140px] px-2">
+            <div key={`${step.id}-label`} className="flex flex-col items-center text-center max-w-[100px] sm:max-w-[140px] px-1 sm:px-2 min-w-0 flex-shrink-0">
               <h3
                 className={cn(
-                  "text-sm font-semibold transition-all duration-300 mb-1",
+                  "text-xs sm:text-sm font-semibold transition-all duration-300 mb-1",
                   isCurrent && "text-warm-amber-700 font-bold",
                   isCompleted && "text-winter-blue-700",
                   isPending && "text-ice-gray-500"
                 )}
               >
-                {step.title}
+                <span className="hidden sm:inline">{step.title}</span>
+                <span className="sm:hidden">{step.title.split(' ')[0]}</span>
                 {step.isOptional && (
-                  <span className="text-xs text-ice-gray-400 ml-1">(Optional)</span>
+                  <span className="hidden sm:inline text-xs text-ice-gray-400 ml-1">(Optional)</span>
                 )}
               </h3>
               <p
                 className={cn(
-                  "text-xs leading-relaxed transition-all duration-300",
+                  "hidden sm:block text-xs leading-relaxed transition-all duration-300",
                   isCurrent && "text-warm-amber-600",
                   isCompleted && "text-winter-blue-600",
                   isPending && "text-ice-gray-400"
@@ -185,11 +186,11 @@ export const StepWizard = ({
               </span>
             </div>
 
-            <h2 className="text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent px-2 sm:px-0">
               {currentStepData.title}
             </h2>
 
-            <p className="text-lg text-ice-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg text-ice-gray-600 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0">
               {currentStepData.description}
             </p>
 
@@ -212,36 +213,38 @@ export const StepWizard = ({
 
       {/* Winter Audio Studio Navigation */}
       {showNavigation && (
-        <div className="mt-12 pt-8 border-t border-ice-gray-200">
-          <div className="flex items-center justify-between">
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-ice-gray-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
             {/* Previous Button */}
             <Button
               variant="outline"
               onClick={onPrevious}
               disabled={previousDisabled || isFirstStep}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 border-ice-gray-300 text-ice-gray-700 hover:border-winter-blue-300 hover:text-winter-blue-700 hover:bg-winter-blue-50 transition-all duration-200",
+                "flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-ice-gray-300 text-ice-gray-700 hover:border-winter-blue-300 hover:text-winter-blue-700 hover:bg-winter-blue-50 transition-all duration-200 w-full sm:w-auto order-2 sm:order-1",
                 (previousDisabled || isFirstStep) && "opacity-50 cursor-not-allowed"
               )}
+              size="sm"
             >
               <ChevronLeftIcon className="w-4 h-4" />
-              {previousLabel}
+              <span className="hidden sm:inline">{previousLabel}</span>
+              <span className="sm:hidden">Back</span>
             </Button>
 
             {/* Progress Indicator */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col items-center gap-2 order-1 sm:order-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 {steps.map((_, index) => (
                   <div
                     key={index}
                     className={cn(
-                      "w-2 h-2 rounded-full transition-all duration-200",
+                      "w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full transition-all duration-200",
                       index <= currentStep ? "bg-winter-blue-500" : "bg-ice-gray-300"
                     )}
                   />
                 ))}
               </div>
-              <span className="text-sm text-ice-gray-500 font-medium">
+              <span className="text-xs sm:text-sm text-ice-gray-500 font-medium">
                 {currentStep + 1} of {steps.length}
               </span>
             </div>
@@ -251,19 +254,22 @@ export const StepWizard = ({
               onClick={onNext}
               disabled={nextDisabled}
               className={cn(
-                "flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-winter-blue-500 to-winter-blue-600 hover:from-winter-blue-600 hover:to-winter-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105",
+                "flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-winter-blue-500 to-winter-blue-600 hover:from-winter-blue-600 hover:to-winter-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 w-full sm:w-auto order-3",
                 nextDisabled && "opacity-50 cursor-not-allowed hover:scale-100",
                 isLastStep && "from-warm-amber-500 to-warm-amber-600 hover:from-warm-amber-600 hover:to-warm-amber-700"
               )}
+              size="sm"
             >
               {isLastStep ? (
                 <>
                   <CheckIcon className="w-4 h-4" />
-                  Complete
+                  <span className="hidden sm:inline">Complete</span>
+                  <span className="sm:hidden">Done</span>
                 </>
               ) : (
                 <>
-                  {nextLabel}
+                  <span className="hidden sm:inline">{nextLabel}</span>
+                  <span className="sm:hidden">Next</span>
                   <ChevronRightIcon className="w-4 h-4" />
                 </>
               )}

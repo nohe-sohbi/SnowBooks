@@ -62,19 +62,19 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
   ];
 
   return (
-    <div className="space-y-6 p-6 border-2 border-winter-blue-200 dark:border-winter-blue-800 rounded-xl bg-gradient-to-br from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 border-2 border-winter-blue-200 dark:border-winter-blue-800 rounded-xl bg-gradient-to-br from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="p-2 rounded-full bg-winter-blue-100 dark:bg-winter-blue-900">
-          <Waves className="h-5 w-5 text-winter-blue-600 dark:text-winter-blue-400" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+        <div className="p-2 rounded-full bg-winter-blue-100 dark:bg-winter-blue-900 flex-shrink-0">
+          <Waves className="h-4 sm:h-5 w-4 sm:w-5 text-winter-blue-600 dark:text-winter-blue-400" />
         </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-winter-blue-900 dark:text-winter-blue-100">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-winter-blue-900 dark:text-winter-blue-100 text-sm sm:text-base">
             White Noise Volume
           </h3>
           <div className="flex items-center gap-2 mt-1">
             {getVolumeIcon()}
-            <span className={cn("text-lg font-bold tabular-nums", getVolumeColor())}>
+            <span className={cn("text-base sm:text-lg font-bold tabular-nums", getVolumeColor())}>
               {Math.round(localVolume * 100)}%
             </span>
           </div>
@@ -142,7 +142,7 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
       </div>
 
       {/* Preset Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
         {presetVolumes.map((preset) => {
           const isSelected = Math.abs(localVolume - preset.value) < 0.01;
           const colorClass = preset.color === 'ice-gray' ? 'ice-gray' :
@@ -155,7 +155,7 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
               size="sm"
               onClick={() => handleVolumeChange(preset.value)}
               className={cn(
-                "text-xs font-medium transition-all duration-200",
+                "text-xs font-medium transition-all duration-200 px-2 sm:px-3 h-7 sm:h-8",
                 isSelected
                   ? `bg-${colorClass}-500 text-white hover:bg-${colorClass}-600 shadow-md`
                   : `border-${colorClass}-300 dark:border-${colorClass}-600 text-${colorClass}-600 dark:text-${colorClass}-400 hover:bg-${colorClass}-50 dark:hover:bg-${colorClass}-950`
