@@ -81,7 +81,7 @@ const FileUploader = () => {
     markStepComplete(1); // Mark configure step as complete when volume is set
   }, []);
 
-  const handleProcessingComplete = useCallback((downloadUrl: string) => {
+  const handleProcessingComplete = useCallback(() => {
     // Store download URL instead of processed files
     setProcessedFiles([{ name: 'processed-files.zip', blob: new Blob() }]); // Placeholder
     markStepComplete(3); // Mark process step as complete

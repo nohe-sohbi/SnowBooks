@@ -1,0 +1,261 @@
+/* SnowBooks Winter Audio Studio Design Tokens */
+
+:root {
+  /* ===== SPACING SCALE ===== */
+  /* Based on 4px base unit for consistent spacing */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+  --space-32: 8rem;     /* 128px */
+
+  /* ===== TYPOGRAPHY SCALE ===== */
+  /* Font sizes with corresponding line heights */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+  --text-6xl: 3.75rem;    /* 60px */
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Font weights */
+  --font-thin: 100;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* ===== BORDER RADIUS ===== */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-base: 0.5rem;  /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-2xl: 2rem;     /* 32px */
+  --radius-full: 9999px;
+
+  /* ===== SHADOWS ===== */
+  /* Elevation system for depth and hierarchy */
+  --shadow-xs: 0 1px 2px 0 rgba(30, 58, 138, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(30, 58, 138, 0.1), 0 1px 2px -1px rgba(30, 58, 138, 0.1);
+  --shadow-base: 0 4px 6px -1px rgba(30, 58, 138, 0.1), 0 2px 4px -2px rgba(30, 58, 138, 0.1);
+  --shadow-md: 0 10px 15px -3px rgba(30, 58, 138, 0.1), 0 4px 6px -4px rgba(30, 58, 138, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(30, 58, 138, 0.1), 0 8px 10px -6px rgba(30, 58, 138, 0.1);
+  --shadow-xl: 0 25px 50px -12px rgba(30, 58, 138, 0.25);
+  --shadow-2xl: 0 50px 100px -20px rgba(30, 58, 138, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(30, 58, 138, 0.05);
+
+  /* Colored shadows for interactive elements */
+  --shadow-primary: 0 4px 14px 0 rgba(30, 58, 138, 0.2);
+  --shadow-secondary: 0 4px 14px 0 rgba(59, 130, 246, 0.2);
+  --shadow-accent: 0 4px 14px 0 rgba(245, 158, 11, 0.2);
+  --shadow-success: 0 4px 14px 0 rgba(16, 185, 129, 0.2);
+  --shadow-error: 0 4px 14px 0 rgba(239, 68, 68, 0.2);
+
+  /* ===== ANIMATION ===== */
+  /* Duration values */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+
+  /* Easing functions */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ===== Z-INDEX SCALE ===== */
+  /* Layering system for proper stacking */
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+
+  /* ===== BREAKPOINTS ===== */
+  /* Responsive design breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ===== WINTER AUDIO THEME SPECIFIC ===== */
+  /* Audio waveform heights for visual elements */
+  --waveform-xs: 2px;
+  --waveform-sm: 4px;
+  --waveform-base: 8px;
+  --waveform-lg: 16px;
+  --waveform-xl: 32px;
+
+  /* Snow particle sizes */
+  --snow-xs: 2px;
+  --snow-sm: 4px;
+  --snow-base: 6px;
+  --snow-lg: 8px;
+  --snow-xl: 12px;
+
+  /* Audio processing specific spacing */
+  --step-indicator-size: 2.5rem;   /* 40px */
+  --step-connector-width: 2px;
+  --progress-bar-height: 0.5rem;   /* 8px */
+  --volume-slider-height: 0.5rem;  /* 8px */
+  --volume-thumb-size: 1.25rem;    /* 20px */
+
+  /* Container max widths */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* Content max widths for readability */
+  --content-xs: 20rem;    /* 320px */
+  --content-sm: 24rem;    /* 384px */
+  --content-md: 28rem;    /* 448px */
+  --content-lg: 32rem;    /* 512px */
+  --content-xl: 36rem;    /* 576px */
+  --content-2xl: 42rem;   /* 672px */
+  --content-3xl: 48rem;   /* 768px */
+  --content-4xl: 56rem;   /* 896px */
+  --content-5xl: 64rem;   /* 1024px */
+  --content-6xl: 72rem;   /* 1152px */
+  --content-7xl: 80rem;   /* 1280px */
+
+  /* ===== GRADIENTS ===== */
+  /* Winter audio theme gradients */
+  --gradient-winter-primary: linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(59, 130, 246) 100%);
+  --gradient-winter-secondary: linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(147, 197, 253) 100%);
+  --gradient-winter-accent: linear-gradient(135deg, rgb(245, 158, 11) 0%, rgb(251, 191, 36) 100%);
+  --gradient-winter-background: linear-gradient(180deg, rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%);
+  --gradient-winter-card: linear-gradient(145deg, rgb(255, 255, 255) 0%, rgb(248, 250, 252) 100%);
+
+  /* Dark mode gradients */
+  --gradient-winter-dark-primary: linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(51, 65, 85) 100%);
+  --gradient-winter-dark-secondary: linear-gradient(135deg, rgb(51, 65, 85) 0%, rgb(71, 85, 105) 100%);
+  --gradient-winter-dark-background: linear-gradient(180deg, rgb(15, 23, 42) 0%, rgb(30, 41, 59) 100%);
+}
+
+/* ===== UTILITY CLASSES ===== */
+/* Common utility classes using design tokens */
+
+.shadow-winter {
+  box-shadow: var(--shadow-primary);
+}
+
+.shadow-winter-lg {
+  box-shadow: var(--shadow-xl);
+}
+
+.gradient-winter-bg {
+  background: var(--gradient-winter-background);
+}
+
+.gradient-winter-card {
+  background: var(--gradient-winter-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.transition-winter {
+  transition: all var(--duration-200) var(--ease-out);
+}
+
+.transition-winter-slow {
+  transition: all var(--duration-300) var(--ease-out);
+}
+
+/* Audio-themed animations */
+@keyframes pulse-audio {
+  0%, 100% {
+    transform: scaleY(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1.5);
+    opacity: 1;
+  }
+}
+
+@keyframes snow-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes waveform-dance {
+  0%, 100% {
+    height: var(--waveform-sm);
+  }
+  25% {
+    height: var(--waveform-lg);
+  }
+  50% {
+    height: var(--waveform-base);
+  }
+  75% {
+    height: var(--waveform-xl);
+  }
+}
+
+.animate-pulse-audio {
+  animation: pulse-audio var(--duration-1000) var(--ease-in-out) infinite;
+}
+
+.animate-snow-fall {
+  animation: snow-fall 10s var(--ease-linear) infinite;
+}
+
+.animate-waveform {
+  animation: waveform-dance var(--duration-500) var(--ease-in-out) infinite;
+}
