@@ -97,16 +97,21 @@ export const StepWizard = ({
                 {/* Step Circle */}
                 <div
                   className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 shadow-lg relative",
-                    "hover:scale-105 cursor-pointer",
-                    isCompleted && "bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 border-winter-blue-500 shadow-winter-blue-500/25",
-                    isCurrent && "bg-gradient-to-br from-warm-amber-500 to-warm-amber-600 border-warm-amber-500 shadow-warm-amber-500/25 animate-pulse-slow",
-                    isPending && "bg-white border-ice-gray-300 shadow-ice-gray-200/50 hover:border-ice-gray-400"
+                    "flex items-center justify-center w-12 h-12 rounded-full border-2 state-transition shadow-lg relative",
+                    "scale-hover cursor-pointer",
+                    isCompleted && "bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 border-winter-blue-500 glow-winter",
+                    isCurrent && "bg-gradient-to-br from-warm-amber-500 to-warm-amber-600 border-warm-amber-500 glow-audio pulse-audio",
+                    isPending && "bg-white border-ice-gray-300 shadow-ice-gray-200/50 hover:border-ice-gray-400 interactive-winter"
                   )}
                 >
-                  {/* Glow effect for current step */}
+                  {/* Enhanced glow effect for current step */}
                   {isCurrent && (
                     <div className="absolute inset-0 rounded-full bg-warm-amber-400 opacity-20 animate-ping" />
+                  )}
+
+                  {/* Success celebration effect */}
+                  {isCompleted && (
+                    <div className="absolute inset-0 rounded-full bg-winter-blue-400 opacity-10 animate-pulse" />
                   )}
 
                   {getStepIcon(step.id, isCompleted, isCurrent)}
@@ -198,7 +203,7 @@ export const StepWizard = ({
 
           {/* Step Content */}
           <div className="max-w-5xl mx-auto">
-            <div className="transition-all duration-300 animate-in slide-in-from-bottom-4">
+            <div className="slide-in-winter">
               {currentStepData.component}
             </div>
           </div>

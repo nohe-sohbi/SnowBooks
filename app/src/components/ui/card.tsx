@@ -4,27 +4,27 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const cardVariants = cva(
-  "rounded-xl border transition-all duration-200",
+  "rounded-xl border state-transition card-winter-hover",
   {
     variants: {
       variant: {
         // Default winter audio theme
-        default: "bg-white border-ice-gray-200 shadow-sm hover:shadow-md dark:bg-ice-gray-900 dark:border-ice-gray-700",
-        
+        default: "bg-white border-ice-gray-200 shadow-sm glow-winter dark:bg-ice-gray-900 dark:border-ice-gray-700",
+
         // Elevated card with gradient
-        elevated: "bg-gradient-to-br from-white to-ice-gray-50 border-ice-gray-200 shadow-lg hover:shadow-xl dark:from-ice-gray-900 dark:to-ice-gray-800 dark:border-ice-gray-600",
+        elevated: "bg-gradient-to-br from-white to-ice-gray-50 border-ice-gray-200 shadow-lg glow-winter dark:from-ice-gray-900 dark:to-ice-gray-800 dark:border-ice-gray-600",
         
         // Audio studio themed card
-        audio: "bg-gradient-to-br from-winter-blue-50 to-ice-gray-50 border-winter-blue-200 shadow-md hover:shadow-lg hover:border-winter-blue-300 dark:from-winter-blue-950 dark:to-ice-gray-900 dark:border-winter-blue-800",
-        
+        audio: "bg-gradient-to-br from-winter-blue-50 to-ice-gray-50 border-winter-blue-200 shadow-md card-audio-hover dark:from-winter-blue-950 dark:to-ice-gray-900 dark:border-winter-blue-800",
+
         // Accent card with warm amber
-        accent: "bg-gradient-to-br from-warm-amber-50 to-orange-50 border-warm-amber-200 shadow-md hover:shadow-lg hover:border-warm-amber-300 dark:from-warm-amber-950 dark:to-orange-950 dark:border-warm-amber-800",
-        
+        accent: "bg-gradient-to-br from-warm-amber-50 to-orange-50 border-warm-amber-200 shadow-md glow-audio dark:from-warm-amber-950 dark:to-orange-950 dark:border-warm-amber-800",
+
         // Glass effect card
-        glass: "bg-white/80 backdrop-blur-sm border-white/20 shadow-lg hover:bg-white/90 dark:bg-ice-gray-900/80 dark:border-ice-gray-700/50",
-        
+        glass: "bg-white/80 backdrop-blur-sm border-white/20 shadow-lg hover:bg-white/90 state-transition dark:bg-ice-gray-900/80 dark:border-ice-gray-700/50",
+
         // Interactive card
-        interactive: "bg-white border-ice-gray-200 shadow-sm hover:shadow-lg hover:border-winter-blue-300 hover:-translate-y-1 cursor-pointer dark:bg-ice-gray-900 dark:border-ice-gray-700 dark:hover:border-winter-blue-600",
+        interactive: "bg-white border-ice-gray-200 shadow-sm hover:shadow-lg hover:border-winter-blue-300 scale-hover cursor-pointer dark:bg-ice-gray-900 dark:border-ice-gray-700 dark:hover:border-winter-blue-600",
         
         // Outline only
         outline: "bg-transparent border-ice-gray-300 hover:bg-ice-gray-50 dark:border-ice-gray-600 dark:hover:bg-ice-gray-800/50",

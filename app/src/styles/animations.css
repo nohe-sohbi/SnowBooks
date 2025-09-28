@@ -1,0 +1,309 @@
+/* Winter Audio Studio - Micro-animations and Transitions */
+
+/* Enhanced Button Animations */
+.btn-winter-hover {
+  @apply transition-all duration-200 ease-out;
+  @apply hover:scale-[1.02] hover:shadow-lg;
+  @apply active:scale-[0.98] active:shadow-md;
+  @apply focus-visible:ring-2 focus-visible:ring-offset-2;
+}
+
+.btn-winter-primary {
+  @apply btn-winter-hover;
+  @apply hover:shadow-winter-blue-500/25;
+  @apply focus-visible:ring-winter-blue-400;
+}
+
+.btn-winter-secondary {
+  @apply btn-winter-hover;
+  @apply hover:shadow-warm-amber-500/25;
+  @apply focus-visible:ring-warm-amber-400;
+}
+
+/* Card Hover Effects */
+.card-winter-hover {
+  @apply transition-all duration-300 ease-out;
+  @apply hover:shadow-xl hover:shadow-winter-blue-500/10;
+  @apply hover:-translate-y-1;
+}
+
+.card-audio-hover {
+  @apply transition-all duration-300 ease-out;
+  @apply hover:shadow-xl hover:shadow-warm-amber-500/10;
+  @apply hover:-translate-y-1;
+  @apply hover:border-warm-amber-300;
+}
+
+/* Interactive Element States */
+.interactive-winter {
+  @apply transition-all duration-200 ease-out;
+  @apply hover:bg-winter-blue-50 dark:hover:bg-winter-blue-950;
+  @apply focus:bg-winter-blue-100 dark:focus:bg-winter-blue-900;
+  @apply focus:outline-none focus:ring-2 focus:ring-winter-blue-400;
+}
+
+.interactive-audio {
+  @apply transition-all duration-200 ease-out;
+  @apply hover:bg-warm-amber-50 dark:hover:bg-warm-amber-950;
+  @apply focus:bg-warm-amber-100 dark:focus:bg-warm-amber-900;
+  @apply focus:outline-none focus:ring-2 focus:ring-warm-amber-400;
+}
+
+/* Waveform Animations */
+@keyframes waveform-pulse {
+  0%, 100% {
+    transform: scaleY(0.5);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1.2);
+    opacity: 1;
+  }
+}
+
+.waveform-bar {
+  animation: waveform-pulse 1.5s ease-in-out infinite;
+}
+
+.waveform-bar:nth-child(2n) {
+  animation-delay: 0.1s;
+}
+
+.waveform-bar:nth-child(3n) {
+  animation-delay: 0.2s;
+}
+
+.waveform-bar:nth-child(4n) {
+  animation-delay: 0.3s;
+}
+
+.waveform-bar:nth-child(5n) {
+  animation-delay: 0.4s;
+}
+
+/* Progress Animations */
+@keyframes progress-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 2s infinite;
+}
+
+/* Loading State Animations */
+@keyframes snowflake-spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.snowflake-loader {
+  animation: snowflake-spin 2s ease-in-out infinite;
+}
+
+@keyframes audio-processing {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+  25% {
+    transform: scale(1.1) rotate(90deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.9;
+  }
+  75% {
+    transform: scale(1.1) rotate(270deg);
+    opacity: 1;
+  }
+}
+
+.audio-processing-loader {
+  animation: audio-processing 3s ease-in-out infinite;
+}
+
+/* Success Celebration Animations */
+@keyframes celebration-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-20px) scale(1.1);
+  }
+  60% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+.celebration-bounce {
+  animation: celebration-bounce 2s ease-in-out;
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+.sparkle-twinkle {
+  animation: sparkle-twinkle 1.5s ease-in-out infinite;
+}
+
+/* Focus States */
+.focus-winter {
+  @apply focus:outline-none focus:ring-2 focus:ring-winter-blue-400 focus:ring-offset-2;
+  @apply dark:focus:ring-winter-blue-500 dark:focus:ring-offset-ice-gray-900;
+}
+
+.focus-audio {
+  @apply focus:outline-none focus:ring-2 focus:ring-warm-amber-400 focus:ring-offset-2;
+  @apply dark:focus:ring-warm-amber-500 dark:focus:ring-offset-ice-gray-900;
+}
+
+/* Smooth State Transitions */
+.state-transition {
+  @apply transition-all duration-300 ease-out;
+}
+
+.state-transition-fast {
+  @apply transition-all duration-150 ease-out;
+}
+
+.state-transition-slow {
+  @apply transition-all duration-500 ease-out;
+}
+
+/* Hover Glow Effects */
+.glow-winter {
+  @apply transition-all duration-300;
+  @apply hover:shadow-lg hover:shadow-winter-blue-500/20;
+}
+
+.glow-audio {
+  @apply transition-all duration-300;
+  @apply hover:shadow-lg hover:shadow-warm-amber-500/20;
+}
+
+.glow-success {
+  @apply transition-all duration-300;
+  @apply hover:shadow-lg hover:shadow-green-500/20;
+}
+
+/* Slide Animations */
+@keyframes slide-in-winter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-winter {
+  animation: slide-in-winter 0.4s ease-out;
+}
+
+/* Scale Animations */
+.scale-hover {
+  @apply transition-transform duration-200 ease-out;
+  @apply hover:scale-105 active:scale-95;
+}
+
+.scale-hover-subtle {
+  @apply transition-transform duration-200 ease-out;
+  @apply hover:scale-[1.02] active:scale-[0.98];
+}
+
+/* Pulse Animations */
+.pulse-winter {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-duration: 3s;
+}
+
+.pulse-audio {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation-duration: 2.5s;
+}
+
+/* Border Animations */
+@keyframes border-glow {
+  0%, 100% {
+    border-color: theme('colors.winter-blue.300');
+    box-shadow: 0 0 0 0 theme('colors.winter-blue.400/0');
+  }
+  50% {
+    border-color: theme('colors.winter-blue.400');
+    box-shadow: 0 0 0 4px theme('colors.winter-blue.400/20');
+  }
+}
+
+.border-glow-winter {
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+/* Text Animations */
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    theme('colors.winter-blue.600'),
+    theme('colors.warm-amber.500'),
+    theme('colors.winter-blue.600')
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: progress-shimmer 3s ease-in-out infinite;
+}
+
+/* Utility Classes */
+.animate-delay-100 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animate-delay-500 {
+  animation-delay: 0.5s;
+}
+
+.animate-delay-700 {
+  animation-delay: 0.7s;
+}
+
+.animate-delay-1000 {
+  animation-delay: 1s;
+}

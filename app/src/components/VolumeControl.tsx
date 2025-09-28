@@ -89,7 +89,7 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
           <div className="relative h-3 bg-gradient-to-r from-ice-gray-200 to-ice-gray-300 dark:from-ice-gray-700 dark:to-ice-gray-600 rounded-full overflow-hidden">
             {/* Progress Fill */}
             <div
-              className="absolute left-0 top-0 h-full bg-gradient-to-r from-winter-blue-500 to-warm-amber-500 rounded-full transition-all duration-300"
+              className="absolute left-0 top-0 h-full bg-gradient-to-r from-winter-blue-500 to-warm-amber-500 rounded-full state-transition progress-shimmer"
               style={{ width: `${localVolume * 100}%` }}
             />
 
@@ -98,10 +98,14 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
               {Array.from({ length: 15 }, (_, i) => (
                 <div
                   key={i}
-                  className="flex-1 h-0.5 mx-0.5 bg-white/30 rounded-full"
+                  className={cn(
+                    "flex-1 h-0.5 mx-0.5 bg-white/30 rounded-full state-transition",
+                    i / 15 <= localVolume && "waveform-bar"
+                  )}
                   style={{
                     opacity: i / 15 <= localVolume ? 0.8 : 0.3,
-                    height: `${Math.sin((i / 15) * Math.PI * 2) * 2 + 3}px`
+                    height: `${Math.sin((i / 15) * Math.PI * 2) * 2 + 3}px`,
+                    animationDelay: `${i * 0.1}s`
                   }}
                 />
               ))}
@@ -122,7 +126,7 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
 
           {/* Slider Thumb */}
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white dark:bg-ice-gray-100 border-2 border-winter-blue-500 rounded-full shadow-md transition-all duration-200 hover:scale-110 cursor-pointer"
+            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white dark:bg-ice-gray-100 border-2 border-winter-blue-500 rounded-full shadow-md state-transition scale-hover cursor-pointer glow-winter"
             style={{ left: `calc(${localVolume * 100}% - 10px)` }}
           >
             <div className="absolute inset-0.5 bg-gradient-to-br from-winter-blue-400 to-warm-amber-400 rounded-full" />
