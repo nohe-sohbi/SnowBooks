@@ -33,8 +33,8 @@ export class AudioService {
     const processedFiles: string[] = [];
     const totalFiles = jobData.mp3Files.length;
 
-    // Load white noise file (assuming it's in assets)
-    const whiteNoisePath = path.join(__dirname, '../../../assets/white-noise.mp3');
+    // Load white noise file from assets directory
+    const whiteNoisePath = path.join(process.cwd(), 'assets', 'white-noise.mp3');
 
     for (let i = 0; i < totalFiles; i++) {
       const mp3File = jobData.mp3Files[i];
