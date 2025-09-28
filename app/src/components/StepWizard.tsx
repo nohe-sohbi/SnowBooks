@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckIcon, ChevronRightIcon, ChevronLeftIcon, Upload, Settings, Play, Zap, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,23 @@ export const StepWizard = ({
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
 
+  // Announce step changes to screen readers
+  const announceStepChange = (stepIndex: number) => {
+    const step = steps[stepIndex];
+    const announcement = `Step ${stepIndex + 1} of ${steps.length}: ${step.title}. ${step.description}`;
+
+    // Update ARIA live region
+    const announceElement = document.getElementById('announcements');
+    if (announceElement) {
+      announceElement.textContent = announcement;
+    }
+  };
+
+  // Announce step change when currentStep changes
+  React.useEffect(() => {
+    announceStepChange(currentStep);
+  }, [currentStep, steps]);
+
   // Winter Audio Theme Icons for each step
   const getStepIcon = (stepId: string, isCompleted: boolean, isCurrent: boolean) => {
     const iconProps = {
@@ -73,9 +91,14 @@ export const StepWizard = ({
   return (
     <div className="space-y-8">
       {/* Winter Audio Studio Step Progress Indicator */}
-      <div className="relative">
+      <nav className="relative" role="navigation" aria-label="Audio processing steps">
+        {/* Progress indicator for screen readers */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          Step {currentStep + 1} of {steps.length}: {currentStepData.title}
+        </div>
+
         {/* Background connecting line */}
-        <div className="absolute top-6 left-6 right-6 h-0.5 bg-ice-gray-200 rounded-full" />
+        <div className="absolute top-6 left-6 right-6 h-0.5 bg-ice-gray-200 rounded-full" aria-hidden="true" />
 
         {/* Gradient progress line */}
         <div
@@ -84,25 +107,30 @@ export const StepWizard = ({
             width: `calc(${(currentStep / (steps.length - 1)) * 100}% - 1.5rem)`,
             maxWidth: 'calc(100% - 3rem)'
           }}
+          aria-hidden="true"
         />
 
-        <div className="flex items-center justify-between relative z-10 px-2 sm:px-0 overflow-x-auto">
+        <ol className="flex items-center justify-between relative z-10 px-2 sm:px-0 overflow-x-auto" role="list">
           {steps.map((step, index) => {
             const isCompleted = index < currentStep || step.isComplete;
             const isCurrent = index === currentStep;
             const isPending = index > currentStep && !step.isComplete;
 
             return (
-              <div key={step.id} className="flex flex-col items-center min-w-0 flex-shrink-0">
+              <li key={step.id} className="flex flex-col items-center min-w-0 flex-shrink-0">
                 {/* Step Circle */}
-                <div
+                <button
                   className={cn(
-                    "flex items-center justify-center w-8 sm:w-10 md:w-12 h-8 sm:h-10 md:h-12 rounded-full border-2 state-transition shadow-lg relative",
+                    "flex items-center justify-center w-8 sm:w-10 md:w-12 h-8 sm:h-10 md:h-12 rounded-full border-2 state-transition shadow-lg relative focus-winter touch-target",
                     "scale-hover cursor-pointer",
                     isCompleted && "bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 border-winter-blue-500 glow-winter",
                     isCurrent && "bg-gradient-to-br from-warm-amber-500 to-warm-amber-600 border-warm-amber-500 glow-audio pulse-audio",
                     isPending && "bg-white border-ice-gray-300 shadow-ice-gray-200/50 hover:border-ice-gray-400 interactive-winter"
                   )}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={`${step.title}: ${step.description}${isCompleted ? ' (completed)' : isCurrent ? ' (current)' : ' (pending)'}`}
+                  tabIndex={isCurrent ? 0 : -1}
+                  disabled={isPending}
                 >
                   {/* Enhanced glow effect for current step */}
                   {isCurrent && (
@@ -115,19 +143,19 @@ export const StepWizard = ({
                   )}
 
                   {getStepIcon(step.id, isCompleted, isCurrent)}
-                </div>
+                </button>
 
                 {/* Optional indicator */}
                 {step.isOptional && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-ice-gray-400 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-ice-gray-400 text-white text-xs rounded-full flex items-center justify-center font-medium" aria-hidden="true">
                     ?
                   </div>
                 )}
-              </div>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ol>
+      </nav>
 
       {/* Winter Audio Studio Step Labels */}
       <div className="flex items-start justify-between mt-3 sm:mt-4 px-2 sm:px-0 overflow-x-auto">
@@ -173,12 +201,12 @@ export const StepWizard = ({
       </div>
 
       {/* Winter Audio Studio Current Step Content */}
-      <div className="min-h-[400px] mt-8">
+      <section className="min-h-[400px] mt-8" aria-labelledby="current-step-title">
         <div className="space-y-8">
           {/* Step Header */}
           <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-winter-blue-50 to-warm-amber-50 rounded-full border border-winter-blue-100">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-warm-amber-500 to-warm-amber-600">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-winter-blue-50 to-warm-amber-50 rounded-full border border-winter-blue-100" role="status" aria-live="polite">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-warm-amber-500 to-warm-amber-600" aria-hidden="true">
                 {getStepIcon(currentStepData.id, false, true)}
               </div>
               <span className="text-sm font-medium text-winter-blue-700">
@@ -186,30 +214,30 @@ export const StepWizard = ({
               </span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent px-2 sm:px-0">
+            <h3 id="current-step-title" className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent px-2 sm:px-0">
               {currentStepData.title}
-            </h2>
+            </h3>
 
             <p className="text-base sm:text-lg text-ice-gray-600 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0">
               {currentStepData.description}
             </p>
 
             {currentStepData.isOptional && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-ice-gray-100 rounded-full text-sm text-ice-gray-600">
-                <span className="w-2 h-2 bg-ice-gray-400 rounded-full"></span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-ice-gray-100 rounded-full text-sm text-ice-gray-600" role="note" aria-label="Optional step indicator">
+                <span className="w-2 h-2 bg-ice-gray-400 rounded-full" aria-hidden="true"></span>
                 This step is optional
               </div>
             )}
           </div>
 
           {/* Step Content */}
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto" id="audio-controls">
             <div className="slide-in-winter">
               {currentStepData.component}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Winter Audio Studio Navigation */}
       {showNavigation && (

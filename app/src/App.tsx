@@ -4,8 +4,24 @@ import FileUploader from "./components/FileUploader.tsx";
 function App() {
   return (
     <div className="min-h-screen gradient-winter-bg">
+      {/* Skip Links for Keyboard Navigation */}
+      <a href="#main-content" className="skip-link focus-winter">
+        Skip to main content
+      </a>
+      <a href="#audio-controls" className="skip-link focus-winter">
+        Skip to audio controls
+      </a>
+
+      {/* Screen Reader Announcements */}
+      <div aria-live="polite" aria-atomic="true" className="aria-live-region" id="announcements">
+        {/* Dynamic announcements will be inserted here */}
+      </div>
+      <div aria-live="assertive" aria-atomic="true" className="aria-live-region" id="urgent-announcements">
+        {/* Urgent announcements will be inserted here */}
+      </div>
+
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-5" aria-hidden="true">
         <div className="absolute inset-0" style={{
           backgroundImage: `radial-gradient(circle at 25% 25%, rgb(59 130 246) 0%, transparent 50%),
                            radial-gradient(circle at 75% 75%, rgb(245 158 11) 0%, transparent 50%)`,
@@ -16,13 +32,13 @@ function App() {
       {/* Main Content */}
       <div className="relative z-10">
         {/* Header Section */}
-        <header className="pt-8 sm:pt-12 pb-6 sm:pb-8 px-4">
+        <header className="pt-8 sm:pt-12 pb-6 sm:pb-8 px-4" role="banner">
           <div className="max-w-4xl mx-auto text-center">
             {/* Logo/Brand Area */}
             <div className="mb-4 sm:mb-6">
-              <div className="inline-flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className="inline-flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4" role="img" aria-label="SnowBooks audio waveform logo">
                 {/* Audio Wave Icon */}
-                <div className="flex items-end gap-0.5 sm:gap-1 h-6 sm:h-8">
+                <div className="flex items-end gap-0.5 sm:gap-1 h-6 sm:h-8" aria-hidden="true">
                   <div className="w-0.5 sm:w-1 bg-winter-blue-500 animate-waveform" style={{ height: '6px', animationDelay: '0ms' }} />
                   <div className="w-0.5 sm:w-1 bg-winter-blue-600 animate-waveform" style={{ height: '12px', animationDelay: '100ms' }} />
                   <div className="w-0.5 sm:w-1 bg-winter-blue-500 animate-waveform" style={{ height: '8px', animationDelay: '200ms' }} />
@@ -31,38 +47,38 @@ function App() {
                 </div>
 
                 {/* Snowflake Icon */}
-                <div className="text-warm-amber-500 text-xl sm:text-2xl">❄️</div>
+                <div className="text-warm-amber-500 text-xl sm:text-2xl" aria-hidden="true">❄️</div>
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold bg-gradient-to-r from-winter-blue-900 via-winter-blue-600 to-winter-blue-500 bg-clip-text text-transparent mb-2">
                 SnowBooks
               </h1>
 
-              <div className="w-16 sm:w-20 md:w-24 h-0.5 sm:h-1 bg-gradient-to-r from-winter-blue-500 to-warm-amber-500 mx-auto rounded-full mb-3 sm:mb-4" />
+              <div className="w-16 sm:w-20 md:w-24 h-0.5 sm:h-1 bg-gradient-to-r from-winter-blue-500 to-warm-amber-500 mx-auto rounded-full mb-3 sm:mb-4" aria-hidden="true" />
             </div>
 
             {/* Subtitle */}
             <div className="max-w-2xl mx-auto px-2 sm:px-0">
-              <p className="text-base sm:text-lg lg:text-xl text-ice-gray-600 font-medium leading-relaxed mb-2">
+              <h2 className="text-base sm:text-lg lg:text-xl text-ice-gray-600 font-medium leading-relaxed mb-2">
                 Professional Audio Processing Studio
-              </p>
+              </h2>
               <p className="text-sm sm:text-base text-ice-gray-500 leading-relaxed">
                 Upload ZIP files containing MP3 chapters to add white noise and create the perfect ambient listening experience
               </p>
             </div>
 
             {/* Feature Highlights */}
-            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-6 mt-6 sm:mt-8 text-xs sm:text-sm text-ice-gray-600">
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-success rounded-full flex-shrink-0" />
+            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-6 mt-6 sm:mt-8 text-xs sm:text-sm text-ice-gray-600" role="list" aria-label="Key features">
+              <div className="flex items-center justify-center gap-2" role="listitem">
+                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-success rounded-full flex-shrink-0" aria-hidden="true" />
                 <span>High-Quality Processing</span>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-winter-blue-500 rounded-full flex-shrink-0" />
+              <div className="flex items-center justify-center gap-2" role="listitem">
+                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-winter-blue-500 rounded-full flex-shrink-0" aria-hidden="true" />
                 <span>Real-time Progress</span>
               </div>
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-warm-amber-500 rounded-full flex-shrink-0" />
+              <div className="flex items-center justify-center gap-2" role="listitem">
+                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-warm-amber-500 rounded-full flex-shrink-0" aria-hidden="true" />
                 <span>Batch Processing</span>
               </div>
             </div>
@@ -70,8 +86,9 @@ function App() {
         </header>
 
         {/* Main Application */}
-        <main className="px-2 sm:px-4 pb-8 sm:pb-12">
+        <main className="px-2 sm:px-4 pb-8 sm:pb-12" id="main-content" role="main">
           <div className="max-w-5xl mx-auto">
+            <h2 className="sr-only">Audio Processing Workflow</h2>
             <FileUploader />
           </div>
         </main>

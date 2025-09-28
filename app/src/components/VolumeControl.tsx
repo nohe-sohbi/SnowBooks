@@ -62,21 +62,25 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
   ];
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 border-2 border-winter-blue-200 dark:border-winter-blue-800 rounded-xl bg-gradient-to-br from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 border-2 border-winter-blue-200 dark:border-winter-blue-800 rounded-xl bg-gradient-to-br from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950 audio-control-accessible">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-        <div className="p-2 rounded-full bg-winter-blue-100 dark:bg-winter-blue-900 flex-shrink-0">
+        <div className="p-2 rounded-full bg-winter-blue-100 dark:bg-winter-blue-900 flex-shrink-0" aria-hidden="true">
           <Waves className="h-4 sm:h-5 w-4 sm:w-5 text-winter-blue-600 dark:text-winter-blue-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-winter-blue-900 dark:text-winter-blue-100 text-sm sm:text-base">
+          <h4 id="volume-control-label" className="font-semibold text-winter-blue-900 dark:text-winter-blue-100 text-sm sm:text-base audio-label">
             White Noise Volume
-          </h3>
+          </h4>
           <div className="flex items-center gap-2 mt-1">
-            {getVolumeIcon()}
-            <span className={cn("text-base sm:text-lg font-bold tabular-nums", getVolumeColor())}>
+            <span aria-hidden="true">{getVolumeIcon()}</span>
+            <span className={cn("text-base sm:text-lg font-bold tabular-nums", getVolumeColor())} aria-live="polite">
               {Math.round(localVolume * 100)}%
             </span>
+          </div>
+          {/* Screen reader only status */}
+          <div className="sr-only audio-status" aria-live="polite" aria-atomic="true">
+            White noise volume set to {Math.round(localVolume * 100)} percent
           </div>
         </div>
         <AudioIcon size="lg" className="text-warm-amber-500" />
@@ -120,8 +124,10 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
             step="0.01"
             value={localVolume}
             onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            aria-label={`Volume slider, currently ${Math.round(localVolume * 100)}%`}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus-winter volume-slider"
+            aria-labelledby="volume-control-label"
+            aria-valuetext={`${Math.round(localVolume * 100)} percent volume`}
+            aria-describedby="volume-help"
           />
 
           {/* Slider Thumb */}
@@ -142,7 +148,8 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
       </div>
 
       {/* Preset Buttons */}
-      <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
+      <fieldset className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
+        <legend className="sr-only">Volume preset options</legend>
         {presetVolumes.map((preset) => {
           const isSelected = Math.abs(localVolume - preset.value) < 0.01;
           const colorClass = preset.color === 'ice-gray' ? 'ice-gray' :
@@ -155,24 +162,26 @@ export const VolumeControl = ({ volume, onVolumeChange }: VolumeControlProps) =>
               size="sm"
               onClick={() => handleVolumeChange(preset.value)}
               className={cn(
-                "text-xs font-medium transition-all duration-200 px-2 sm:px-3 h-7 sm:h-8",
+                "text-xs font-medium transition-all duration-200 px-2 sm:px-3 h-7 sm:h-8 focus-winter touch-target",
                 isSelected
                   ? `bg-${colorClass}-500 text-white hover:bg-${colorClass}-600 shadow-md`
                   : `border-${colorClass}-300 dark:border-${colorClass}-600 text-${colorClass}-600 dark:text-${colorClass}-400 hover:bg-${colorClass}-50 dark:hover:bg-${colorClass}-950`
               )}
+              aria-pressed={isSelected}
+              aria-label={`Set volume to ${preset.label}`}
             >
               {preset.label}
             </Button>
           );
         })}
-      </div>
+      </fieldset>
 
       {/* Info */}
       <div className="text-xs text-winter-blue-600 dark:text-winter-blue-400 bg-winter-blue-100 dark:bg-winter-blue-900 rounded-lg p-3">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
           <span className="font-medium">Auto-saved:</span>
-          <span>Volume setting is remembered for future sessions</span>
+          <span id="volume-help">Volume setting is remembered for future sessions. Use arrow keys or click preset buttons to adjust.</span>
         </div>
       </div>
     </div>
