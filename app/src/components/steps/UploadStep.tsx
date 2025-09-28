@@ -3,8 +3,14 @@
 import { useState } from 'react';
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone';
 import { Button } from '@/components/ui/button';
-import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, UploadIcon, RefreshCwIcon } from 'lucide-react';
+import { AudioCard, ProcessingCard } from '@/components/ui/card';
+import { ErrorAlert, SuccessAlert } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { SnowflakeLoader, AudioProcessingLoader } from '@/components/ui/loading';
+import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
+import { Upload, FileAudio, Package, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
+import { cn } from '@/lib/utils';
 import type MP3File from "@/interface/MP3File.tsx";
 
 type UploadStatus = 'idle' | 'extracting' | 'ready' | 'error';
@@ -81,89 +87,240 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="max-w-2xl mx-auto">
-        <Dropzone
-          accept={{ 'application/zip': ['.zip'] }}
-          maxFiles={1}
-          maxSize={500 * 1024 * 1024} // 500MB
-          onDrop={handleDrop}
-          onError={(error) => {
-            setStatus('error');
-            setError(error.message);
-            onError(error.message);
-          }}
-          src={files}
-          disabled={status === 'extracting'}
-          className={status === 'extracting' ? "opacity-50 cursor-not-allowed" : ""}
-        >
-          <DropzoneEmptyState>
-            <div className="space-y-4 py-8">
-              <UploadIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-              <div className="space-y-2">
-                <p className="text-xl font-medium">Upload ZIP file with MP3 chapters</p>
-                <p className="text-muted-foreground">
-                  Drop your ZIP file here or click to browse (max 500MB)
-                </p>
+    <div className="space-y-8">
+      <div className="max-w-3xl mx-auto">
+        {/* Winter Audio Studio Upload Area */}
+        <AudioCard className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-winter-blue-500 to-warm-amber-500" />
+
+          <div className="p-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-full bg-gradient-to-br from-winter-blue-100 to-warm-amber-100 dark:from-winter-blue-900 dark:to-warm-amber-900">
+                  <Package className="h-6 w-6 text-winter-blue-600 dark:text-winter-blue-400" />
+                </div>
+                <SnowflakeIcon size="lg" className="text-warm-amber-500" />
               </div>
+              <h3 className="text-2xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent mb-2">
+                Upload Your Audio Collection
+              </h3>
+              <p className="text-ice-gray-600 dark:text-ice-gray-400 leading-relaxed">
+                Drop your ZIP file containing MP3 chapters to begin the winter audio processing experience
+              </p>
             </div>
-          </DropzoneEmptyState>
-          <DropzoneContent />
-        </Dropzone>
+
+            <Dropzone
+              accept={{ 'application/zip': ['.zip'] }}
+              maxFiles={1}
+              maxSize={500 * 1024 * 1024} // 500MB
+              onDrop={handleDrop}
+              onError={(error) => {
+                setStatus('error');
+                setError(error.message);
+                onError(error.message);
+              }}
+              src={files}
+              disabled={status === 'extracting'}
+              className={cn(
+                "border-2 border-dashed rounded-xl transition-all duration-300",
+                status === 'extracting'
+                  ? "border-winter-blue-300 bg-winter-blue-50 dark:bg-winter-blue-950 opacity-75 cursor-not-allowed"
+                  : "border-ice-gray-300 hover:border-winter-blue-400 hover:bg-winter-blue-50 dark:border-ice-gray-600 dark:hover:border-winter-blue-500 dark:hover:bg-winter-blue-950/50",
+                "focus-within:border-winter-blue-500 focus-within:ring-2 focus-within:ring-winter-blue-500 focus-within:ring-offset-2"
+              )}
+            >
+              <DropzoneEmptyState>
+                <div className="space-y-6 py-12 px-6">
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className="p-4 rounded-full bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 shadow-lg">
+                        <Upload className="h-8 w-8 text-white" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 p-1 rounded-full bg-warm-amber-500 shadow-sm">
+                        <FileAudio className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 text-center">
+                    <p className="text-xl font-semibold text-winter-blue-900 dark:text-winter-blue-100">
+                      Drop your ZIP file here
+                    </p>
+                    <p className="text-ice-gray-600 dark:text-ice-gray-400 max-w-md mx-auto leading-relaxed">
+                      Or click to browse and select your audio collection (max 500MB)
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap justify-center gap-4 text-sm text-ice-gray-500 dark:text-ice-gray-500">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span>MP3 files supported</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span>ZIP archives only</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span>Up to 500MB</span>
+                    </div>
+                  </div>
+                </div>
+              </DropzoneEmptyState>
+              <DropzoneContent />
+            </Dropzone>
+          </div>
+        </AudioCard>
 
         {status === 'extracting' && (
-          <div className="space-y-4 mt-6 p-4 border rounded-lg bg-muted/20">
-            <div className="flex items-center space-x-3 text-blue-600">
-              <LoaderIcon className="h-5 w-5 animate-spin" />
-              <div>
-                <p className="font-medium">Extracting MP3 files...</p>
-                <p className="text-sm text-muted-foreground">
-                  {fileCount > 0 ? `Found ${fileCount} MP3 files` : 'Scanning archive...'}
-                </p>
+          <ProcessingCard className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="flex-shrink-0">
+                  <AudioProcessingLoader size="lg" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <h4 className="text-lg font-semibold text-winter-blue-900 dark:text-winter-blue-100">
+                    Processing Your Audio Collection
+                  </h4>
+                  <p className="text-ice-gray-600 dark:text-ice-gray-400">
+                    {fileCount > 0
+                      ? `Discovered ${fileCount} MP3 files in your archive`
+                      : 'Scanning and extracting audio files from your ZIP archive...'
+                    }
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Progress</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm font-medium text-winter-blue-700 dark:text-winter-blue-300">
+                  <span>Extraction Progress</span>
+                  <span className="tabular-nums">{Math.round(progress)}%</span>
+                </div>
+
+                <Progress
+                  value={progress}
+                  variant="audio"
+                  className="h-3"
                 />
+
+                <div className="flex items-center gap-6 text-xs text-ice-gray-500 dark:text-ice-gray-500">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse" />
+                    <span>Extracting files</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-warm-amber-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                    <span>Validating audio</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+                    <span>Preparing files</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </ProcessingCard>
         )}
         
         {status === 'ready' && (
-          <div className="mt-6 p-4 border rounded-lg bg-green-50 dark:bg-green-950/20">
-            <div className="flex items-center space-x-3 text-green-600">
-              <CheckCircleIcon className="h-5 w-5" />
-              <div>
-                <p className="font-medium">Successfully extracted {fileCount} MP3 files</p>
-                <p className="text-sm text-muted-foreground">Ready to configure white noise settings</p>
+          <div className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
+            <SuccessAlert
+              title="Audio Collection Ready!"
+              className="border-l-4 border-l-green-500"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <SuccessIcon size="sm" />
+                  <span className="font-medium">Successfully extracted {fileCount} MP3 files</span>
+                </div>
+
+                <div className="flex flex-wrap gap-4 text-sm text-green-700 dark:text-green-300">
+                  <div className="flex items-center gap-1">
+                    <AudioIcon size="xs" />
+                    <span>{fileCount} audio files</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>All files validated</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <SnowflakeIcon size="xs" />
+                    <span>Ready for winter processing</span>
+                  </div>
+                </div>
+
+                <p className="text-green-600 dark:text-green-400 text-sm leading-relaxed">
+                  Your audio collection is ready! You can now proceed to configure the white noise settings
+                  and create the perfect ambient listening experience.
+                </p>
               </div>
-            </div>
+            </SuccessAlert>
           </div>
         )}
-        
+
         {status === 'error' && (
-          <div className="mt-6 p-4 border rounded-lg bg-red-50 dark:bg-red-950/20">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-red-600">
-                <AlertCircleIcon className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Upload Error</p>
-                  <p className="text-sm">{error}</p>
+          <div className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
+            <ErrorAlert
+              title="Upload Failed"
+              retry={reset}
+              className="border-l-4 border-l-red-500"
+            >
+              <div className="space-y-4">
+                <div className="flex items-start gap-2">
+                  <ErrorIcon size="sm" className="mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2">
+                    <p className="text-red-700 dark:text-red-300 leading-relaxed">
+                      {error}
+                    </p>
+
+                    {/* Audio-specific error guidance */}
+                    {(error.toLowerCase().includes('mp3') || error.toLowerCase().includes('audio')) && (
+                      <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                        <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+                          Audio File Tips:
+                        </h5>
+                        <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                          <li>• Ensure your ZIP contains only MP3 files</li>
+                          <li>• Check that audio files are not corrupted</li>
+                          <li>• Verify file names don't contain special characters</li>
+                          <li>• Try with a smaller ZIP file first</li>
+                        </ul>
+                      </div>
+                    )}
+
+                    {error.toLowerCase().includes('size') && (
+                      <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                        <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+                          File Size Tips:
+                        </h5>
+                        <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                          <li>• Maximum file size is 500MB</li>
+                          <li>• Try compressing your audio files</li>
+                          <li>• Split large collections into smaller ZIP files</li>
+                          <li>• Remove any non-audio files from the ZIP</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button onClick={reset} variant="outline" size="sm" className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Try Again
+                  </Button>
+                  <Button
+                    onClick={() => window.open('https://support.example.com/audio-upload', '_blank')}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    Get Help
+                  </Button>
                 </div>
               </div>
-              <Button onClick={reset} variant="outline" size="sm">
-                <RefreshCwIcon className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
+            </ErrorAlert>
           </div>
         )}
       </div>
