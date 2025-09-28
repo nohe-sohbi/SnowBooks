@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DownloadIcon, LoaderIcon, PackageIcon, CheckCircleIcon, AlertCircleIcon, RefreshCwIcon } from 'lucide-react';
 import { audioProcessingAPI } from '@/services/audioProcessingAPI';
@@ -12,44 +12,81 @@ interface DownloadStepProps {
   onStartOver: () => void;
 }
 
-type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error' | 'memory-warning';
+interface FileInfo {
+  fileName: string;
+  fileSize: number;
+  fileCount?: number;
+}
+
+type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error';
 
 export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadStepProps) => {
   const [status, setStatus] = useState<ExportStatus>('idle');
   const [error, setError] = useState<string>('');
   const [downloadedFileName, setDownloadedFileName] = useState<string>('');
-  const [fileInfo, setFileInfo] = useState<any>(null);
+  const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
+
+  // Load file info on component mount
+  useEffect(() => {
+    const loadFileInfo = async () => {
+      try {
+        const info = await audioProcessingAPI.getDownloadInfo(jobId);
+        setFileInfo(info);
+      } catch (error) {
+        console.error('Failed to load file info:', error);
+        // Don't set error state here, just log it
+      }
+    };
+
+    if (jobId) {
+      loadFileInfo();
+    }
+  }, [jobId]);
 
   const downloadProcessedFiles = async () => {
     try {
       setStatus('downloading');
       setError('');
+      setDownloadProgress(0);
 
-      // Get file info first
-      const info = await audioProcessingAPI.getDownloadInfo(jobId);
-      setFileInfo(info);
+      // Get file info if not already loaded
+      let info = fileInfo;
+      if (!info) {
+        info = await audioProcessingAPI.getDownloadInfo(jobId);
+        setFileInfo(info);
+      }
+
+      // Simulate download progress for better UX
+      const progressInterval = setInterval(() => {
+        setDownloadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
 
       // Download the processed ZIP file
       const blob = await audioProcessingAPI.downloadResult(jobId);
+
+      clearInterval(progressInterval);
+      setDownloadProgress(100);
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = info.fileName || `${originalZipName.replace(/\.zip$/i, '')}-with-white-noise.zip`;
+      const fileName = info.fileName || `${originalZipName?.replace(/\.zip$/i, '') || 'processed-audio'}-with-white-noise.zip`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      setDownloadedFileName(link.download);
+      setDownloadedFileName(fileName);
       setStatus('completed');
 
     } catch (error) {
       console.error('Download failed:', error);
       setError(error instanceof Error ? error.message : 'Download failed');
       setStatus('error');
-
+      setDownloadProgress(0);
     }
   };
 
@@ -69,7 +106,7 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
   const getStatusText = () => {
     switch (status) {
       case 'downloading':
-        return 'Downloading processed files...';
+        return `Downloading processed files... ${downloadProgress}%`;
       case 'completed':
         return `Successfully downloaded: ${downloadedFileName}`;
       case 'error':
@@ -147,7 +184,7 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
 
           {/* Status */}
           <div className="mb-4">
-            <p className={`text-sm ${status === 'error' ? 'text-red-600' : status === 'memory-warning' ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+            <p className={`text-sm ${status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
               {getStatusText()}
             </p>
           </div>
@@ -156,33 +193,18 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
           {isProcessing && (
             <div className="mb-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Progress</span>
-                <span className="font-mono">{progress}%</span>
+                <span>Download Progress</span>
+                <span className="font-mono">{downloadProgress}%</span>
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: `${downloadProgress}%` }}
                 />
               </div>
-              {currentFile && (
-                <p className="text-xs text-muted-foreground">
-                  Processing: {currentFile}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Memory Warning */}
-          {memoryWarning && (
-            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
-                <AlertCircleIcon className="h-4 w-4" />
-                <div>
-                  <p className="text-sm font-medium">High Memory Usage</p>
-                  <p className="text-xs">The system is using significant memory. Large files may cause slowdowns.</p>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Preparing your processed files for download...
+              </p>
             </div>
           )}
 
@@ -200,46 +222,36 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
           )}
         </div>
 
-        {/* File List Preview */}
-        <div className="p-4 border rounded-lg bg-muted/10">
-          <h4 className="font-medium mb-3">Files in ZIP Archive</h4>
-          <div className="max-h-48 overflow-y-auto space-y-2">
-            {processedFiles.map((file, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                  <span className="truncate">{file.name}</span>
-                </div>
-                <span className="text-muted-foreground font-mono text-xs">
-                  {formatSize(file.blob.size)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Export Info */}
-        <div className="p-4 border rounded-lg bg-muted/10">
-          <h4 className="font-medium mb-3">Export Details</h4>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex justify-between">
-              <span>Files processed:</span>
-              <span className="font-mono">{processedFiles.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Total size:</span>
-              <span className="font-mono">{formatSize(totalSize)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Format:</span>
-              <span>WAV (high quality)</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Compression:</span>
-              <span>DEFLATE (ZIP)</span>
+        {fileInfo && (
+          <div className="p-4 border rounded-lg bg-muted/10">
+            <h4 className="font-medium mb-3">Download Details</h4>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex justify-between">
+                <span>File name:</span>
+                <span className="font-mono text-right break-all">{fileInfo.fileName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>File size:</span>
+                <span className="font-mono">{formatSize(fileInfo.fileSize)}</span>
+              </div>
+              {fileInfo.fileCount && (
+                <div className="flex justify-between">
+                  <span>Files processed:</span>
+                  <span className="font-mono">{fileInfo.fileCount}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Format:</span>
+                <span>MP3 with white noise</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Compression:</span>
+                <span>ZIP archive</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Actions */}
         <div className="flex justify-center pt-6">

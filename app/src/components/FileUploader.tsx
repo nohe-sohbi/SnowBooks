@@ -7,6 +7,7 @@ import { ConfigureStep } from './steps/ConfigureStep';
 import { PreviewStep } from './steps/PreviewStep';
 import { ProcessStep } from './steps/ProcessStep';
 import { DownloadStep } from './steps/DownloadStep';
+import { ErrorBoundary } from './ErrorBoundary';
 import type MP3File from "@/interface/MP3File.tsx";
 import whiteNoiseUrl from '@/assets/white-noise.mp3';
 import { cleanupAudioContext } from '@/utils/audio';
@@ -179,11 +180,17 @@ const FileUploader = () => {
       title: 'Download',
       description: 'Get your processed files',
       component: (
-        <DownloadStep
-          jobId={jobId}
-          originalZipName={originalZipName}
-          onStartOver={handleStartOver}
-        />
+        <ErrorBoundary
+          onError={(error, errorInfo) => {
+            console.error('DownloadStep error:', error, errorInfo);
+          }}
+        >
+          <DownloadStep
+            jobId={jobId}
+            originalZipName={originalZipName}
+            onStartOver={handleStartOver}
+          />
+        </ErrorBoundary>
       ),
       isComplete: stepCompletions[4]
     }
