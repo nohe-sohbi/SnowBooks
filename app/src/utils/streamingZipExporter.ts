@@ -45,7 +45,7 @@ export class StreamingZipExporter {
       // Add files one by one with memory management
       for (let i = 0; i < files.length; i++) {
         if (this.aborted) {
-          throw new Error('Export aborted');
+          new Error('Export aborted');
         }
 
         const file = files[i];
@@ -91,17 +91,15 @@ export class StreamingZipExporter {
   private async generateZipStream(): Promise<Blob> {
     try {
       // Use streaming generation with memory-efficient options
-      const zipBlob = await this.zip.generateAsync({
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: {
-          level: this.options.compressionLevel
-        },
-        // Use streaming internally when possible
-        streamFiles: true
+        return await this.zip.generateAsync({
+          type: 'blob',
+          compression: 'DEFLATE',
+          compressionOptions: {
+              level: this.options.compressionLevel
+          },
+          // Use streaming internally when possible
+          streamFiles: true
       });
-
-      return zipBlob;
     } catch (error) {
       console.error('ZIP generation failed:', error);
       throw new Error('Failed to generate ZIP file. This might be due to insufficient memory.');
