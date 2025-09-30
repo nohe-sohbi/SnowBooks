@@ -91,16 +91,9 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
       <div className="max-w-3xl mx-auto">
         {/* Winter Audio Studio Upload Area */}
         <AudioCard className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-winter-blue-500 to-warm-amber-500" />
 
           <div className="p-8">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-full bg-gradient-to-br from-winter-blue-100 to-warm-amber-100 dark:from-winter-blue-900 dark:to-warm-amber-900">
-                  <Package className="h-6 w-6 text-winter-blue-600 dark:text-winter-blue-400" />
-                </div>
-                <SnowflakeIcon size="lg" className="text-warm-amber-500" />
-              </div>
               <h3 className="text-2xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent mb-2">
                 Upload Your Audio Collection
               </h3>
@@ -135,9 +128,6 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                     <div className="relative">
                       <div className="p-4 rounded-full bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 shadow-lg">
                         <Upload className="h-8 w-8 text-white" />
-                      </div>
-                      <div className="absolute -top-1 -right-1 p-1 rounded-full bg-warm-amber-500 shadow-sm">
-                        <FileAudio className="h-4 w-4 text-white" />
                       </div>
                     </div>
                   </div>
@@ -204,20 +194,6 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                   className="h-3"
                 />
 
-                <div className="flex items-center gap-6 text-xs text-ice-gray-500 dark:text-ice-gray-500">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse" />
-                    <span>Extracting files</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-warm-amber-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                    <span>Validating audio</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-                    <span>Preparing files</span>
-                  </div>
-                </div>
               </div>
             </div>
           </ProcessingCard>
