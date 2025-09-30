@@ -22,14 +22,14 @@ NestJS backend service for SnowBooks audio processing application.
 
 ### Using Docker (Recommended)
 
-1. **Start services**:
+1. **Start services (run from repo root)**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 2. **View logs**:
    ```bash
-   docker-compose logs -f backend
+   docker compose logs -f backend
    ```
 
 ### Manual Setup
