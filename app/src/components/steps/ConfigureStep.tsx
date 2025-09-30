@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioCard, ProcessingCard } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { AudioIcon, SnowflakeIcon, InfoIcon as InfoIconComponent } from '@/components/ui/icon';
+import { AudioIcon, SnowflakeIcon } from '@/components/ui/icon';
 import { VolumeX, Volume1, Volume2, Info, Sliders, Waves, Settings, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
