@@ -260,41 +260,6 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                 </div>
               </div>
 
-              {/* Waveform Visualization */}
-              <div className="relative mb-6">
-                <div className="h-20 bg-gradient-to-r from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950 rounded-xl overflow-hidden border border-winter-blue-200 dark:border-winter-blue-800">
-                  <div className="absolute inset-0 flex items-center justify-center gap-1 px-4">
-                    {Array.from({ length: 60 }, (_, i) => {
-                      const progress = duration > 0 ? currentTime / duration : 0;
-                      const isActive = i / 60 <= progress;
-                      const height = Math.sin((i / 60) * Math.PI * 6 + (isPlaying ? Date.now() / 200 : 0)) * 0.4 + 0.6;
-
-                      return (
-                        <div
-                          key={i}
-                          className={cn(
-                            "flex-1 rounded-full transition-all duration-200",
-                            isActive
-                              ? "bg-gradient-to-t from-winter-blue-500 to-warm-amber-500"
-                              : "bg-ice-gray-300 dark:bg-ice-gray-600"
-                          )}
-                          style={{
-                            height: `${height * 60}px`,
-                            opacity: isActive ? 0.9 : 0.4,
-                            animationDelay: `${i * 20}ms`
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Progress Overlay */}
-                  <div
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-winter-blue-400/20 to-warm-amber-400/20 transition-all duration-100"
-                    style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-                  />
-                </div>
-              </div>
 
               {/* Audio Controls */}
               <div className="flex items-center gap-6">
@@ -469,21 +434,6 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                           )}
                         </div>
 
-                        {/* Mini Waveform for Current File */}
-                        {isCurrentlyPlaying && (
-                          <div className="flex items-center gap-0.5 mt-2">
-                            {Array.from({ length: 20 }, (_, i) => (
-                              <div
-                                key={i}
-                                className="w-1 bg-gradient-to-t from-winter-blue-400 to-warm-amber-400 rounded-full transition-all duration-200"
-                                style={{
-                                  height: `${Math.sin((i / 20) * Math.PI * 4 + (isPlaying ? Date.now() / 300 : 0)) * 8 + 12}px`,
-                                  opacity: isPlaying ? 0.8 : 0.4
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
                       </div>
 
                       {/* Play Button */}
@@ -526,79 +476,6 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
           </div>
         </AudioCard>
 
-        {/* Winter-Themed Instructions */}
-        <ProcessingCard className="p-8">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-winter-blue-100 dark:bg-winter-blue-900">
-                <Headphones className="h-5 w-5 text-winter-blue-600 dark:text-winter-blue-400" />
-              </div>
-              <h4 className="text-lg font-semibold text-winter-blue-900 dark:text-winter-blue-100">
-                Preview Instructions
-              </h4>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h5 className="font-medium text-winter-blue-800 dark:text-winter-blue-200 flex items-center gap-2">
-                  <Play className="h-4 w-4" />
-                  How to Preview
-                </h5>
-                <ul className="text-sm text-winter-blue-700 dark:text-winter-blue-300 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-winter-blue-500 rounded-full mt-2 flex-shrink-0" />
-                    <span>Click the play button next to any file to start preview</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-winter-blue-500 rounded-full mt-2 flex-shrink-0" />
-                    <span>Use the audio player controls to pause, resume, or stop</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-winter-blue-500 rounded-full mt-2 flex-shrink-0" />
-                    <span>Watch the waveform visualization for real-time feedback</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-4">
-                <h5 className="font-medium text-warm-amber-800 dark:text-warm-amber-200 flex items-center gap-2">
-                  <SnowflakeIcon size="sm" />
-                  What You'll Hear
-                </h5>
-                <ul className="text-sm text-warm-amber-700 dark:text-warm-amber-300 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-warm-amber-500 rounded-full mt-2 flex-shrink-0" />
-                    <span>Exactly how your final processed files will sound</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-warm-amber-500 rounded-full mt-2 flex-shrink-0" />
-                    <span>Your audio mixed with the configured white noise level</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-warm-amber-500 rounded-full mt-2 flex-shrink-0" />
-                    <span>Preview limited to 30 seconds for optimal performance</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="p-4 bg-gradient-to-r from-ice-gray-50 to-ice-gray-100 dark:from-ice-gray-900 dark:to-ice-gray-800 rounded-xl border border-ice-gray-200 dark:border-ice-gray-700">
-              <div className="flex items-start gap-3">
-                <div className="p-1 rounded-full bg-ice-gray-200 dark:bg-ice-gray-700">
-                  <Waves className="h-4 w-4 text-ice-gray-600 dark:text-ice-gray-400" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-ice-gray-900 dark:text-ice-gray-100">
-                    Need to adjust settings?
-                  </p>
-                  <p className="text-xs text-ice-gray-600 dark:text-ice-gray-400">
-                    Go back to the Configure step to modify white noise volume or return here to preview your changes.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ProcessingCard>
       </div>
     </div>
   );
