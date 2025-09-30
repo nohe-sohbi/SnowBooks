@@ -37,7 +37,7 @@ services:
       - CORS_ORIGIN=http://localhost:5173
       - CORS_CREDENTIALS=true
       - WS_CORS_ORIGIN=http://localhost:5173
-      - LOG_LEVEL=debug
+
     volumes:
       - ./backend:/app
       - /app/node_modules
