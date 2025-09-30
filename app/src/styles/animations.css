@@ -61,30 +61,6 @@
   }
 }
 
-/* Progress Animations */
-@keyframes progress-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.progress-shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.4),
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: progress-shimmer 2s infinite;
-}
-
-
-
-
 
 /* Focus States */
 .focus-winter {
@@ -148,10 +124,6 @@
   @apply hover:scale-105 active:scale-95;
 }
 
-.scale-hover-subtle {
-  @apply transition-transform duration-200 ease-out;
-  @apply hover:scale-[1.02] active:scale-[0.98];
-}
 
 /* Pulse Animations */
 .pulse-winter {
@@ -180,20 +152,6 @@
   animation: border-glow 2s ease-in-out infinite;
 }
 
-/* Text Animations */
-.text-shimmer {
-  background: linear-gradient(
-    90deg,
-    theme('colors.winter-blue.600'),
-    theme('colors.warm-amber.500'),
-    theme('colors.winter-blue.600')
-  );
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: progress-shimmer 3s ease-in-out infinite;
-}
 
 /* Utility Classes */
 .animate-delay-100 {
