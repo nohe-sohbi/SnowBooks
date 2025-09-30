@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AudioCard, ProcessingCard } from '@/components/ui/card';
 import { ErrorAlert, SuccessAlert } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { SnowflakeLoader, AudioProcessingLoader } from '@/components/ui/loading';
+import { Loading } from '@/components/ui/loading';
 import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
 import { Upload, FileAudio, Package, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
@@ -167,7 +167,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
             <div className="p-6">
               <div className="flex items-start gap-4 mb-6">
                 <div className="flex-shrink-0">
-                  <AudioProcessingLoader size="lg" />
+                  <Loading size="lg" />
                 </div>
                 <div className="flex-1 space-y-2">
                   <h4 className="text-lg font-semibold text-winter-blue-900 dark:text-winter-blue-100">

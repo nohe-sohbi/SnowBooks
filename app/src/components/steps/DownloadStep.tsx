@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { AudioCard, ProcessingCard } from '@/components/ui/card';
 import { SuccessAlert, ErrorAlert } from '@/components/ui/alert';
-import { AudioProcessingLoader } from '@/components/ui/loading';
+import { Loading } from '@/components/ui/loading';
 import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
 import { Download, Package, CheckCircle2, RefreshCw, Gift, Sparkles, Trophy, Music, FileArchive, Zap, Star } from 'lucide-react';
 import { audioProcessingAPI } from '@/services/audioProcessingAPI';
@@ -99,7 +99,7 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
   const getStatusIcon = () => {
     switch (status) {
       case 'downloading':
-        return <AudioProcessingLoader size="lg" />;
+        return <Loading size="lg" />;
       case 'completed':
         return <SuccessIcon size="xl" />;
       case 'error':
@@ -203,7 +203,7 @@ export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadSt
                     size="lg"
                     className="bg-gradient-to-r from-winter-blue-500 to-winter-blue-600 text-white min-w-[180px]"
                   >
-                    <AudioProcessingLoader size="sm" className="mr-2" />
+                    <Loading size="sm" className="mr-2" />
                     Preparing Download...
                   </Button>
                 )}

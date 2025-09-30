@@ -4,7 +4,7 @@ import { useState, useMemo, memo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioCard, ProcessingCard } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { SnowflakeLoader } from '@/components/ui/loading';
+import { Loading } from '@/components/ui/loading';
 import { AudioIcon, SnowflakeIcon } from '@/components/ui/icon';
 import { Play, Pause, Square, FileAudio, VolumeX, Volume2, Clock, HardDrive, Headphones, Waves, Music } from 'lucide-react';
 import { formatSize, formatDuration } from '@/utils/formatters';
@@ -461,7 +461,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                         }
                       >
                         {isLoading ? (
-                          <SnowflakeLoader size="sm" />
+                          <Loading size="sm" />
                         ) : isCurrentlyPlaying ? (
                           <Square className="h-5 w-5" />
                         ) : (

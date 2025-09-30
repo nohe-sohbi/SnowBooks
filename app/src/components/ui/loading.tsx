@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2, Settings } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -9,23 +9,10 @@ const loadingVariants = cva(
   {
     variants: {
       variant: {
-        // Spinning snowflake loader
-        snowflake: "text-winter-blue-500",
-        
-        // Audio waveform pulse animation
-        waveform: "gap-0.5",
-        
-        // Progress ring with winter gradient
+        // Progress ring
         ring: "relative",
-        
         // Simple spinner
         spinner: "text-winter-blue-600",
-        
-        // Processing gear animation
-        processing: "gap-2",
-        
-        // Dots animation
-        dots: "gap-1",
       },
       size: {
         sm: "w-4 h-4 text-sm",
@@ -49,47 +36,6 @@ interface LoadingProps
 
 const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(
   ({ className, variant, size, progress, ...props }, ref) => {
-    if (variant === "snowflake") {
-      return (
-        <div
-          ref={ref}
-          className={cn(loadingVariants({ variant, size }), className)}
-          {...props}
-        >
-          <div className="animate-spin text-winter-blue-500">
-            ❄️
-          </div>
-        </div>
-      )
-    }
-
-    if (variant === "waveform") {
-      return (
-        <div
-          ref={ref}
-          className={cn(loadingVariants({ variant, size }), className)}
-          {...props}
-        >
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "bg-winter-blue-500 rounded-full animate-waveform",
-                size === "sm" && "w-0.5 h-2",
-                size === "default" && "w-1 h-4",
-                size === "lg" && "w-1.5 h-6",
-                size === "xl" && "w-2 h-8"
-              )}
-              style={{
-                animationDelay: `${i * 150}ms`,
-                animationDuration: "1s",
-              }}
-            />
-          ))}
-        </div>
-      )
-    }
-
     if (variant === "ring") {
       const circumference = 2 * Math.PI * 16 // radius of 16
       const strokeDasharray = circumference
@@ -145,61 +91,6 @@ const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(
       )
     }
 
-    if (variant === "processing") {
-      return (
-        <div
-          ref={ref}
-          className={cn(loadingVariants({ variant, size }), className)}
-          {...props}
-        >
-          <Settings className="animate-spin text-winter-blue-600" />
-          <div className="flex items-end gap-0.5">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "bg-warm-amber-500 rounded-full animate-pulse",
-                  size === "sm" && "w-0.5 h-1",
-                  size === "default" && "w-1 h-2",
-                  size === "lg" && "w-1.5 h-3",
-                  size === "xl" && "w-2 h-4"
-                )}
-                style={{
-                  animationDelay: `${i * 200}ms`,
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-
-    if (variant === "dots") {
-      return (
-        <div
-          ref={ref}
-          className={cn(loadingVariants({ variant, size }), className)}
-          {...props}
-        >
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "bg-winter-blue-500 rounded-full animate-bounce",
-                size === "sm" && "w-1 h-1",
-                size === "default" && "w-1.5 h-1.5",
-                size === "lg" && "w-2 h-2",
-                size === "xl" && "w-3 h-3"
-              )}
-              style={{
-                animationDelay: `${i * 150}ms`,
-              }}
-            />
-          ))}
-        </div>
-      )
-    }
-
     // Default spinner
     return (
       <div
@@ -213,46 +104,6 @@ const Loading = React.forwardRef<HTMLDivElement, LoadingProps>(
   }
 )
 Loading.displayName = "Loading"
-
-// Specialized loading components for audio studio use
-const AudioProcessingLoader = React.forwardRef<
-  HTMLDivElement,
-  Omit<LoadingProps, "variant">
->(({ className, ...props }, ref) => (
-  <Loading
-    ref={ref}
-    variant="waveform"
-    className={cn("text-winter-blue-600", className)}
-    {...props}
-  />
-))
-AudioProcessingLoader.displayName = "AudioProcessingLoader"
-
-const SnowflakeLoader = React.forwardRef<
-  HTMLDivElement,
-  Omit<LoadingProps, "variant">
->(({ className, ...props }, ref) => (
-  <Loading
-    ref={ref}
-    variant="snowflake"
-    className={cn("text-winter-blue-500", className)}
-    {...props}
-  />
-))
-SnowflakeLoader.displayName = "SnowflakeLoader"
-
-const ProcessingLoader = React.forwardRef<
-  HTMLDivElement,
-  Omit<LoadingProps, "variant">
->(({ className, ...props }, ref) => (
-  <Loading
-    ref={ref}
-    variant="processing"
-    className={cn("text-winter-blue-600", className)}
-    {...props}
-  />
-))
-ProcessingLoader.displayName = "ProcessingLoader"
 
 const ProgressRing = React.forwardRef<
   HTMLDivElement,
@@ -270,9 +121,6 @@ ProgressRing.displayName = "ProgressRing"
 
 export {
   Loading,
-  AudioProcessingLoader,
-  SnowflakeLoader,
-  ProcessingLoader,
   ProgressRing,
   loadingVariants,
 }
