@@ -11,7 +11,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import type MP3File from "@/interface/MP3File.tsx";
 import whiteNoiseUrl from '@/assets/white-noise.mp3';
 import { cleanupAudioContext } from '@/utils/audio';
-import { cleanupAudioWorker } from '@/utils/audioWorkerManager';
+
 
 const FileUploader = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -53,7 +53,7 @@ const FileUploader = () => {
   useEffect(() => {
     return () => {
       cleanupAudioContext();
-      cleanupAudioWorker();
+
     };
   }, []);
 

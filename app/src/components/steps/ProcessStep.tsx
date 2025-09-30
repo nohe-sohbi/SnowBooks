@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { AudioProcessingLoader } from '@/components/ui/loading';
+import { Loading } from '@/components/ui/loading';
 import { ErrorIcon } from '@/components/ui/icon';
 import { Play, Square, CheckCircle2, RefreshCw } from 'lucide-react';
 import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
@@ -109,7 +109,7 @@ export const ProcessStep = ({
   const getStatusIcon = () => {
     switch (status) {
       case 'processing':
-        return <AudioProcessingLoader size="lg" />;
+        return <Loading size="lg" />;
       case 'completed':
         return <CheckCircle2 className="h-8 w-8 text-green-500" />;
       case 'error':
