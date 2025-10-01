@@ -42,25 +42,8 @@
   @apply focus:outline-none focus:ring-2 focus:ring-winter-blue-400;
 }
 
-.interactive-audio {
-  @apply transition-all duration-200 ease-out;
-  @apply hover:bg-warm-amber-50 dark:hover:bg-warm-amber-950;
-  @apply focus:bg-warm-amber-100 dark:focus:bg-warm-amber-900;
-  @apply focus:outline-none focus:ring-2 focus:ring-warm-amber-400;
-}
 
 /* Waveform Animations */
-@keyframes waveform-pulse {
-  0%, 100% {
-    transform: scaleY(0.5);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scaleY(1.2);
-    opacity: 1;
-  }
-}
-
 
 /* Focus States */
 .focus-winter {
@@ -68,10 +51,6 @@
   @apply dark:focus:ring-winter-blue-500 dark:focus:ring-offset-ice-gray-900;
 }
 
-.focus-audio {
-  @apply focus:outline-none focus:ring-2 focus:ring-warm-amber-400 focus:ring-offset-2;
-  @apply dark:focus:ring-warm-amber-500 dark:focus:ring-offset-ice-gray-900;
-}
 
 /* Smooth State Transitions */
 .state-transition {
@@ -82,9 +61,6 @@
   @apply transition-all duration-150 ease-out;
 }
 
-.state-transition-slow {
-  @apply transition-all duration-500 ease-out;
-}
 
 /* Hover Glow Effects */
 .glow-winter {
@@ -103,21 +79,6 @@
 }
 
 /* Slide Animations */
-@keyframes slide-in-winter {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.slide-in-winter {
-  animation: slide-in-winter 0.4s ease-out;
-}
-
 /* Scale Animations */
 .scale-hover {
   @apply transition-transform duration-200 ease-out;
@@ -126,16 +87,6 @@
 
 
 /* Pulse Animations */
-.pulse-winter {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  animation-duration: 3s;
-}
-
-.pulse-audio {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  animation-duration: 2.5s;
-}
-
 /* Border Animations */
 @keyframes border-glow {
   0%, 100% {
@@ -148,32 +99,5 @@
   }
 }
 
-.border-glow-winter {
-  animation: border-glow 2s ease-in-out infinite;
-}
-
 
 /* Utility Classes */
-.animate-delay-100 {
-  animation-delay: 0.1s;
-}
-
-.animate-delay-200 {
-  animation-delay: 0.2s;
-}
-
-.animate-delay-300 {
-  animation-delay: 0.3s;
-}
-
-.animate-delay-500 {
-  animation-delay: 0.5s;
-}
-
-.animate-delay-700 {
-  animation-delay: 0.7s;
-}
-
-.animate-delay-1000 {
-  animation-delay: 1s;
-}

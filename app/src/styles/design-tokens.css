@@ -179,182 +179,30 @@
 /* ===== UTILITY CLASSES ===== */
 /* Common utility classes using design tokens */
 
-.shadow-winter {
-  box-shadow: var(--shadow-primary);
-}
 
-.shadow-winter-lg {
-  box-shadow: var(--shadow-xl);
-}
 
-.gradient-winter-bg {
-  background: var(--gradient-winter-background);
-}
 
-.gradient-winter-card {
-  background: var(--gradient-winter-card);
-  box-shadow: var(--shadow-sm);
-}
 
 /* ===== RESPONSIVE UTILITIES ===== */
 /* Mobile-first responsive design utilities */
 
-.responsive-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-4);
-}
 
-@media (min-width: 640px) {
-  .responsive-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-6);
-  }
-}
 
-@media (min-width: 1024px) {
-  .responsive-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
-  }
-}
 
-.responsive-text {
-  font-size: var(--text-sm);
-  line-height: var(--leading-relaxed);
-}
 
-@media (min-width: 640px) {
-  .responsive-text {
-    font-size: var(--text-base);
-  }
-}
 
-@media (min-width: 1024px) {
-  .responsive-text {
-    font-size: var(--text-lg);
-  }
-}
 
-.responsive-spacing {
-  padding: var(--space-4);
-}
 
-@media (min-width: 640px) {
-  .responsive-spacing {
-    padding: var(--space-6);
-  }
-}
 
-@media (min-width: 1024px) {
-  .responsive-spacing {
-    padding: var(--space-8);
-  }
-}
 
-.responsive-container {
-  width: 100%;
-  max-width: var(--container-sm);
-  margin: 0 auto;
-  padding: 0 var(--space-4);
-}
 
-@media (min-width: 640px) {
-  .responsive-container {
-    max-width: var(--container-md);
-    padding: 0 var(--space-6);
-  }
-}
 
-@media (min-width: 1024px) {
-  .responsive-container {
-    max-width: var(--container-lg);
-    padding: 0 var(--space-8);
-  }
-}
 
-@media (min-width: 1280px) {
-  .responsive-container {
-    max-width: var(--container-xl);
-  }
-}
 
-@media (min-width: 1536px) {
-  .responsive-container {
-    max-width: var(--container-2xl);
-  }
-}
 
-.transition-winter {
-  transition: all var(--duration-200) var(--ease-out);
-}
 
-.transition-winter-slow {
-  transition: all var(--duration-300) var(--ease-out);
-}
 
 /* Audio-themed animations */
-@keyframes pulse-audio {
-  0%, 100% {
-    transform: scaleY(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scaleY(1.5);
-    opacity: 1;
-  }
-}
-
-@keyframes snow-fall {
-  0% {
-    transform: translateY(-100vh) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100vh) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-@keyframes waveform-dance {
-  0%, 100% {
-    height: var(--waveform-sm);
-  }
-  25% {
-    height: var(--waveform-lg);
-  }
-  50% {
-    height: var(--waveform-base);
-  }
-  75% {
-    height: var(--waveform-xl);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 @keyframes indeterminate {
   0% {
     transform: translateX(-100%);
@@ -367,18 +215,3 @@
   }
 }
 
-.animate-pulse-audio {
-  animation: pulse-audio var(--duration-1000) var(--ease-in-out) infinite;
-}
-
-.animate-snow-fall {
-  animation: snow-fall 10s var(--ease-linear) infinite;
-}
-
-.animate-waveform {
-  animation: waveform-dance var(--duration-500) var(--ease-in-out) infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 2s var(--ease-in-out) infinite;
-}
