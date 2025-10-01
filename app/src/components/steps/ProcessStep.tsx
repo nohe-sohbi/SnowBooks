@@ -7,7 +7,7 @@ import { Loading } from '@/components/ui/loading';
 import { ErrorIcon } from '@/components/ui/icon';
 import { Play, Square, CheckCircle2, RefreshCw } from 'lucide-react';
 import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
-import type MP3File from "@/interface/MP3File.tsx";
+import type MP3File from "@/interface/MP3File";
 
 interface ProcessStepProps {
   mp3Files: MP3File[];

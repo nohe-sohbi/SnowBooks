@@ -11,7 +11,7 @@ import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/u
 import { Upload, FileAudio, Package, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
 import { cn } from '@/lib/utils';
-import type MP3File from "@/interface/MP3File.tsx";
+import type MP3File from "@/interface/MP3File";
 
 type UploadStatus = 'idle' | 'extracting' | 'ready' | 'error';
 

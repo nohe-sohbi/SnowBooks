@@ -10,7 +10,7 @@ import { Play, Pause, Square, FileAudio, VolumeX, Volume2, Clock, HardDrive, Hea
 import { formatSize, formatDuration } from '@/utils/formatters';
 import { createMixedAudioPreview } from '@/utils/audio';
 import { cn } from '@/lib/utils';
-import type MP3File from "@/interface/MP3File.tsx";
+import type MP3File from "@/interface/MP3File";
 
 interface PreviewStepProps {
   mp3Files: MP3File[];
