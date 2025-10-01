@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AudioCard, ProcessingCard } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { AudioIcon, SnowflakeIcon } from '@/components/ui/icon';
+import { AudioIcon } from '@/components/ui/icon';
 import { VolumeX, Volume1, Volume2, Info, Sliders, Waves, Settings, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -85,7 +85,6 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                 <div className="p-4 rounded-full bg-gradient-to-br from-winter-blue-100 to-warm-amber-100 dark:from-winter-blue-900 dark:to-warm-amber-900">
                   <Sliders className="h-8 w-8 text-winter-blue-600 dark:text-winter-blue-400" />
                 </div>
-                <SnowflakeIcon size="xl" className="text-warm-amber-500" />
               </div>
 
               <h3 className="text-3xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent mb-3">
@@ -122,29 +121,6 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                 </div>
               </div>
 
-              {/* Waveform Visualization */}
-              <div className="relative h-16 bg-gradient-to-r from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950 rounded-xl overflow-hidden border border-winter-blue-200 dark:border-winter-blue-800">
-                <div className="absolute inset-0 flex items-center justify-center gap-1 px-4">
-                  {Array.from({ length: 40 }, (_, i) => {
-                    const height = Math.sin((i / 40) * Math.PI * 4 + Date.now() / 1000) * 0.3 + 0.7;
-                    const opacity = localVolume * height;
-                    return (
-                      <div
-                        key={i}
-                        className="bg-gradient-to-t from-winter-blue-400 to-warm-amber-400 rounded-full transition-all duration-300"
-                        style={{
-                          width: '3px',
-                          height: `${height * localVolume * 40 + 8}px`,
-                          opacity: opacity * 0.8 + 0.2,
-                          animationDelay: `${i * 50}ms`
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-              </div>
             </div>
 
             {/* Information Card */}
@@ -163,7 +139,6 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                       a consistent, immersive winter atmosphere that masks distracting background sounds.
                     </p>
                     <div className="flex items-center gap-2 text-warm-amber-600 dark:text-warm-amber-400">
-                      <SnowflakeIcon size="xs" />
                       <span className="font-medium">Recommended: Start with "Gentle" (30%) and adjust to your preference</span>
                     </div>
                   </div>

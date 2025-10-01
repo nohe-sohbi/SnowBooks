@@ -12,9 +12,6 @@ export default defineConfig({
       { find: '@', replacement: '/src' }
     ],
   },
-  optimizeDeps: {
-    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
-  },
   worker: {
     format: 'es'
   },

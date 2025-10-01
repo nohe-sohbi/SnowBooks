@@ -8,7 +8,7 @@ import { PreviewStep } from './steps/PreviewStep';
 import { ProcessStep } from './steps/ProcessStep';
 import { DownloadStep } from './steps/DownloadStep';
 import { ErrorBoundary } from './ErrorBoundary';
-import type MP3File from "@/interface/MP3File.tsx";
+import type MP3File from "@/interface/MP3File";
 import whiteNoiseUrl from '@/assets/white-noise.mp3';
 import { cleanupAudioContext } from '@/utils/audio';
 

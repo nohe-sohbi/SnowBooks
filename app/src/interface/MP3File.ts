@@ -4,3 +4,4 @@ export default interface MP3File {
     duration?: number;
     blob: Blob;
 }
+
