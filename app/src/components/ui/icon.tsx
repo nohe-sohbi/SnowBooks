@@ -1,6 +1,8 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-import type {LucideIcon} from "lucide-react"
+// Local SVG icon component type to avoid depending on lucide-react's types
+// Accepts standard SVG props and may optionally forward refs via props.ref
+export type SvgIconLike = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement | null
 
 import { cn } from "@/lib/utils"
 
@@ -66,7 +68,7 @@ const iconVariants = cva(
 interface IconProps
   extends Omit<React.SVGProps<SVGSVGElement>, "size">,
     VariantProps<typeof iconVariants> {
-  icon: LucideIcon
+  icon: SvgIconLike
   label?: string
 }
 
@@ -88,7 +90,7 @@ interface CommonIconProps extends Omit<IconProps, "icon"> {}
 // Audio Studio Icons
 export const AudioIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
   (props, ref) => {
-    const AudioWaveIcon: LucideIcon = ({ className, ...iconProps }) => (
+    const AudioWaveIcon: SvgIconLike = ({ className, ...iconProps }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -114,7 +116,7 @@ AudioIcon.displayName = "AudioIcon"
 
 export const SnowflakeIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
   (props, ref) => {
-    const SnowflakeIconSvg: LucideIcon = ({ className, ...iconProps }) => (
+    const SnowflakeIconSvg: SvgIconLike = ({ className, ...iconProps }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -141,7 +143,7 @@ SnowflakeIcon.displayName = "SnowflakeIcon"
 // Status Icons with predefined variants
 export const SuccessIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
   ({ variant = "success", ...props }, ref) => {
-    const CheckCircleIcon: LucideIcon = ({ className, ...iconProps }) => (
+    const CheckCircleIcon: SvgIconLike = ({ className, ...iconProps }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -163,7 +165,7 @@ SuccessIcon.displayName = "SuccessIcon"
 
 export const ErrorIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
   ({ variant = "destructive", ...props }, ref) => {
-    const AlertCircleIcon: LucideIcon = ({ className, ...iconProps }) => (
+    const AlertCircleIcon: SvgIconLike = ({ className, ...iconProps }) => (
       <svg
         className={className}
         viewBox="0 0 24 24"
