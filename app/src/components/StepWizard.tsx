@@ -38,10 +38,7 @@ export const StepWizard = ({
   showNavigation = true
 }: StepWizardProps) => {
   const currentStepData = steps[currentStep];
-  const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
-
-
 
   return (
     <div className="space-y-8">

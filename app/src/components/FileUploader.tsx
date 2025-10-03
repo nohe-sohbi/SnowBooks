@@ -140,7 +140,7 @@ const FileUploader = () => {
           setCurrentStep(3);   // go directly to download
         },
         (err) => {
-          setProcessingError(typeof err === 'string' ? err : 'Processing failed');
+          setProcessingError(err);
           setIsProcessing(false);
         }
       );

@@ -1,10 +1,9 @@
 'use client'
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { ErrorAlert } from '@/components/ui/alert';
-import { AlertCircleIcon, RefreshCwIcon, Bug, HelpCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { RefreshCwIcon, Bug, HelpCircle } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
