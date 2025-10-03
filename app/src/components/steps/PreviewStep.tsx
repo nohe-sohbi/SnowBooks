@@ -1,15 +1,27 @@
 'use client'
 
-import { useState, useMemo, memo, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { AudioCard, ProcessingCard } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Loading } from '@/components/ui/loading';
-import { AudioIcon, SnowflakeIcon } from '@/components/ui/icon';
-import { Play, Pause, Square, FileAudio, VolumeX, Volume2, Clock, HardDrive, Headphones, Waves, Music } from 'lucide-react';
-import { formatSize, formatDuration } from '@/utils/formatters';
-import { createMixedAudioPreview } from '@/utils/audio';
-import { cn } from '@/lib/utils';
+import {memo, useEffect, useMemo, useRef, useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {AudioCard, ProcessingCard} from '@/components/ui/card';
+import {Progress} from '@/components/ui/progress';
+import {Loading} from '@/components/ui/loading';
+import {AudioIcon, SnowflakeIcon} from '@/components/ui/icon';
+import {
+    Clock,
+    FileAudio,
+    HardDrive,
+    Headphones,
+    Music,
+    Pause,
+    Play,
+    Square,
+    Volume2,
+    VolumeX,
+    Waves
+} from 'lucide-react';
+import {formatDuration, formatSize} from '@/utils/formatters';
+import {createMixedAudioPreview} from '@/utils/audio';
+import {cn} from '@/lib/utils';
 import type MP3File from "@/interface/MP3File";
 
 interface PreviewStepProps {
@@ -90,8 +102,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
       }
 
       const audio = new Audio();
-      const url = URL.createObjectURL(audioBlob);
-      audio.src = url;
+      audio.src = URL.createObjectURL(audioBlob);
 
       // Set up audio event listeners
       audio.addEventListener('loadedmetadata', () => {

@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { AudioCard, ProcessingCard } from '@/components/ui/card';
+import { ProcessingCard } from '@/components/ui/card';
 import { SuccessAlert, ErrorAlert } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
-import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
-import { Download, Package, CheckCircle2, RefreshCw, Gift, Sparkles, Trophy, Music, FileArchive, Zap, Star } from 'lucide-react';
+import { SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
+import { Download, CheckCircle2, RefreshCw, Gift, FileArchive } from 'lucide-react';
 import { audioProcessingAPI } from '@/services/audioProcessingAPI';
 import { formatSize } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ interface FileInfo {
 
 type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error';
 
-export const DownloadStep = ({ jobId, originalZipName, onStartOver }: DownloadStepProps) => {
+export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
   const [status, setStatus] = useState<ExportStatus>('idle');
   const [error, setError] = useState<string>('');
   const [downloadedFileName, setDownloadedFileName] = useState<string>('');

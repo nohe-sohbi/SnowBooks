@@ -8,7 +8,7 @@ import { ErrorAlert, SuccessAlert } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Loading } from '@/components/ui/loading';
 import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
-import { Upload, FileAudio, Package, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Upload, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
 import { cn } from '@/lib/utils';
 import type MP3File from "@/interface/MP3File";
