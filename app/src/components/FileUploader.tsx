@@ -5,12 +5,13 @@ import { StepWizard } from './StepWizard';
 import { UploadStep } from './steps/UploadStep';
 import { ConfigureStep } from './steps/ConfigureStep';
 import { PreviewStep } from './steps/PreviewStep';
-import { ProcessStep } from './steps/ProcessStep';
 import { DownloadStep } from './steps/DownloadStep';
 import { ErrorBoundary } from './ErrorBoundary';
 import type MP3File from "@/interface/MP3File";
-import whiteNoiseUrl from '@/assets/white-noise.mp3';
+const WHITE_NOISE_PUBLIC_URL = '/white-noise.mp3';
 import { cleanupAudioContext } from '@/utils/audio';
+import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
+import { Progress } from '@/components/ui/progress';
 
 
 const FileUploader = () => {
@@ -21,7 +22,11 @@ const FileUploader = () => {
   const [processedFiles, setProcessedFiles] = useState<Array<{ name: string; blob: Blob }>>([]);
   const [originalZipName, setOriginalZipName] = useState<string>('');
   const [jobId, setJobId] = useState<string>('');
-  const [stepCompletions, setStepCompletions] = useState<boolean[]>([false, false, false, false, false]);
+  const [stepCompletions, setStepCompletions] = useState<boolean[]>([false, false, false, false]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingError, setProcessingError] = useState<string>('');
+  const [progress, setProgress] = useState<JobProgress | null>(null);
+  const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
 
   // Demo mode for testing UI without backend
   const [demoMode, setDemoMode] = useState(false);
@@ -30,7 +35,7 @@ const FileUploader = () => {
   useEffect(() => {
     const loadWhiteNoise = async () => {
       try {
-        const response = await fetch(whiteNoiseUrl);
+        const response = await fetch(WHITE_NOISE_PUBLIC_URL);
         const blob = await response.blob();
         setWhiteNoiseBlob(blob);
       } catch (error) {
@@ -53,9 +58,11 @@ const FileUploader = () => {
   useEffect(() => {
     return () => {
       cleanupAudioContext();
-
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
-  }, []);
+  }, [unsubscribe]);
 
   // Step completion handlers
   const markStepComplete = (stepIndex: number) => {
@@ -84,19 +91,20 @@ const FileUploader = () => {
     markStepComplete(1); // Mark configure step as complete when volume is set
   }, []);
 
-  const handleProcessingComplete = useCallback(() => {
-    // Store download URL instead of processed files
-    setProcessedFiles([{ name: 'processed-files.zip', blob: new Blob() }]); // Placeholder
-    markStepComplete(3); // Mark process step as complete
-    setCurrentStep(4); // Move to download step
-  }, []);
+
 
   const handleStartOver = useCallback(() => {
     setCurrentStep(0);
     setMp3Files([]);
     setProcessedFiles([]);
     setOriginalZipName('');
-    setStepCompletions([false, false, false, false, false]);
+    setStepCompletions([false, false, false, false]);
+    if (unsubscribe) {
+      unsubscribe();
+    }
+    setIsProcessing(false);
+    setProcessingError('');
+    setProgress(null);
     setDemoMode(false);
   }, []);
 
@@ -114,9 +122,51 @@ const FileUploader = () => {
     setCurrentStep(1); // Move to configure step
   }, []);
 
+  // Start processing when leaving Preview
+  const startProcessingFlow = useCallback(async () => {
+    if (!jobId) return;
+    try {
+      setIsProcessing(true);
+      setProcessingError('');
+      setProgress(null);
+
+      const unsub = audioProcessingAPI.subscribeToProgress(
+        jobId,
+        (p) => setProgress(p),
+        () => {
+          // processing completed successfully
+          setIsProcessing(false);
+          markStepComplete(2); // mark preview as completed
+          setCurrentStep(3);   // go directly to download
+        },
+        (err) => {
+          setProcessingError(typeof err === 'string' ? err : 'Processing failed');
+          setIsProcessing(false);
+        }
+      );
+      setUnsubscribe(() => unsub);
+
+      const config: ProcessingConfig = {
+        whiteNoiseVolume,
+      } as ProcessingConfig;
+
+      await audioProcessingAPI.startProcessing(jobId, config);
+    } catch (e) {
+      setProcessingError('Failed to start processing');
+      setIsProcessing(false);
+    }
+  }, [jobId, whiteNoiseVolume, markStepComplete]);
+
   // Navigation handlers
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep === 2) {
+      // From Preview: trigger processing and do not advance until done
+      if (!isProcessing) {
+        void startProcessingFlow();
+      }
+      return;
+    }
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -131,9 +181,8 @@ const FileUploader = () => {
     switch (currentStep) {
       case 0: return mp3Files.length > 0; // Upload complete
       case 1: return true; // Configure step (always can proceed)
-      case 2: return true; // Preview step (optional)
-      case 3: return processedFiles.length > 0; // Processing complete
-      case 4: return false; // Final step
+      case 2: return !isProcessing; // Preview step - Next triggers processing
+      case 3: return false; // Download step
       default: return false;
     }
   };
@@ -192,20 +241,6 @@ const FileUploader = () => {
       isOptional: true
     },
     {
-      id: 'process',
-      title: 'Process',
-      description: 'Mix white noise with audio',
-      component: (
-        <ProcessStep
-          mp3Files={mp3Files}
-          whiteNoiseVolume={whiteNoiseVolume}
-          jobId={jobId}
-          onProcessingComplete={handleProcessingComplete}
-        />
-      ),
-      isComplete: stepCompletions[3]
-    },
-    {
       id: 'download',
       title: 'Download',
       description: 'Get your processed files',
@@ -222,24 +257,35 @@ const FileUploader = () => {
           />
         </ErrorBoundary>
       ),
-      isComplete: stepCompletions[4]
+      isComplete: stepCompletions[3]
     }
   ], [
     mp3Files,
     whiteNoiseBlob,
     whiteNoiseVolume,
-    processedFiles,
     originalZipName,
     stepCompletions,
     handleFilesExtracted,
     handleUploadError,
     handleVolumeChange,
-    handleProcessingComplete,
     handleStartOver
   ]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
+      {/* Processing Overlay */}
+      {isProcessing && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 dark:bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-6 rounded-xl border bg-white dark:bg-ice-gray-900 shadow-lg">
+            <div className="text-center mb-4 font-medium">Processing audio…</div>
+            <Progress value={progress?.totalProgress ?? 0} variant="audio" />
+            {processingError && (
+              <div className="mt-3 text-sm text-red-600">{processingError}</div>
+            )}
+          </div>
+        </div>
+      )}
+
       <StepWizard
         steps={steps}
         currentStep={currentStep}
@@ -247,7 +293,7 @@ const FileUploader = () => {
         onNext={handleNext}
         onPrevious={handlePrevious}
         nextDisabled={!canProceedToNext()}
-        nextLabel={currentStep === 3 ? "Start Processing" : "Next"}
+        nextLabel={currentStep === 2 ? "Start Processing" : "Next"}
       />
     </div>
   );
