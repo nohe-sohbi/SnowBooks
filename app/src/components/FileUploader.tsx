@@ -19,7 +19,7 @@ const FileUploader = () => {
   const [mp3Files, setMp3Files] = useState<MP3File[]>([]);
   const [whiteNoiseVolume, setWhiteNoiseVolume] = useState(0.3);
   const [whiteNoiseBlob, setWhiteNoiseBlob] = useState<Blob | null>(null);
-  const [processedFiles, setProcessedFiles] = useState<Array<{ name: string; blob: Blob }>>([]);
+
   const [originalZipName, setOriginalZipName] = useState<string>('');
   const [jobId, setJobId] = useState<string>('');
   const [stepCompletions, setStepCompletions] = useState<boolean[]>([false, false, false, false]);
@@ -28,8 +28,7 @@ const FileUploader = () => {
   const [progress, setProgress] = useState<JobProgress | null>(null);
   const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
 
-  // Demo mode for testing UI without backend
-  const [demoMode, setDemoMode] = useState(false);
+
 
   // Load white noise file on component mount
   useEffect(() => {
@@ -96,7 +95,7 @@ const FileUploader = () => {
   const handleStartOver = useCallback(() => {
     setCurrentStep(0);
     setMp3Files([]);
-    setProcessedFiles([]);
+
     setOriginalZipName('');
     setStepCompletions([false, false, false, false]);
     if (unsubscribe) {
@@ -105,22 +104,9 @@ const FileUploader = () => {
     setIsProcessing(false);
     setProcessingError('');
     setProgress(null);
-    setDemoMode(false);
   }, []);
 
-  // Demo mode handler
-  const enableDemoMode = useCallback(() => {
-    setDemoMode(true);
-    setMp3Files([
-      { name: 'Chapter 01.mp3', size: 5242880, duration: 300 },
-      { name: 'Chapter 02.mp3', size: 4718592, duration: 270 },
-      { name: 'Chapter 03.mp3', size: 6291456, duration: 360 }
-    ]);
-    setOriginalZipName('demo-audiobook.zip');
-    setJobId('demo-job-123');
-    setStepCompletions([true, false, false, false, false]);
-    setCurrentStep(1); // Move to configure step
-  }, []);
+
 
   // Start processing when leaving Preview
   const startProcessingFlow = useCallback(async () => {
@@ -194,22 +180,10 @@ const FileUploader = () => {
       title: 'Upload',
       description: 'Upload your ZIP file',
       component: (
-        <div className="space-y-4">
-          <UploadStep
-            onFilesExtracted={handleFilesExtracted}
-            onError={handleUploadError}
-          />
-          {!demoMode && mp3Files.length === 0 && (
-            <div className="text-center">
-              <button
-                onClick={enableDemoMode}
-                className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
-              >
-                🎭 Enable Demo Mode (Test UI)
-              </button>
-            </div>
-          )}
-        </div>
+        <UploadStep
+          onFilesExtracted={handleFilesExtracted}
+          onError={handleUploadError}
+        />
       ),
       isComplete: stepCompletions[0]
     },
