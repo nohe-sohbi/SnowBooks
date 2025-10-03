@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+
 import { AudioCard, ProcessingCard } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { AudioIcon } from '@/components/ui/icon';
-import { VolumeX, Volume1, Volume2, Info, Sliders, Waves, Settings, Save } from 'lucide-react';
+import { VolumeX, Volume1, Volume2, Info, Sliders, Waves } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ConfigureStepProps {
@@ -63,14 +63,7 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
     return 'Enveloping - Full ambient experience';
   };
 
-  const presetVolumes = [
-    { value: 0, label: 'Silent', shortLabel: '0%', description: 'No white noise', color: 'ice-gray', icon: 'mute' },
-    { value: 0.1, label: 'Whisper', shortLabel: '10%', description: 'Very subtle', color: 'winter-blue', icon: 'low' },
-    { value: 0.3, label: 'Gentle', shortLabel: '30%', description: 'Recommended', color: 'winter-blue', icon: 'medium', recommended: true },
-    { value: 0.5, label: 'Balanced', shortLabel: '50%', description: 'Moderate', color: 'winter-blue', icon: 'medium' },
-    { value: 0.7, label: 'Immersive', shortLabel: '70%', description: 'Rich experience', color: 'warm-amber', icon: 'high' },
-    { value: 1.0, label: 'Enveloping', shortLabel: '100%', description: 'Maximum', color: 'warm-amber', icon: 'high' }
-  ];
+
 
   return (
     <div className="space-y-8">
@@ -236,107 +229,7 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
           </div>
         </ProcessingCard>
 
-        {/* Winter-Themed Preset Buttons */}
-        <AudioCard className="p-8">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Settings className="h-6 w-6 text-winter-blue-600 dark:text-winter-blue-400" />
-              <h4 className="text-xl font-semibold text-winter-blue-900 dark:text-winter-blue-100">
-                Quick Presets
-              </h4>
-            </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {presetVolumes.map((preset) => {
-                const isSelected = Math.abs(localVolume - preset.value) < 0.01;
-                const colorClass = preset.color === 'ice-gray' ? 'ice-gray' :
-                                 preset.color === 'warm-amber' ? 'warm-amber' : 'winter-blue';
-
-                return (
-                  <Button
-                    key={preset.value}
-                    variant="outline"
-                    onClick={() => handleVolumeChange(preset.value)}
-                    className={cn(
-                      "relative h-auto p-6 flex flex-col items-center gap-3 transition-all duration-300 group",
-                      "border-2 hover:scale-105 focus:scale-105",
-                      isSelected
-                        ? `border-${colorClass}-500 bg-gradient-to-br from-${colorClass}-50 to-${colorClass}-100 dark:from-${colorClass}-950 dark:to-${colorClass}-900 shadow-lg`
-                        : `border-ice-gray-200 dark:border-ice-gray-700 hover:border-${colorClass}-300 dark:hover:border-${colorClass}-600 hover:bg-${colorClass}-50 dark:hover:bg-${colorClass}-950/50`,
-                      preset.recommended && "ring-2 ring-warm-amber-400 ring-offset-2"
-                    )}
-                  >
-                    {/* Preset Icon */}
-                    <div className={cn(
-                      "p-3 rounded-full transition-all duration-300",
-                      isSelected
-                        ? `bg-${colorClass}-500 text-white`
-                        : `bg-${colorClass}-100 dark:bg-${colorClass}-900 text-${colorClass}-600 dark:text-${colorClass}-400 group-hover:bg-${colorClass}-200 dark:group-hover:bg-${colorClass}-800`
-                    )}>
-                      {preset.icon === 'mute' && <VolumeX className="h-5 w-5" />}
-                      {preset.icon === 'low' && <Volume1 className="h-5 w-5" />}
-                      {preset.icon === 'medium' && <Volume2 className="h-5 w-5" />}
-                      {preset.icon === 'high' && <Volume2 className="h-5 w-5" />}
-                    </div>
-
-                    {/* Preset Info */}
-                    <div className="text-center space-y-1">
-                      <div className="font-semibold text-lg">
-                        {preset.label}
-                      </div>
-                      <div className={cn(
-                        "text-sm font-mono",
-                        isSelected ? `text-${colorClass}-600 dark:text-${colorClass}-400` : "text-ice-gray-500"
-                      )}>
-                        {preset.shortLabel}
-                      </div>
-                      <div className="text-xs text-ice-gray-500 dark:text-ice-gray-400">
-                        {preset.description}
-                      </div>
-                    </div>
-
-                    {/* Recommended Badge */}
-                    {preset.recommended && (
-                      <div className="absolute -top-2 -right-2 px-2 py-1 bg-warm-amber-500 text-white text-xs font-medium rounded-full shadow-sm">
-                        Recommended
-                      </div>
-                    )}
-
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                      <div className="absolute top-2 right-2">
-                        <div className={`w-3 h-3 bg-${colorClass}-500 rounded-full animate-pulse`} />
-                      </div>
-                    )}
-
-                    {/* Mini Waveform */}
-                    <div className="flex items-center gap-0.5 mt-1">
-                      {Array.from({ length: 8 }, (_, i) => (
-                        <div
-                          key={i}
-                          className={cn(
-                            "w-1 rounded-full transition-all duration-300",
-                            isSelected ? `bg-${colorClass}-400` : "bg-ice-gray-300 dark:bg-ice-gray-600"
-                          )}
-                          style={{
-                            height: `${Math.max(2, preset.value * 16 + Math.sin(i) * 2)}px`
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Custom Preset Hint */}
-            <div className="text-center p-4 bg-gradient-to-r from-ice-gray-50 to-winter-blue-50 dark:from-ice-gray-900 dark:to-winter-blue-950 rounded-lg border border-ice-gray-200 dark:border-ice-gray-700">
-              <p className="text-sm text-ice-gray-600 dark:text-ice-gray-400">
-                <strong>Pro Tip:</strong> Use the slider above for precise control, or choose a preset for quick setup
-              </p>
-            </div>
-          </div>
-        </AudioCard>
       </div>
 
       </div>
