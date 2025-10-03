@@ -34,19 +34,6 @@ class AudioContextManager {
   }
 }
 
-// Extract audio duration using shared AudioContext
-export const getAudioDuration = async (blob: Blob): Promise<number | undefined> => {
-  try {
-    const manager = AudioContextManager.getInstance();
-    const audioContext = await manager.getContext();
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    return audioBuffer.duration;
-  } catch {
-    return undefined;
-  }
-};
-
 // Create a mixed audio preview with white noise using shared AudioContext
 export const createMixedAudioPreview = async (
   mp3Blob: Blob,
