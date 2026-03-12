@@ -33,9 +33,9 @@ export class UploadService {
       await fs.mkdir(jobDir, { recursive: true });
       await fs.mkdir(extractDir, { recursive: true });
 
-      // Save uploaded archive file
+      // Move uploaded archive file from temp to job directory
       const archivePath = path.join(jobDir, file.originalname);
-      await fs.writeFile(archivePath, file.buffer);
+      await fs.rename(file.path, archivePath);
 
       // Extract MP3 files from archive (ZIP or RAR)
       const isRar = file.originalname.toLowerCase().endsWith('.rar');
@@ -66,6 +66,10 @@ export class UploadService {
     } catch (error) {
       // Cleanup on error
       await this.cleanupJobDirectory(jobDir);
+      // Also cleanup temp file if it still exists (e.g. rename failed)
+      if (file.path) {
+        await fs.rm(file.path, { force: true }).catch(() => {});
+      }
       throw error;
     }
   }

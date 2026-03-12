@@ -105,7 +105,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
             <Dropzone
               accept={{ 'application/zip': ['.zip'], 'application/x-rar-compressed': ['.rar'], 'application/vnd.rar': ['.rar'] }}
               maxFiles={1}
-              maxSize={500 * 1024 * 1024} // 500MB
+              maxSize={1024 * 1024 * 1024} // 1GB
               onDrop={handleDrop}
               onError={(error) => {
                 setStatus('error');
@@ -137,7 +137,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                       Drop your ZIP or RAR file here
                     </p>
                     <p className="text-ice-gray-600 dark:text-ice-gray-400 max-w-md mx-auto leading-relaxed">
-                      Or click to browse and select your audio collection (max 500MB)
+                      Or click to browse and select your audio collection (max 1GB)
                     </p>
                   </div>
 
@@ -152,7 +152,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                     </div>
                     <div className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <span>Up to 500MB</span>
+                      <span>Up to 1GB</span>
                     </div>
                   </div>
                 </div>
@@ -271,7 +271,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                           File Size Tips:
                         </h5>
                         <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
-                          <li>• Maximum file size is 500MB</li>
+                          <li>• Maximum file size is 1GB</li>
                           <li>• Try compressing your audio files</li>
                           <li>• Split large collections into smaller archives</li>
                           <li>• Remove any non-audio files from the archive</li>
