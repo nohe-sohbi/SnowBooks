@@ -38,9 +38,12 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
     setFileCount(0);
 
     try {
-      // Upload to backend API
-      setProgress(10);
-      const uploadResponse: UploadResponse = await audioProcessingAPI.uploadZip(zipFile);
+      // Upload to backend API with real progress tracking
+      setProgress(0);
+      const uploadResponse: UploadResponse = await audioProcessingAPI.uploadZip(zipFile, (percent) => {
+        // Map upload progress to 0-50% of overall progress
+        setProgress(Math.round(percent * 0.5));
+      });
 
       setProgress(50);
       setFileCount(uploadResponse.fileCount);
@@ -267,6 +270,20 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                           <li>• Check that audio files are not corrupted</li>
                           <li>• Verify file names don't contain special characters</li>
                           <li>• Try with a smaller archive first</li>
+                        </ul>
+                      </div>
+                    )}
+
+                    {(error.toLowerCase().includes('network') || error.toLowerCase().includes('timed out')) && (
+                      <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                        <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+                          Connection Tips:
+                        </h5>
+                        <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                          <li>• Check your internet connection is stable</li>
+                          <li>• Switch from mobile data to Wi-Fi if possible</li>
+                          <li>• Try moving closer to your router</li>
+                          <li>• For large files, try a faster connection</li>
                         </ul>
                       </div>
                     )}
