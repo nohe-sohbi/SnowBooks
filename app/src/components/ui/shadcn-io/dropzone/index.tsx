@@ -57,6 +57,26 @@ export const Dropzone = ({
   children,
   ...props
 }: DropzoneProps) => {
+  // Custom validator: on mobile (especially iOS), MIME types are often
+  // incorrect (e.g. application/octet-stream). Fall back to extension check.
+  const validator = (file: File) => {
+    if (!accept) return null;
+    const allowedExtensions = Object.values(accept).flat();
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (allowedExtensions.length > 0 && allowedExtensions.includes(ext)) {
+      return null; // valid
+    }
+    // Also check MIME type
+    const allowedMimes = Object.keys(accept);
+    if (allowedMimes.includes(file.type)) {
+      return null; // valid
+    }
+    return {
+      code: 'file-invalid-type',
+      message: `File type must be one of: ${allowedExtensions.join(', ')}`,
+    };
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept,
     maxFiles,
@@ -64,6 +84,7 @@ export const Dropzone = ({
     minSize,
     onError,
     disabled,
+    validator,
     onDrop: (acceptedFiles, fileRejections, event) => {
       if (fileRejections.length > 0) {
         const message = fileRejections.at(0)?.errors.at(0)?.message;

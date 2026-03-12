@@ -90,17 +90,41 @@ class AudioProcessingAPI {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${this.baseURL}/upload`, {
-      method: 'POST',
-      body: formData,
+    // Use XMLHttpRequest for upload progress tracking and better mobile support
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${this.baseURL}/upload`);
+
+      // 10 minute timeout for large files on mobile connections
+      xhr.timeout = 600000;
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            reject(new Error('Invalid server response'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.message || 'Upload failed'));
+          } catch {
+            reject(new Error(`Upload failed (HTTP ${xhr.status})`));
+          }
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Network error during upload. Check your connection and try again.'));
+      };
+
+      xhr.ontimeout = () => {
+        reject(new Error('Upload timed out. Try with a smaller file or a faster connection.'));
+      };
+
+      xhr.send(formData);
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
-      throw new Error(error.message || 'Upload failed');
-    }
-
-    return response.json();
   }
 
   // Get job status and metadata
