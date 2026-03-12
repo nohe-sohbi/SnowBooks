@@ -13,7 +13,9 @@ import { JobProgress } from '@/common/interfaces/job.interface';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.WS_CORS_ORIGIN || 'http://localhost:5173',
+    origin: (process.env.WS_CORS_ORIGIN || 'http://localhost:5173').includes(',')
+      ? (process.env.WS_CORS_ORIGIN || '').split(',').map(o => o.trim())
+      : process.env.WS_CORS_ORIGIN || 'http://localhost:5173',
     credentials: true,
   },
   namespace: '/progress',

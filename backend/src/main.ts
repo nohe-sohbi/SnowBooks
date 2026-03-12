@@ -17,9 +17,13 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration
+  // CORS configuration — supports comma-separated origins
+  const corsOrigin = configService.get('CORS_ORIGIN') || '';
+  const origins = corsOrigin.includes(',')
+    ? corsOrigin.split(',').map((o: string) => o.trim())
+    : corsOrigin;
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN'),
+    origin: origins,
     credentials: configService.get('CORS_CREDENTIALS') === 'true',
   });
 
