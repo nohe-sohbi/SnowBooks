@@ -85,18 +85,54 @@ class AudioProcessingAPI {
     this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   }
 
-  // Upload ZIP file containing MP3s
-  async uploadZip(file: File): Promise<UploadResponse> {
+  // Upload ZIP file containing MP3s with automatic retry for network errors
+  async uploadZip(file: File, onProgress?: (percent: number) => void): Promise<UploadResponse> {
+    const maxRetries = 3;
+    const baseDelay = 2000; // 2 seconds
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await this.attemptUpload(file, onProgress);
+      } catch (err) {
+        const isNetworkError = err instanceof Error && err.message.includes('Network error');
+        const isTimeout = err instanceof Error && err.message.includes('timed out');
+        const isRetryable = isNetworkError || isTimeout;
+
+        if (!isRetryable || attempt === maxRetries) {
+          throw err;
+        }
+
+        // Exponential backoff: 2s, 4s, 8s
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.warn(`Upload attempt ${attempt + 1} failed, retrying in ${delay / 1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    // Unreachable, but TypeScript needs it
+    throw new Error('Upload failed after retries');
+  }
+
+  private attemptUpload(file: File, onProgress?: (percent: number) => void): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
+    const uploadURL = `${this.baseURL}/upload`;
 
     // Use XMLHttpRequest for upload progress tracking and better mobile support
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${this.baseURL}/upload`);
+      xhr.open('POST', uploadURL);
 
       // 10 minute timeout for large files on mobile connections
       xhr.timeout = 600000;
+
+      if (onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            onProgress(Math.round((event.loaded / event.total) * 100));
+          }
+        };
+      }
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
@@ -105,6 +141,14 @@ class AudioProcessingAPI {
           } catch {
             reject(new Error('Invalid server response'));
           }
+        } else if (xhr.status === 0) {
+          // Status 0 with onload is unusual but can indicate CORS or aborted request
+          console.error('[Upload] Response with status 0 — likely CORS or connection issue', {
+            url: uploadURL,
+            readyState: xhr.readyState,
+            responseText: xhr.responseText,
+          });
+          reject(new Error('Network error during upload. The server may be unreachable or blocking the request (CORS).'));
         } else {
           try {
             const error = JSON.parse(xhr.responseText);
@@ -116,12 +160,44 @@ class AudioProcessingAPI {
       };
 
       xhr.onerror = () => {
-        reject(new Error('Network error during upload. Check your connection and try again.'));
+        // XHR onerror gives no detail — log everything we can to help diagnose
+        const isCrossOrigin = !uploadURL.startsWith(window.location.origin);
+        console.error('[Upload] XHR onerror fired', {
+          url: uploadURL,
+          origin: window.location.origin,
+          isCrossOrigin,
+          readyState: xhr.readyState,
+          status: xhr.status,
+          statusText: xhr.statusText,
+          responseType: xhr.responseType,
+          fileSize: file.size,
+          fileName: file.name,
+        });
+
+        if (isCrossOrigin) {
+          reject(new Error(
+            `Network error during upload. The API URL (${this.baseURL}) does not match the app origin (${window.location.origin}) — this is likely a CORS misconfiguration.`
+          ));
+        } else {
+          reject(new Error('Network error during upload. Check your connection and try again.'));
+        }
       };
 
       xhr.ontimeout = () => {
+        console.error('[Upload] XHR timeout after 10 minutes', {
+          url: uploadURL,
+          fileSize: file.size,
+          fileName: file.name,
+        });
         reject(new Error('Upload timed out. Try with a smaller file or a faster connection.'));
       };
+
+      console.info('[Upload] Starting upload', {
+        url: uploadURL,
+        origin: window.location.origin,
+        fileSize: file.size,
+        fileName: file.name,
+      });
 
       xhr.send(formData);
     });
