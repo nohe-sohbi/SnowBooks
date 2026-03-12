@@ -82,7 +82,7 @@ class AudioProcessingAPI {
   private errorCallbacks = new Map<string, (error: string) => void>();
 
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    this.baseURL = import.meta.env.VITE_API_URL || '/api';
   }
 
   // Upload ZIP file containing MP3s with automatic retry for network errors
@@ -285,7 +285,7 @@ class AudioProcessingAPI {
       return this.socket;
     }
 
-    const wsURL = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
+    const wsURL = import.meta.env.VITE_WS_URL || window.location.origin;
     this.socket = io(`${wsURL}/progress`, {
       transports: ['websocket', 'polling'],
     });
