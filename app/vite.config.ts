@@ -21,5 +21,20 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
     },
+    proxy: {
+      '/api': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://backend:3001',
+        ws: true,
+        changeOrigin: true,
+      },
+      '/files': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+      },
+    },
   },
 })
