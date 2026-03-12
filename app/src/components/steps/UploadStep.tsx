@@ -103,7 +103,13 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
             </div>
 
             <Dropzone
-              accept={{ 'application/zip': ['.zip'], 'application/x-rar-compressed': ['.rar'], 'application/vnd.rar': ['.rar'] }}
+              accept={{
+                'application/zip': ['.zip'],
+                'application/x-zip-compressed': ['.zip'],
+                'application/x-rar-compressed': ['.rar'],
+                'application/vnd.rar': ['.rar'],
+                'application/octet-stream': ['.zip', '.rar'],
+              }}
               maxFiles={1}
               maxSize={1024 * 1024 * 1024} // 1GB
               onDrop={handleDrop}
