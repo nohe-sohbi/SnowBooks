@@ -16,6 +16,7 @@ export default defineConfig({
     format: 'es'
   },
   server: {
+    allowedHosts: ['snowbooks.sohbi.dev'],
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
