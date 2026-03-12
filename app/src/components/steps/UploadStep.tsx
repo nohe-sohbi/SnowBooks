@@ -52,9 +52,9 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
       // Check if files were found
       if (jobData.mp3Files.length === 0) {
-        setError('No MP3 files found in the ZIP archive');
+        setError('No MP3 files found in the archive');
         setStatus('error');
-        onError('No MP3 files found in the ZIP archive');
+        onError('No MP3 files found in the archive');
         return;
       }
 
@@ -71,7 +71,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
       onFilesExtracted(mp3Files, uploadResponse.originalZipName, uploadResponse.jobId);
       
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to process ZIP file';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process archive file';
       setError(errorMessage);
       setStatus('error');
       onError(errorMessage);
@@ -98,12 +98,12 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                 Upload Your Audio Collection
               </h3>
               <p className="text-ice-gray-600 dark:text-ice-gray-400 leading-relaxed">
-                Drop your ZIP file containing MP3 chapters to begin the winter audio processing experience
+                Drop your ZIP or RAR file containing MP3 chapters to begin the winter audio processing experience
               </p>
             </div>
 
             <Dropzone
-              accept={{ 'application/zip': ['.zip'] }}
+              accept={{ 'application/zip': ['.zip'], 'application/x-rar-compressed': ['.rar'], 'application/vnd.rar': ['.rar'] }}
               maxFiles={1}
               maxSize={500 * 1024 * 1024} // 500MB
               onDrop={handleDrop}
@@ -134,7 +134,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
                   <div className="space-y-3 text-center">
                     <p className="text-xl font-semibold text-winter-blue-900 dark:text-winter-blue-100">
-                      Drop your ZIP file here
+                      Drop your ZIP or RAR file here
                     </p>
                     <p className="text-ice-gray-600 dark:text-ice-gray-400 max-w-md mx-auto leading-relaxed">
                       Or click to browse and select your audio collection (max 500MB)
@@ -148,7 +148,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                     </div>
                     <div className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <span>ZIP archives only</span>
+                      <span>ZIP & RAR archives</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -176,7 +176,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                   <p className="text-ice-gray-600 dark:text-ice-gray-400">
                     {fileCount > 0
                       ? `Discovered ${fileCount} MP3 files in your archive`
-                      : 'Scanning and extracting audio files from your ZIP archive...'
+                      : 'Scanning and extracting audio files from your archive...'
                     }
                   </p>
                 </div>
@@ -257,10 +257,10 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                           Audio File Tips:
                         </h5>
                         <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
-                          <li>• Ensure your ZIP contains only MP3 files</li>
+                          <li>• Ensure your archive contains only MP3 files</li>
                           <li>• Check that audio files are not corrupted</li>
                           <li>• Verify file names don't contain special characters</li>
-                          <li>• Try with a smaller ZIP file first</li>
+                          <li>• Try with a smaller archive first</li>
                         </ul>
                       </div>
                     )}
@@ -273,8 +273,8 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                         <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
                           <li>• Maximum file size is 500MB</li>
                           <li>• Try compressing your audio files</li>
-                          <li>• Split large collections into smaller ZIP files</li>
-                          <li>• Remove any non-audio files from the ZIP</li>
+                          <li>• Split large collections into smaller archives</li>
+                          <li>• Remove any non-audio files from the archive</li>
                         </ul>
                       </div>
                     )}

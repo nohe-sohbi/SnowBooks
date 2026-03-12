@@ -23,8 +23,9 @@ export class UploadController {
         fileSize: 1073741824, // 1GB
       },
       fileFilter: (req, file, callback) => {
-        if (!file.originalname.toLowerCase().endsWith('.zip')) {
-          return callback(new BadRequestException('Only ZIP files are allowed'), false);
+        const name = file.originalname.toLowerCase();
+        if (!name.endsWith('.zip') && !name.endsWith('.rar')) {
+          return callback(new BadRequestException('Only ZIP and RAR files are allowed'), false);
         }
         callback(null, true);
       },
@@ -35,7 +36,7 @@ export class UploadController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const jobData = await this.uploadService.handleZipUpload(file);
+    const jobData = await this.uploadService.handleArchiveUpload(file);
 
     return {
       jobId: jobData.id,
