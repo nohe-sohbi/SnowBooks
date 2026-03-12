@@ -274,7 +274,18 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                       </div>
                     )}
 
-                    {(error.toLowerCase().includes('network') || error.toLowerCase().includes('timed out')) && (
+                    {error.toLowerCase().includes('cors') && (
+                      <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                        <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+                          Server Configuration Issue:
+                        </h5>
+                        <p className="text-sm text-red-700 dark:text-red-300">
+                          The app cannot reach the backend server. This usually means the API URL or CORS settings need to be updated for your deployment. Check the browser console for details.
+                        </p>
+                      </div>
+                    )}
+
+                    {(error.toLowerCase().includes('network') || error.toLowerCase().includes('timed out')) && !error.toLowerCase().includes('cors') && (
                       <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
                         <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
                           Connection Tips:
