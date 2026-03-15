@@ -244,16 +244,18 @@ export class UploadService {
 
     try {
       const jobDirs = await fs.readdir(this.uploadDir);
-      
-      for (const jobDir of jobDirs) {
-        const jobPath = path.join(this.uploadDir, jobDir);
-        const stats = await fs.stat(jobPath);
-        
-        if (stats.isDirectory() && stats.mtime < cutoffTime) {
-          await this.cleanupJobDirectory(jobPath);
-          console.log(`Cleaned up expired job: ${jobDir}`);
-        }
-      }
+
+      await Promise.all(
+        jobDirs.map(async (jobDir) => {
+          const jobPath = path.join(this.uploadDir, jobDir);
+          const stats = await fs.stat(jobPath);
+
+          if (stats.isDirectory() && stats.mtime < cutoffTime) {
+            await this.cleanupJobDirectory(jobPath);
+            console.log(`Cleaned up expired job: ${jobDir}`);
+          }
+        }),
+      );
     } catch (error) {
       console.error('Failed to cleanup expired jobs:', error);
     }
