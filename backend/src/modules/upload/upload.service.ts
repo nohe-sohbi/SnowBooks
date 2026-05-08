@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import * as path from 'path';
 import * as yauzl from 'yauzl';
 import { createExtractorFromData } from 'node-unrar-js';
@@ -20,6 +21,23 @@ export class UploadService {
     this.maxFileSize = parseInt(this.configService.get('MAX_FILE_SIZE')) || 1073741824; // 1GB
   }
 
+  public sanitizeFilename(filename: string, baseDir: string = ''): string {
+    const base = path.basename(filename).trim();
+    if (!base || base === '.' || base === '..') {
+      throw new BadRequestException('Invalid filename');
+    }
+
+    if (baseDir) {
+      const outputPath = path.join(baseDir, base);
+      const relativePath = path.relative(baseDir, outputPath);
+      if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+        throw new BadRequestException('Path traversal detected');
+      }
+    }
+
+    return base;
+  }
+
   async handleArchiveUpload(file: Express.Multer.File): Promise<JobData> {
     // Validate file
     this.validateArchiveFile(file);
@@ -34,7 +52,8 @@ export class UploadService {
       await fs.mkdir(extractDir, { recursive: true });
 
       // Move uploaded archive file from temp to job directory
-      const archivePath = path.join(jobDir, file.originalname);
+      const safeOriginalName = this.sanitizeFilename(file.originalname, jobDir);
+      const archivePath = path.join(jobDir, safeOriginalName);
       await fs.rename(file.path, archivePath);
 
       // Extract MP3 files from archive (ZIP or RAR)
@@ -50,7 +69,7 @@ export class UploadService {
       // Create job data
       const jobData: JobData = {
         id: jobId,
-        originalZipName: file.originalname,
+        originalZipName: safeOriginalName,
         mp3Files,
         whiteNoiseVolume: 0.3, // Default value
         uploadPath: jobDir,
@@ -126,7 +145,8 @@ export class UploadService {
           }
 
           try {
-            const outputPath = path.join(extractDir, path.basename(entry.fileName));
+            const safeName = this.sanitizeFilename(entry.fileName, extractDir);
+            const outputPath = path.join(extractDir, safeName);
             
             zipfile.openReadStream(entry, (err, readStream) => {
               if (err) {
@@ -134,12 +154,12 @@ export class UploadService {
                 return;
               }
 
-              const writeStream = require('fs').createWriteStream(outputPath);
+              const writeStream = createWriteStream(outputPath);
               readStream.pipe(writeStream);
 
               writeStream.on('close', () => {
                 mp3Files.push({
-                  name: path.basename(entry.fileName),
+                  name: safeName,
                   size: entry.uncompressedSize,
                   path: outputPath,
                 });
@@ -188,12 +208,13 @@ export class UploadService {
           continue;
         }
 
-        const outputPath = path.join(extractDir, path.basename(fileHeader.name));
+        const safeName = this.sanitizeFilename(fileHeader.name, extractDir);
+        const outputPath = path.join(extractDir, safeName);
         const fileData = extraction as Uint8Array;
         await fs.writeFile(outputPath, fileData);
 
         mp3Files.push({
-          name: path.basename(fileHeader.name),
+          name: safeName,
           size: fileHeader.unpSize,
           path: outputPath,
         });
