@@ -74,6 +74,22 @@ export class UploadService {
     }
   }
 
+  public sanitizeFilename(filename: string, extractDir: string): { safeName: string; outputPath: string } {
+    const safeName = path.basename(filename).trim();
+    if (!safeName || safeName === '.' || safeName === '..') {
+      throw new BadRequestException(`Invalid or unsafe filename: ${filename}`);
+    }
+
+    const outputPath = path.join(extractDir, safeName);
+    const relative = path.relative(extractDir, outputPath);
+
+    if (relative.startsWith('..' + path.sep) || relative === '..' || path.isAbsolute(relative)) {
+      throw new BadRequestException(`Path traversal detected: ${filename}`);
+    }
+
+    return { safeName, outputPath };
+  }
+
   private validateArchiveFile(file: Express.Multer.File): void {
     if (!file) {
       throw new BadRequestException('No file uploaded');
@@ -126,7 +142,7 @@ export class UploadService {
           }
 
           try {
-            const outputPath = path.join(extractDir, path.basename(entry.fileName));
+            const { safeName, outputPath } = this.sanitizeFilename(entry.fileName, extractDir);
             
             zipfile.openReadStream(entry, (err, readStream) => {
               if (err) {
@@ -139,7 +155,7 @@ export class UploadService {
 
               writeStream.on('close', () => {
                 mp3Files.push({
-                  name: path.basename(entry.fileName),
+                  name: safeName,
                   size: entry.uncompressedSize,
                   path: outputPath,
                 });
@@ -188,12 +204,12 @@ export class UploadService {
           continue;
         }
 
-        const outputPath = path.join(extractDir, path.basename(fileHeader.name));
+        const { safeName, outputPath } = this.sanitizeFilename(fileHeader.name, extractDir);
         const fileData = extraction as Uint8Array;
         await fs.writeFile(outputPath, fileData);
 
         mp3Files.push({
-          name: path.basename(fileHeader.name),
+          name: safeName,
           size: fileHeader.unpSize,
           path: outputPath,
         });
