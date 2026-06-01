@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Loading } from '@/components/ui/loading';
 import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
 import { Upload, RefreshCw, CheckCircle2 } from 'lucide-react';
-import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
+import { audioProcessingAPI, type UploadResponse } from '@/services/api';
 import { cn } from '@/lib/utils';
 import type MP3File from "@/interface/MP3File";
 
@@ -66,7 +66,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
         name: fileInfo.name,
         size: fileInfo.size,
         duration: fileInfo.duration,
-        blob: new Blob(), // Placeholder - files are now on backend
+        blob: fileInfo.blob ?? new Blob(), // demo supplies a real blob; backend mode stays empty
       }));
 
       setProgress(100);

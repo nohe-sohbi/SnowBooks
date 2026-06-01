@@ -8,7 +8,7 @@ import { SuccessAlert, ErrorAlert } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
 import { SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
 import { Download, CheckCircle2, RefreshCw, Gift, FileArchive } from 'lucide-react';
-import { audioProcessingAPI } from '@/services/audioProcessingAPI';
+import { audioProcessingAPI } from '@/services/api';
 import { formatSize } from '@/utils/formatters';
 import { cn } from '@/lib/utils';
 

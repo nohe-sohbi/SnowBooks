@@ -7,6 +7,9 @@ export interface MP3FileInfo {
   size: number;
   duration?: number;
   path: string;
+  // Optional client-side blob. Empty in real (backend) mode; populated by the
+  // demo implementation so the audio reaches the in-browser mixer.
+  blob?: Blob;
 }
 
 export interface JobData {

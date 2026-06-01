@@ -8,9 +8,12 @@ import { PreviewStep } from './steps/PreviewStep';
 import { DownloadStep } from './steps/DownloadStep';
 import { ErrorBoundary } from './ErrorBoundary';
 import type MP3File from "@/interface/MP3File";
-const WHITE_NOISE_PUBLIC_URL = '/white-noise.mp3';
 import { cleanupAudioContext } from '@/utils/audio';
-import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
+import { generateWhiteNoiseBlob } from '@/utils/renderMixedAudio';
+import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/api';
+
+const IS_DEMO = import.meta.env.VITE_DEMO_MODE === 'true';
+const WHITE_NOISE_PUBLIC_URL = `${import.meta.env.BASE_URL}white-noise.mp3`;
 import { Progress } from '@/components/ui/progress';
 
 
@@ -33,6 +36,11 @@ const FileUploader = () => {
   // Load white noise file on component mount
   useEffect(() => {
     const loadWhiteNoise = async () => {
+      if (IS_DEMO) {
+        // No backend asset on Pages: synthesize the white noise in-browser.
+        setWhiteNoiseBlob(generateWhiteNoiseBlob(10));
+        return;
+      }
       try {
         const response = await fetch(WHITE_NOISE_PUBLIC_URL);
         const blob = await response.blob();

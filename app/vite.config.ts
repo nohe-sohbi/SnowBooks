@@ -2,7 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // GitHub Pages serves the demo build from a project subpath.
+  base: mode === 'demo' ? '/SnowBooks/' : '/',
   plugins: [react()],
   css: {
     postcss: './postcss.config.js',
@@ -37,4 +39,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

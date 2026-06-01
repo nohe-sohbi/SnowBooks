@@ -1,5 +1,6 @@
 
 import FileUploader from "./components/FileUploader.tsx";
+import { DemoBanner } from "./components/DemoBanner";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
 
       {/* Main Content */}
       <div className="relative z-10">
+        <DemoBanner />
         {/* Header Section */}
         <header className="pt-8 sm:pt-12 pb-6 sm:pb-8 px-4" role="banner">
           <div className="max-w-4xl mx-auto text-center">
