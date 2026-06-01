@@ -10,7 +10,7 @@ import {
   type UploadResponse,
 } from './audioProcessingAPI';
 
-// BASE_URL is '/' in dev and '/SnowBooks/' on Pages — never an absolute path.
+// BASE_URL is '/' in dev and '/SnowBooks/' on Pages, never an absolute path.
 const SAMPLE_URL = `${import.meta.env.BASE_URL}sample-audiobook.mp3`;
 
 interface DemoJob {
@@ -46,7 +46,7 @@ class DemoAudioProcessingAPI {
     return { blob, duration };
   }
 
-  // The dropped file is ignored — the demo always processes the bundled sample.
+  // The dropped file is ignored, the demo always processes the bundled sample.
   async uploadZip(file: File, onProgress?: (percent: number) => void): Promise<UploadResponse> {
     for (let pct = 0; pct <= 100; pct += 25) {
       onProgress?.(pct);

@@ -11,13 +11,13 @@ const cardVariants = cva(
         // Frosted glass over the winter atmosphere (default surface)
         default: "glass-frost",
 
-        // Elevated frost — same glass, used where a top accent bar is added
+        // Elevated frost, same glass, used where a top accent bar is added
         elevated: "glass-frost",
 
-        // Audio studio card — cool ice-blue frost
+        // Audio studio card, cool ice-blue frost
         audio: "glass-frost-tint card-audio-hover",
 
-        // Accent card — warm amber frost
+        // Accent card, warm amber frost
         accent: "glass-frost-amber",
 
         // Glass effect card

@@ -164,7 +164,7 @@ a {
     background-attachment: fixed;
   }
 
-  /* Typography Hierarchy — Fraunces (literary) for big titles, Hanken for UI labels */
+  /* Typography Hierarchy, Fraunces (literary) for big titles, Hanken for UI labels */
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight;
   }
@@ -196,7 +196,7 @@ a {
     @apply font-mono text-sm;
   }
 
-  /* Focus styles — warm amber ring (the warmth in the cold) */
+  /* Focus styles, warm amber ring (the warmth in the cold) */
   :focus-visible {
     @apply outline-2 outline-offset-2;
     outline-color: rgb(245 158 11);
@@ -204,7 +204,7 @@ a {
 }
 
 /* ============================================================
-   Frosted winter daylight — atmosphere, frost glass, snowfall
+   Frosted winter daylight, atmosphere, frost glass, snowfall
    ============================================================ */
 
 /* Frosted-glass surfaces: literal frost over the winter atmosphere */

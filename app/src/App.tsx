@@ -3,7 +3,7 @@ import FileUploader from "./components/FileUploader.tsx";
 import { DemoBanner } from "./components/DemoBanner";
 import { WinterAtmosphere } from "./components/WinterAtmosphere";
 
-// Decorative audio waveform that gently breathes — ties the hero to "audio".
+// Decorative audio waveform that gently breathes, ties the hero to "audio".
 function Waveform() {
   const bars = [10, 18, 28, 16, 34, 22, 44, 30, 52, 36, 60, 40, 52, 30, 44, 22, 34, 16, 28, 18, 10];
   return (
@@ -88,11 +88,22 @@ function App() {
             </h1>
 
             <p
-              className="animate-rise mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ice-gray-600 sm:text-xl"
+              className="animate-rise mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-ice-gray-600 sm:text-xl"
               style={{ animationDelay: "160ms" }}
             >
-              White noise for your audiobooks. Even, calm and warm —
-              <span className="font-display italic text-ice-gray-800"> like reading while it snows.</span>
+              SnowBooks mixes a steady layer of white noise into your audiobook
+              chapters, so the narration stays clear while background sounds and
+              distractions fade into the quiet.
+            </p>
+            <p
+              className="animate-rise mx-auto mt-4 max-w-xl text-base leading-relaxed text-ice-gray-500"
+              style={{ animationDelay: "220ms" }}
+            >
+              Drop in a ZIP of MP3 chapters, set the white-noise intensity, preview
+              the mix, and download your calmer collection.{" "}
+              <span className="font-display italic text-ice-gray-700">
+                Made for reading while it snows.
+              </span>
             </p>
 
             <div className="animate-rise mt-9 flex justify-center" style={{ animationDelay: "240ms" }}>
