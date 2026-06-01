@@ -8,7 +8,7 @@
 
 :root {
   /* Winter Audio Studio Typography */
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   font-weight: 400;
 
@@ -151,16 +151,30 @@ a {
   }
 
   body {
-    @apply bg-white text-slate-900;
+    @apply text-ice-gray-800;
     margin: 0;
     min-height: 100vh;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Winter daylight: warm amber glow + cool ice glow over a snow-sky gradient */
+    background-color: #f4f8fd;
+    background-image:
+      radial-gradient(1100px 620px at 80% -10%, rgba(245, 158, 11, 0.12), transparent 60%),
+      radial-gradient(1000px 720px at 10% 6%, rgba(59, 130, 246, 0.13), transparent 55%),
+      linear-gradient(180deg, #fcfdff 0%, #eef4fb 45%, #e6eef8 100%);
+    background-attachment: fixed;
   }
 
-  /* Typography Hierarchy */
+  /* Typography Hierarchy — Fraunces (literary) for big titles, Hanken for UI labels */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
-    font-family: 'Inter', system-ui, sans-serif;
+    @apply tracking-tight;
+  }
+  h1, h2, h3 {
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+    font-weight: 600;
+  }
+  h4, h5, h6 {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-weight: 600;
   }
 
   h1 {
@@ -182,9 +196,77 @@ a {
     @apply font-mono text-sm;
   }
 
-  /* Focus styles */
+  /* Focus styles — warm amber ring (the warmth in the cold) */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-blue-500;
+    @apply outline-2 outline-offset-2;
+    outline-color: rgb(245 158 11);
+  }
+}
+
+/* ============================================================
+   Frosted winter daylight — atmosphere, frost glass, snowfall
+   ============================================================ */
+
+/* Frosted-glass surfaces: literal frost over the winter atmosphere */
+.glass-frost {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 18px 50px -20px rgba(30, 58, 138, 0.28),
+    0 2px 8px -4px rgba(30, 58, 138, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.glass-frost-tint {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(219, 234, 254, 0.42));
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 18px 50px -20px rgba(30, 58, 138, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.glass-frost-amber {
+  background: linear-gradient(160deg, rgba(255, 251, 235, 0.7), rgba(254, 243, 199, 0.45));
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(253, 230, 138, 0.7);
+  box-shadow:
+    0 18px 50px -20px rgba(180, 83, 9, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Subtle film grain to kill the flat-white feeling */
+.grain-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+/* Falling snow flake (driven by inline --vars per flake) */
+.snowflake {
+  position: absolute;
+  top: -2vh;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  animation-name: snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+@keyframes snowfall {
+  0%   { transform: translate3d(0, -4vh, 0); opacity: 0; }
+  8%   { opacity: var(--snow-opacity, 0.7); }
+  92%  { opacity: var(--snow-opacity, 0.7); }
+  100% { transform: translate3d(var(--snow-drift, 24px), 104vh, 0); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snowflake { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 
