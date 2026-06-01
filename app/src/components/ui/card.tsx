@@ -8,26 +8,26 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        // Default winter audio theme
-        default: "bg-white border-ice-gray-200 shadow-sm glow-winter dark:bg-ice-gray-900 dark:border-ice-gray-700",
+        // Frosted glass over the winter atmosphere (default surface)
+        default: "glass-frost",
 
-        // Elevated card with gradient
-        elevated: "bg-gradient-to-br from-white to-ice-gray-50 border-ice-gray-200 shadow-lg glow-winter dark:from-ice-gray-900 dark:to-ice-gray-800 dark:border-ice-gray-600",
-        
-        // Audio studio themed card
-        audio: "bg-gradient-to-br from-winter-blue-50 to-ice-gray-50 border-winter-blue-200 shadow-md card-audio-hover dark:from-winter-blue-950 dark:to-ice-gray-900 dark:border-winter-blue-800",
+        // Elevated frost, same glass, used where a top accent bar is added
+        elevated: "glass-frost",
 
-        // Accent card with warm amber
-        accent: "bg-gradient-to-br from-warm-amber-50 to-orange-50 border-warm-amber-200 shadow-md glow-audio dark:from-warm-amber-950 dark:to-orange-950 dark:border-warm-amber-800",
+        // Audio studio card, cool ice-blue frost
+        audio: "glass-frost-tint card-audio-hover",
+
+        // Accent card, warm amber frost
+        accent: "glass-frost-amber",
 
         // Glass effect card
-        glass: "bg-white/80 backdrop-blur-sm border-white/20 shadow-lg hover:bg-white/90 state-transition dark:bg-ice-gray-900/80 dark:border-ice-gray-700/50",
+        glass: "glass-frost state-transition hover:-translate-y-0.5",
 
         // Interactive card
-        interactive: "bg-white border-ice-gray-200 shadow-sm hover:shadow-lg hover:border-winter-blue-300 scale-hover cursor-pointer dark:bg-ice-gray-900 dark:border-ice-gray-700 dark:hover:border-winter-blue-600",
-        
+        interactive: "glass-frost hover:shadow-xl hover:-translate-y-0.5 scale-hover cursor-pointer",
+
         // Outline only
-        outline: "bg-transparent border-ice-gray-300 hover:bg-ice-gray-50 dark:border-ice-gray-600 dark:hover:bg-ice-gray-800/50",
+        outline: "bg-white/40 border-ice-gray-300/70 hover:bg-white/60",
       },
       size: {
         sm: "p-4",
