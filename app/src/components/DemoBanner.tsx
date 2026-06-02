@@ -17,6 +17,7 @@ export function DemoBanner() {
           target="_blank"
           rel="noreferrer"
           className="underline font-medium hover:opacity-80 whitespace-nowrap"
+          data-umami-event="repo_click"
         >
           Clone the repo for the full app →
         </a>

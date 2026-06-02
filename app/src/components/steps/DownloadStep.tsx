@@ -191,6 +191,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                     disabled={isProcessing}
                     size="lg"
                     className="bg-gradient-to-r from-warm-amber-500 to-warm-amber-600 hover:from-warm-amber-600 hover:to-warm-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px]"
+                    data-umami-event="demo_download"
                   >
                     <Download className="h-5 w-5 mr-2" />
                     Download Winter Collection
