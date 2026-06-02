@@ -2,6 +2,12 @@
 
 A modern web application for processing audiobook files by mixing them with white noise. Built with React frontend and NestJS backend, featuring real-time progress updates and high-quality audio processing.
 
+> **Live demo:** [nohe-sohbi.github.io/SnowBooks](https://nohe-sohbi.github.io/SnowBooks/) runs the whole flow in your browser with no backend, mixing a built-in sample clip so you can try it in a few clicks. The full version (real FFmpeg processing on your own files) is the Docker app described below.
+
+<p align="center">
+  <img src=".github/assets/hero.png" alt="SnowBooks home screen" width="820">
+</p>
+
 ## ✨ Features
 
 - **📁 ZIP File Upload**: Upload ZIP files containing multiple MP3 audiobook files
@@ -12,6 +18,21 @@ A modern web application for processing audiobook files by mixing them with whit
 - **🐳 Docker Ready**: Complete containerized development and production setup
 - **🔄 Job Queue**: Redis-based background processing with Bull queue
 - **📊 Progress Tracking**: Detailed progress information with time estimates
+
+## 📸 Screenshots
+
+A four-step flow, from a ZIP of chapters to a winter-enhanced download.
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src=".github/assets/step-1-upload.png" alt="Upload step"><br><sub><b>1. Upload</b> a ZIP of your MP3 chapters.</sub></td>
+    <td width="50%" valign="top"><img src=".github/assets/step-2-configure.png" alt="Configure step"><br><sub><b>2. Configure</b> the white-noise intensity.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src=".github/assets/step-3-preview.png" alt="Preview step"><br><sub><b>3. Preview</b> the mix before processing.</sub></td>
+    <td width="50%" valign="top"><img src=".github/assets/step-4-download.png" alt="Download step"><br><sub><b>4. Download</b> your winter-enhanced collection.</sub></td>
+  </tr>
+</table>
 
 ## 🏗️ Architecture
 
