@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { StepWizard } from './StepWizard';
 import { UploadStep } from './steps/UploadStep';
 import { ConfigureStep } from './steps/ConfigureStep';
@@ -12,6 +12,13 @@ const WHITE_NOISE_PUBLIC_URL = '/white-noise.mp3';
 import { cleanupAudioContext } from '@/utils/audio';
 import { audioProcessingAPI, type JobProgress, type ProcessingConfig } from '@/services/audioProcessingAPI';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { useAnnouncer } from '@/hooks/useAnnouncer';
+import { formatTimeRemaining } from '@/utils/formatters';
+
+// Human-readable labels for each wizard step, used for screen-reader
+// announcements when the active step changes.
+const STEP_LABELS = ['Upload', 'Configure', 'Preview', 'Download'] as const;
 
 
 const FileUploader = () => {
@@ -28,7 +35,18 @@ const FileUploader = () => {
   const [progress, setProgress] = useState<JobProgress | null>(null);
   const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
 
+  const announce = useAnnouncer();
+  // Tracks the last file index we announced so we don't repeat announcements
+  // on every progress tick (only when the current file actually changes).
+  const lastAnnouncedFileRef = useRef<number>(-1);
 
+  // Announce the active step to assistive technology whenever it changes.
+  useEffect(() => {
+    const label = STEP_LABELS[currentStep];
+    if (label) {
+      announce(`Step ${currentStep + 1} of ${STEP_LABELS.length}: ${label}.`);
+    }
+  }, [currentStep, announce]);
 
   // Load white noise file on component mount
   useEffect(() => {
@@ -64,13 +82,13 @@ const FileUploader = () => {
   }, [unsubscribe]);
 
   // Step completion handlers
-  const markStepComplete = (stepIndex: number) => {
+  const markStepComplete = useCallback((stepIndex: number) => {
     setStepCompletions(prev => {
       const newCompletions = [...prev];
       newCompletions[stepIndex] = true;
       return newCompletions;
     });
-  };
+  }, []);
 
   // Memoized step event handlers to prevent unnecessary re-renders
   const handleFilesExtracted = useCallback((files: MP3File[], zipName: string, uploadJobId: string) => {
@@ -78,17 +96,19 @@ const FileUploader = () => {
     setOriginalZipName(zipName);
     setJobId(uploadJobId);
     markStepComplete(0);
+    announce(`${files.length} audio ${files.length === 1 ? 'file' : 'files'} extracted from ${zipName}.`);
     setCurrentStep(1); // Move to configure step
-  }, []);
+  }, [announce, markStepComplete]);
 
   const handleUploadError = useCallback((error: string) => {
     console.error('Upload error:', error);
-  }, []);
+    announce(`Upload failed: ${error}`, 'assertive');
+  }, [announce]);
 
   const handleVolumeChange = useCallback((volume: number) => {
     setWhiteNoiseVolume(volume);
     markStepComplete(1); // Mark configure step as complete when volume is set
-  }, []);
+  }, [markStepComplete]);
 
 
 
@@ -101,10 +121,32 @@ const FileUploader = () => {
     if (unsubscribe) {
       unsubscribe();
     }
+    setUnsubscribe(null);
     setIsProcessing(false);
     setProcessingError('');
     setProgress(null);
-  }, []);
+    lastAnnouncedFileRef.current = -1;
+  }, [unsubscribe]);
+
+  // Cancel an in-flight processing job and return the user to an idle state.
+  const handleCancelProcessing = useCallback(async () => {
+    if (unsubscribe) {
+      unsubscribe();
+      setUnsubscribe(null);
+    }
+    try {
+      if (jobId) {
+        await audioProcessingAPI.cancelJob(jobId);
+      }
+    } catch (e) {
+      // We are tearing the job down regardless; a failed cancel call is non-fatal.
+      console.warn('Cancel request failed:', e);
+    }
+    setIsProcessing(false);
+    setProgress(null);
+    lastAnnouncedFileRef.current = -1;
+    announce('Processing cancelled.');
+  }, [unsubscribe, jobId, announce]);
 
 
 
@@ -115,19 +157,31 @@ const FileUploader = () => {
       setIsProcessing(true);
       setProcessingError('');
       setProgress(null);
+      lastAnnouncedFileRef.current = -1;
+      announce('Processing started.');
 
       const unsub = audioProcessingAPI.subscribeToProgress(
         jobId,
-        (p) => setProgress(p),
+        (p) => {
+          setProgress(p);
+          // Announce only when the file being processed changes, to avoid
+          // flooding screen-reader users with every progress tick.
+          if (p.currentFileName && p.currentFileIndex !== lastAnnouncedFileRef.current) {
+            lastAnnouncedFileRef.current = p.currentFileIndex;
+            announce(`Processing file ${p.currentFileIndex + 1} of ${p.totalFiles}: ${p.currentFileName}.`);
+          }
+        },
         () => {
           // processing completed successfully
           setIsProcessing(false);
+          announce('Processing complete. Your collection is ready to download.', 'assertive');
           markStepComplete(2); // mark preview as completed
           setCurrentStep(3);   // go directly to download
         },
         (err) => {
           setProcessingError(err);
           setIsProcessing(false);
+          announce(`Processing failed: ${err}`, 'assertive');
         }
       );
       setUnsubscribe(() => unsub);
@@ -137,11 +191,12 @@ const FileUploader = () => {
       } as ProcessingConfig;
 
       await audioProcessingAPI.startProcessing(jobId, config);
-    } catch (e) {
+    } catch {
       setProcessingError('Failed to start processing');
       setIsProcessing(false);
+      announce('Failed to start processing.', 'assertive');
     }
-  }, [jobId, whiteNoiseVolume, markStepComplete]);
+  }, [jobId, whiteNoiseVolume, markStepComplete, announce]);
 
   // Navigation handlers
   const handleNext = () => {
@@ -249,13 +304,56 @@ const FileUploader = () => {
     <div className="space-y-8 relative">
       {/* Processing Overlay */}
       {isProcessing && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 dark:bg-black/50 backdrop-blur-sm">
+        <div
+          className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 dark:bg-black/50 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Audio processing in progress"
+        >
           <div className="w-full max-w-md p-6 rounded-xl border bg-white dark:bg-ice-gray-900 shadow-lg">
-            <div className="text-center mb-4 font-medium">Processing audio…</div>
-            <Progress value={progress?.totalProgress ?? 0} variant="audio" />
-            {processingError && (
-              <div className="mt-3 text-sm text-red-600">{processingError}</div>
+            <div className="text-center mb-1 font-medium">Processing audio…</div>
+
+            {/* Current file being processed */}
+            {progress?.currentFileName ? (
+              <div className="mb-4 text-center text-sm text-ice-gray-600 dark:text-ice-gray-400">
+                <span className="block truncate" title={progress.currentFileName}>
+                  {progress.currentFileName}
+                </span>
+                <span className="tabular-nums">
+                  File {Math.min(progress.currentFileIndex + 1, progress.totalFiles)} of {progress.totalFiles}
+                </span>
+              </div>
+            ) : (
+              <div className="mb-4 text-center text-sm text-ice-gray-600 dark:text-ice-gray-400">
+                Preparing your files…
+              </div>
             )}
+
+            <Progress value={progress?.totalProgress ?? 0} variant="audio" />
+
+            {/* Percent + estimated time remaining */}
+            <div className="mt-2 flex items-center justify-between text-xs text-ice-gray-500 dark:text-ice-gray-400">
+              <span className="tabular-nums">{Math.round(progress?.totalProgress ?? 0)}%</span>
+              {formatTimeRemaining(progress?.estimatedTimeRemaining) && (
+                <span className="tabular-nums">
+                  ~{formatTimeRemaining(progress?.estimatedTimeRemaining)} remaining
+                </span>
+              )}
+            </div>
+
+            {processingError && (
+              <div className="mt-3 text-sm text-red-600" role="alert">{processingError}</div>
+            )}
+
+            <div className="mt-5 flex justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { void handleCancelProcessing(); }}
+              >
+                Cancel processing
+              </Button>
+            </div>
           </div>
         </div>
       )}

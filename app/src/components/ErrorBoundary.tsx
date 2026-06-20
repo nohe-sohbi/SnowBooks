@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
         title = "Something went wrong",
         description,
         showRetry = true,
-        showDetails = process.env.NODE_ENV === 'development'
+        showDetails = import.meta.env.DEV
       } = this.props;
 
       const errorMessage = description || this.state.error?.message || 'An unexpected error occurred';

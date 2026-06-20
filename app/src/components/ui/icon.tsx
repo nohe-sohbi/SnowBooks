@@ -85,7 +85,7 @@ const Icon = React.forwardRef<SVGSVGElement, IconProps>(
 Icon.displayName = "Icon"
 
 // Predefined icon components for common use cases
-interface CommonIconProps extends Omit<IconProps, "icon"> {}
+type CommonIconProps = Omit<IconProps, "icon">;
 
 // Audio Studio Icons
 export const AudioIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(

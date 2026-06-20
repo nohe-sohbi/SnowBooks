@@ -37,7 +37,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Memoize expensive calculations to prevent unnecessary re-renders
   const { totalSize, totalDuration } = useMemo(() => {

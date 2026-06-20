@@ -321,7 +321,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                     Try Again
                   </Button>
                   <Button
-                    onClick={() => window.open('https://support.example.com/audio-upload', '_blank')}
+                    onClick={() => window.open('https://github.com/nohe-sohbi/SnowBooks/issues', '_blank', 'noopener,noreferrer')}
                     variant="ghost"
                     size="sm"
                     className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"

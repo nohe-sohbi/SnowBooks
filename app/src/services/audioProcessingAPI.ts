@@ -33,13 +33,17 @@ export interface JobProgress {
   totalFiles: number;
 }
 
-export enum JobStatus {
-  UPLOADED = 'uploaded',
-  PROCESSING = 'processing',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-}
+// Plain const object (not a TS `enum`) so the file stays compatible with the
+// `erasableSyntaxOnly` compiler option used by this project's bundler setup.
+export const JobStatus = {
+  UPLOADED: 'uploaded',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled',
+} as const;
+
+export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus];
 
 export interface ProcessingConfig {
   whiteNoiseVolume: number;
@@ -64,7 +68,7 @@ export interface ProgressUpdate {
 
 export interface JobCompletion {
   jobId: string;
-  result: any;
+  result: unknown;
   timestamp: string;
 }
 
@@ -78,7 +82,7 @@ class AudioProcessingAPI {
   private baseURL: string;
   private socket: Socket | null = null;
   private progressCallbacks = new Map<string, (progress: JobProgress) => void>();
-  private completionCallbacks = new Map<string, (result: any) => void>();
+  private completionCallbacks = new Map<string, (result: unknown) => void>();
   private errorCallbacks = new Map<string, (error: string) => void>();
 
   constructor() {
@@ -326,7 +330,7 @@ class AudioProcessingAPI {
   subscribeToProgress(
     jobId: string,
     onProgress: (progress: JobProgress) => void,
-    onCompletion?: (result: any) => void,
+    onCompletion?: (result: unknown) => void,
     onError?: (error: string) => void,
   ): () => void {
     const socket = this.connectWebSocket();
@@ -368,7 +372,7 @@ class AudioProcessingAPI {
     try {
       const response = await fetch(`${this.baseURL.replace('/api', '')}/api/health`);
       return response.ok;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
