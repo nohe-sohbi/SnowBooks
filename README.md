@@ -18,6 +18,8 @@ A modern web application for processing audiobook files by mixing them with whit
 - **🐳 Docker Ready**: Complete containerized development and production setup
 - **🔄 Job Queue**: Redis-based background processing with Bull queue
 - **📊 Progress Tracking**: Detailed progress information with time estimates
+- **🛑 Cancellable Processing**: Stop an in-flight job at any time, with a live view of the current file and estimated time remaining
+- **♿ Accessibility**: Screen-reader announcements for every step, upload result, and processing update via ARIA live regions
 
 ## 📸 Screenshots
 
@@ -100,6 +102,16 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
    ```
 
 ## 🧪 Testing
+
+### Frontend Unit Tests (Vitest)
+```bash
+cd app
+npm test          # run once
+npm run test:watch # watch mode
+```
+Covers the formatting helpers, the screen-reader announcer, and the wizard's
+accessibility wiring. These run automatically in CI on every pull request
+(see `.github/workflows/ci.yml`), alongside `npm run lint` and `npm run build`.
 
 ### End-to-End Testing
 ```bash
