@@ -78,7 +78,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      const fileName = info.fileName || `${originalZipName?.replace(/\.zip$/i, '') || 'processed-audio'}-with-white-noise.zip`;
+      const fileName = info?.fileName || `${originalZipName?.replace(/\.zip$/i, '') || 'processed-audio'}-with-white-noise.zip`;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();

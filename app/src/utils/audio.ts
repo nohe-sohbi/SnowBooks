@@ -13,7 +13,10 @@ class AudioContextManager {
 
   async getContext(): Promise<AudioContext> {
     if (!this.audioContext || this.audioContext.state === 'closed' || this.isClosing) {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      this.audioContext = new AudioContextCtor();
       this.isClosing = false;
     }
 
