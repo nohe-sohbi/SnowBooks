@@ -10,6 +10,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 import { UploadResponseDto } from '@/common/dto/upload.dto';
+import { isArchiveFile, isMediaFile } from '@/common/media-types';
+
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024 * 1024; // 5GB — large enough for films
 
 @Controller('upload')
 export class UploadController {
@@ -20,12 +23,14 @@ export class UploadController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize: 1073741824, // 1GB
+        fileSize: MAX_UPLOAD_SIZE,
       },
       fileFilter: (req, file, callback) => {
-        const name = file.originalname.toLowerCase();
-        if (!name.endsWith('.zip') && !name.endsWith('.rar')) {
-          return callback(new BadRequestException('Only ZIP and RAR files are allowed'), false);
+        if (!isArchiveFile(file.originalname) && !isMediaFile(file.originalname)) {
+          return callback(
+            new BadRequestException('Only ZIP/RAR archives or audio/video files are allowed'),
+            false,
+          );
         }
         callback(null, true);
       },

@@ -5,6 +5,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as archiver from 'archiver';
 import { JobData, JobProgress, ProcessingConfig } from '@/common/interfaces/job.interface';
+import { isVideoFile, audioCodecForContainer } from '@/common/media-types';
 
 @Injectable()
 export class AudioService {
@@ -53,7 +54,7 @@ export class AudioService {
       onProgress(progress);
 
       try {
-        await this.processMP3WithWhiteNoise(
+        await this.processFileWithWhiteNoise(
           mp3File.path,
           whiteNoisePath,
           outputPath,
@@ -73,7 +74,28 @@ export class AudioService {
       }
     }
 
-    // Create ZIP file with processed audio
+    // A single directly-uploaded media file (e.g. a film) is returned as-is.
+    // Archives — and any multi-file job — are bundled back into a ZIP.
+    const isSingleDirectFile = jobData.isArchive === false && processedFiles.length === 1;
+
+    if (isSingleDirectFile) {
+      const finalProgress: JobProgress = {
+        currentFileIndex: totalFiles - 1,
+        currentFileName: jobData.mp3Files[0].name,
+        fileProgress: 100,
+        totalProgress: 100,
+        processedFiles: totalFiles,
+        totalFiles,
+      };
+      onProgress(finalProgress);
+
+      return {
+        outputPath: processedFiles[0],
+        processedFiles,
+      };
+    }
+
+    // Create ZIP file with processed media
     const zipPath = await this.createZipFile(processedFiles, jobData.uploadPath, jobData.originalZipName);
 
     // Final progress update
@@ -91,6 +113,18 @@ export class AudioService {
       outputPath: zipPath,
       processedFiles,
     };
+  }
+
+  private async processFileWithWhiteNoise(
+    mediaPath: string,
+    whiteNoisePath: string,
+    outputPath: string,
+    volume: number,
+    onProgress: (progress: number) => void,
+  ): Promise<void> {
+    return isVideoFile(mediaPath)
+      ? this.processVideoWithWhiteNoise(mediaPath, whiteNoisePath, outputPath, volume, onProgress)
+      : this.processMP3WithWhiteNoise(mediaPath, whiteNoisePath, outputPath, volume, onProgress);
   }
 
   private async processMP3WithWhiteNoise(
@@ -130,6 +164,71 @@ export class AudioService {
         })
         .on('end', () => {
           this.logger.debug(`FFmpeg processing completed: ${outputPath}`);
+          resolve();
+        })
+        .on('error', (error) => {
+          this.logger.error(`FFmpeg error: ${error.message}`);
+          reject(error);
+        });
+
+      // Set timeout for the operation
+      const timeout = setTimeout(() => {
+        command.kill('SIGKILL');
+        reject(new Error('FFmpeg operation timed out'));
+      }, this.jobTimeout);
+
+      command.on('end', () => clearTimeout(timeout));
+      command.on('error', () => clearTimeout(timeout));
+
+      command.run();
+    });
+  }
+
+  // Mix white noise into a video's audio track while copying the video stream
+  // untouched (no re-encode of the picture, so it stays fast and lossless).
+  private async processVideoWithWhiteNoise(
+    videoPath: string,
+    whiteNoisePath: string,
+    outputPath: string,
+    volume: number,
+    onProgress: (progress: number) => void,
+  ): Promise<void> {
+    // Containers like WebM can't hold AAC, so pick the codec by output format.
+    const audioCodec = audioCodecForContainer(outputPath);
+
+    return new Promise((resolve, reject) => {
+      const command = ffmpeg()
+        .input(videoPath)
+        .input(whiteNoisePath)
+        .complexFilter([
+          // Normalise the source audio track
+          '[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[main]',
+          // Loop white noise to cover the whole film and apply the configured volume
+          `[1:a]aloop=loop=-1:size=2e+09,aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,volume=${volume}[noise]`,
+          // Mix; duration=first keeps the result as long as the film's audio
+          '[main][noise]amix=inputs=2:duration=first:dropout_transition=2[out]'
+        ])
+        .outputOptions([
+          '-map', '0:v:0', // keep the first video stream
+          '-map', '[out]', // use the mixed audio
+          '-c:v', 'copy',  // copy the picture untouched (fast, lossless)
+          '-c:a', audioCodec,
+          '-b:a', '192k',
+          '-ar', '44100',
+          '-ac', '2',
+          '-movflags', '+faststart', // ignored by non-MP4 containers
+        ])
+        .output(outputPath)
+        .on('start', (commandLine) => {
+          this.logger.debug(`FFmpeg command: ${commandLine}`);
+        })
+        .on('progress', (progress) => {
+          if (progress.percent) {
+            onProgress(Math.round(progress.percent));
+          }
+        })
+        .on('end', () => {
+          this.logger.debug(`FFmpeg video processing completed: ${outputPath}`);
           resolve();
         })
         .on('error', (error) => {

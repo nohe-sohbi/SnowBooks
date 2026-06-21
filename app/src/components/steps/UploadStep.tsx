@@ -55,9 +55,9 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
       // Check if files were found
       if (jobData.mp3Files.length === 0) {
-        setError('No MP3 files found in the archive');
+        setError('No supported audio or video files found');
         setStatus('error');
-        onError('No MP3 files found in the archive');
+        onError('No supported audio or video files found');
         return;
       }
 
@@ -101,7 +101,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                 Upload Your Audio Collection
               </h3>
               <p className="text-ice-gray-600 dark:text-ice-gray-400 leading-relaxed">
-                Drop your ZIP or RAR file containing MP3 chapters to begin the winter audio processing experience
+                Drop an MP3, a video file (film or series episode), or a ZIP/RAR archive to begin the winter processing experience
               </p>
             </div>
 
@@ -112,9 +112,15 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                 'application/x-rar-compressed': ['.rar'],
                 'application/vnd.rar': ['.rar'],
                 'application/octet-stream': ['.zip', '.rar'],
+                'audio/mpeg': ['.mp3'],
+                'video/mp4': ['.mp4', '.m4v'],
+                'video/x-matroska': ['.mkv'],
+                'video/x-msvideo': ['.avi'],
+                'video/quicktime': ['.mov'],
+                'video/webm': ['.webm'],
               }}
               maxFiles={1}
-              maxSize={1024 * 1024 * 1024} // 1GB
+              maxSize={5 * 1024 * 1024 * 1024} // 5GB
               onDrop={handleDrop}
               onError={(error) => {
                 setStatus('error');
@@ -143,25 +149,25 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
                   <div className="space-y-3 text-center">
                     <p className="text-xl font-semibold text-winter-blue-900 dark:text-winter-blue-100">
-                      Drop your ZIP or RAR file here
+                      Drop your audio, video, or archive file here
                     </p>
                     <p className="text-ice-gray-600 dark:text-ice-gray-400 max-w-md mx-auto leading-relaxed">
-                      Or click to browse and select your audio collection (max 1GB)
+                      Or click to browse and select your media (max 5GB)
                     </p>
                   </div>
 
                   <div className="flex flex-wrap justify-center gap-4 text-sm text-ice-gray-500 dark:text-ice-gray-500">
                     <div className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <span>MP3 files supported</span>
+                      <span>MP3 &amp; video (films / series)</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <span>ZIP & RAR archives</span>
+                      <span>ZIP &amp; RAR archives</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <span>Up to 1GB</span>
+                      <span>Up to 5GB</span>
                     </div>
                   </div>
                 </div>
@@ -184,8 +190,8 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                   </h4>
                   <p className="text-ice-gray-600 dark:text-ice-gray-400">
                     {fileCount > 0
-                      ? `Discovered ${fileCount} MP3 files in your archive`
-                      : 'Scanning and extracting audio files from your archive...'
+                      ? `Discovered ${fileCount} media ${fileCount === 1 ? 'file' : 'files'}`
+                      : 'Scanning and preparing your media files...'
                     }
                   </p>
                 </div>
@@ -211,19 +217,19 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
         {status === 'ready' && (
           <div className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
             <SuccessAlert
-              title="Audio Collection Ready!"
+              title="Media Collection Ready!"
               className="border-l-4 border-l-green-500"
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <SuccessIcon size="sm" />
-                  <span className="font-medium">Successfully extracted {fileCount} MP3 files</span>
+                  <span className="font-medium">Successfully prepared {fileCount} media {fileCount === 1 ? 'file' : 'files'}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-4 text-sm text-green-700 dark:text-green-300">
                   <div className="flex items-center gap-1">
                     <AudioIcon size="xs" />
-                    <span>{fileCount} audio files</span>
+                    <span>{fileCount} media {fileCount === 1 ? 'file' : 'files'}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />

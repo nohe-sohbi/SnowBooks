@@ -1,8 +1,8 @@
 # SnowBooks 🎧❄️
 
-A modern web application for processing audiobook files by mixing them with white noise. Built with React frontend and NestJS backend, featuring real-time progress updates and high-quality audio processing.
+A modern web application for processing audiobooks — and now films and series — by mixing a layer of white noise into their soundtrack. Built with React frontend and NestJS backend, featuring real-time progress updates and high-quality FFmpeg processing.
 
-> **Live demo:** [nohe-sohbi.github.io/SnowBooks](https://nohe-sohbi.github.io/SnowBooks/) runs the whole flow in your browser with no backend, mixing a built-in sample clip so you can try it in a few clicks. The full version (real FFmpeg processing on your own files) is the Docker app described below.
+> **Live demo:** [nohe-sohbi.github.io/SnowBooks](https://nohe-sohbi.github.io/SnowBooks/) runs the whole flow in your browser with no backend, mixing a built-in sample clip so you can try it in a few clicks. The full version (real FFmpeg processing on your own files, including **video**) is the Docker app described below — video mixing is only available there, not in the browser-only demo.
 
 <p align="center">
   <img src=".github/assets/hero.png" alt="SnowBooks home screen" width="820">
@@ -10,8 +10,9 @@ A modern web application for processing audiobook files by mixing them with whit
 
 ## ✨ Features
 
-- **📁 ZIP File Upload**: Upload ZIP files containing multiple MP3 audiobook files
-- **🎵 White Noise Mixing**: Mix white noise with audio files at configurable volume levels
+- **📁 Flexible Upload**: Upload a single MP3 or video file (film / series episode) directly, or a ZIP/RAR archive containing several media files
+- **🎬 Video Support**: Mix white noise into a film's or episode's soundtrack — the video stream is copied untouched (fast, lossless) and only the audio is re-encoded (Docker/backend version only)
+- **🎵 White Noise Mixing**: Mix white noise with audio or video at configurable volume levels
 - **⚡ Real-time Processing**: Live progress updates via WebSocket connections
 - **🎯 High-Quality Audio**: Native FFmpeg processing for professional results
 - **📦 Batch Download**: Download all processed files as a single ZIP archive

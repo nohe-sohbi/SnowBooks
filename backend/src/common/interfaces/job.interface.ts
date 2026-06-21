@@ -3,6 +3,8 @@ export interface MP3FileInfo {
   size: number;
   duration?: number;
   path: string;
+  // 'audio' (mixed + re-encoded) or 'video' (stream copied, audio track mixed).
+  type?: 'audio' | 'video';
 }
 
 export interface JobData {
@@ -17,6 +19,9 @@ export interface JobData {
   updatedAt: Date;
   progress?: JobProgress;
   error?: string;
+  // True when the upload was a ZIP/RAR archive. A single direct media file
+  // (e.g. a film) is downloaded as-is instead of being re-zipped.
+  isArchive?: boolean;
 }
 
 export interface JobProgress {
