@@ -195,16 +195,20 @@ export class AudioService {
   ): Promise<void> {
     // Containers like WebM can't hold AAC, so pick the codec by output format.
     const audioCodec = audioCodecForContainer(outputPath);
+    // libopus only supports 48 kHz; AAC is happy at 44.1 kHz. The rate must
+    // match in both the filter graph and the encoder or the encode fails.
+    const sampleRate = audioCodec === 'libopus' ? 48000 : 44100;
 
     return new Promise((resolve, reject) => {
       const command = ffmpeg()
         .input(videoPath)
         .input(whiteNoisePath)
         .complexFilter([
-          // Normalise the source audio track
-          '[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[main]',
+          // Normalise the source audio track (first audio stream — films may
+          // ship several language tracks; we keep and mix the default one)
+          `[0:a:0]aformat=sample_fmts=fltp:sample_rates=${sampleRate}:channel_layouts=stereo[main]`,
           // Loop white noise to cover the whole film and apply the configured volume
-          `[1:a]aloop=loop=-1:size=2e+09,aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,volume=${volume}[noise]`,
+          `[1:a]aloop=loop=-1:size=2e+09,aformat=sample_fmts=fltp:sample_rates=${sampleRate}:channel_layouts=stereo,volume=${volume}[noise]`,
           // Mix; duration=first keeps the result as long as the film's audio
           '[main][noise]amix=inputs=2:duration=first:dropout_transition=2[out]'
         ])
@@ -214,7 +218,7 @@ export class AudioService {
           '-c:v', 'copy',  // copy the picture untouched (fast, lossless)
           '-c:a', audioCodec,
           '-b:a', '192k',
-          '-ar', '44100',
+          '-ar', String(sampleRate),
           '-ac', '2',
           '-movflags', '+faststart', // ignored by non-MP4 containers
         ])
