@@ -22,7 +22,7 @@ if (!fs.existsSync(tempDir)) {
         },
       }),
       limits: {
-        fileSize: 1073741824, // 1GB
+        fileSize: 5 * 1024 * 1024 * 1024, // 5GB — large enough for films
       },
     }),
   ],

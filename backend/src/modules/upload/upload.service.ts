@@ -8,6 +8,12 @@ import { createExtractorFromData } from 'node-unrar-js';
 import { v4 as uuidv4 } from 'uuid';
 import { promisify } from 'util';
 import { MP3FileInfo, JobData, JobStatus } from '@/common/interfaces/job.interface';
+import {
+  isArchiveFile,
+  isMediaFile,
+  getMediaType,
+  MEDIA_EXTENSIONS,
+} from '@/common/media-types';
 
 @Injectable()
 export class UploadService {
@@ -18,7 +24,7 @@ export class UploadService {
   constructor(private configService: ConfigService) {
     this.uploadDir = this.configService.get('UPLOAD_DIR') || './uploads';
     this.tempDir = this.configService.get('TEMP_DIR') || './temp';
-    this.maxFileSize = parseInt(this.configService.get('MAX_FILE_SIZE')) || 1073741824; // 1GB
+    this.maxFileSize = parseInt(this.configService.get('MAX_FILE_SIZE')) || 5368709120; // 5GB
   }
 
   public sanitizeFilename(filename: string, baseDir: string = ''): string {
@@ -40,7 +46,7 @@ export class UploadService {
 
   async handleArchiveUpload(file: Express.Multer.File): Promise<JobData> {
     // Validate file
-    this.validateArchiveFile(file);
+    this.validateUpload(file);
 
     // Generate job ID and create directories
     const jobId = uuidv4();
@@ -51,31 +57,50 @@ export class UploadService {
       await fs.mkdir(jobDir, { recursive: true });
       await fs.mkdir(extractDir, { recursive: true });
 
-      // Move uploaded archive file from temp to job directory
       const safeOriginalName = this.sanitizeFilename(file.originalname, jobDir);
-      const archivePath = path.join(jobDir, safeOriginalName);
-      await fs.rename(file.path, archivePath);
+      const isArchive = isArchiveFile(file.originalname);
+      let mediaFiles: MP3FileInfo[];
 
-      // Extract MP3 files from archive (ZIP or RAR)
-      const isRar = file.originalname.toLowerCase().endsWith('.rar');
-      const mp3Files = isRar
-        ? await this.extractMP3FilesFromRar(archivePath, extractDir)
-        : await this.extractMP3Files(archivePath, extractDir);
+      if (isArchive) {
+        // Move uploaded archive file from temp to job directory
+        const archivePath = path.join(jobDir, safeOriginalName);
+        await fs.rename(file.path, archivePath);
 
-      if (mp3Files.length === 0) {
-        throw new BadRequestException('No MP3 files found in the uploaded archive');
+        // Extract media files from archive (ZIP or RAR)
+        const isRar = file.originalname.toLowerCase().endsWith('.rar');
+        mediaFiles = isRar
+          ? await this.extractMediaFilesFromRar(archivePath, extractDir)
+          : await this.extractMediaFiles(archivePath, extractDir);
+
+        if (mediaFiles.length === 0) {
+          throw new BadRequestException('No supported audio or video files found in the uploaded archive');
+        }
+      } else {
+        // Direct single media file (e.g. a film or an episode): keep it as-is.
+        const mediaPath = path.join(extractDir, safeOriginalName);
+        await fs.rename(file.path, mediaPath);
+
+        mediaFiles = [
+          {
+            name: safeOriginalName,
+            size: file.size,
+            path: mediaPath,
+            type: getMediaType(safeOriginalName),
+          },
+        ];
       }
 
       // Create job data
       const jobData: JobData = {
         id: jobId,
         originalZipName: safeOriginalName,
-        mp3Files,
+        mp3Files: mediaFiles,
         whiteNoiseVolume: 0.3, // Default value
         uploadPath: jobDir,
         status: JobStatus.UPLOADED,
         createdAt: new Date(),
         updatedAt: new Date(),
+        isArchive,
       };
 
       // Save job metadata
@@ -93,7 +118,7 @@ export class UploadService {
     }
   }
 
-  private validateArchiveFile(file: Express.Multer.File): void {
+  private validateUpload(file: Express.Multer.File): void {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
@@ -102,9 +127,10 @@ export class UploadService {
       throw new BadRequestException(`File size exceeds maximum limit of ${this.maxFileSize} bytes`);
     }
 
-    const name = file.originalname.toLowerCase();
-    if (!name.endsWith('.zip') && !name.endsWith('.rar')) {
-      throw new BadRequestException('Only ZIP and RAR files are allowed');
+    if (!isArchiveFile(file.originalname) && !isMediaFile(file.originalname)) {
+      throw new BadRequestException(
+        `Unsupported file type. Allowed: ZIP, RAR archives or media files (${MEDIA_EXTENSIONS.join(', ')})`,
+      );
     }
 
     const allowedMimeTypes = [
@@ -114,14 +140,16 @@ export class UploadService {
       'application/vnd.rar',
       'application/octet-stream',
     ];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Only ZIP and RAR files are allowed');
+    // Browsers report video/* and audio/* for direct media uploads.
+    const isMediaMime = file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/');
+    if (!allowedMimeTypes.includes(file.mimetype) && !isMediaMime) {
+      throw new BadRequestException('Invalid file type. Only ZIP/RAR archives or audio/video files are allowed');
     }
   }
 
-  private async extractMP3Files(zipPath: string, extractDir: string): Promise<MP3FileInfo[]> {
+  private async extractMediaFiles(zipPath: string, extractDir: string): Promise<MP3FileInfo[]> {
     return new Promise((resolve, reject) => {
-      const mp3Files: MP3FileInfo[] = [];
+      const mediaFiles: MP3FileInfo[] = [];
 
       yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
         if (err) {
@@ -138,8 +166,8 @@ export class UploadService {
             return;
           }
 
-          // Check if it's an MP3 file
-          if (!entry.fileName.toLowerCase().endsWith('.mp3')) {
+          // Check if it's a supported media file (audio or video)
+          if (!isMediaFile(entry.fileName)) {
             zipfile.readEntry();
             return;
           }
@@ -147,7 +175,7 @@ export class UploadService {
           try {
             const safeName = this.sanitizeFilename(entry.fileName, extractDir);
             const outputPath = path.join(extractDir, safeName);
-            
+
             zipfile.openReadStream(entry, (err, readStream) => {
               if (err) {
                 reject(err);
@@ -158,10 +186,11 @@ export class UploadService {
               readStream.pipe(writeStream);
 
               writeStream.on('close', () => {
-                mp3Files.push({
+                mediaFiles.push({
                   name: safeName,
                   size: entry.uncompressedSize,
                   path: outputPath,
+                  type: getMediaType(safeName),
                 });
                 zipfile.readEntry();
               });
@@ -176,7 +205,7 @@ export class UploadService {
         });
 
         zipfile.on('end', () => {
-          resolve(mp3Files);
+          resolve(mediaFiles);
         });
 
         zipfile.on('error', (error) => {
@@ -186,8 +215,8 @@ export class UploadService {
     });
   }
 
-  private async extractMP3FilesFromRar(rarPath: string, extractDir: string): Promise<MP3FileInfo[]> {
-    const mp3Files: MP3FileInfo[] = [];
+  private async extractMediaFilesFromRar(rarPath: string, extractDir: string): Promise<MP3FileInfo[]> {
+    const mediaFiles: MP3FileInfo[] = [];
 
     try {
       const rarBuffer = await fs.readFile(rarPath);
@@ -203,8 +232,8 @@ export class UploadService {
           continue;
         }
 
-        // Check if it's an MP3 file
-        if (!fileHeader.name.toLowerCase().endsWith('.mp3')) {
+        // Check if it's a supported media file (audio or video)
+        if (!isMediaFile(fileHeader.name)) {
           continue;
         }
 
@@ -213,10 +242,11 @@ export class UploadService {
         const fileData = extraction as Uint8Array;
         await fs.writeFile(outputPath, fileData);
 
-        mp3Files.push({
+        mediaFiles.push({
           name: safeName,
           size: fileHeader.unpSize,
           path: outputPath,
+          type: getMediaType(safeName),
         });
       }
     } catch (error) {
@@ -226,7 +256,7 @@ export class UploadService {
       throw new BadRequestException(`RAR extraction failed: ${error.message}`);
     }
 
-    return mp3Files;
+    return mediaFiles;
   }
 
   private async saveJobMetadata(jobData: JobData): Promise<void> {

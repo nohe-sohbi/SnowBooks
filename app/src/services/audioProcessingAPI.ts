@@ -7,6 +7,7 @@ export interface MP3FileInfo {
   size: number;
   duration?: number;
   path: string;
+  type?: 'audio' | 'video';
 }
 
 export interface JobData {

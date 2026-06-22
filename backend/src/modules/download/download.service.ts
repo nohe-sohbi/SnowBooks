@@ -77,6 +77,17 @@ export class DownloadService {
         return 'audio/mpeg';
       case '.wav':
         return 'audio/wav';
+      case '.mp4':
+      case '.m4v':
+        return 'video/mp4';
+      case '.mkv':
+        return 'video/x-matroska';
+      case '.avi':
+        return 'video/x-msvideo';
+      case '.mov':
+        return 'video/quicktime';
+      case '.webm':
+        return 'video/webm';
       default:
         return 'application/octet-stream';
     }
