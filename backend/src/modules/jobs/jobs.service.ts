@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectQueue } from '@nestjs/bull';
 import { Queue, Job } from 'bull';
 import { UploadService } from '../upload/upload.service';
+import { AudioService } from '../audio/audio.service';
 import { JobData, JobStatus, ProcessingConfig } from '@/common/interfaces/job.interface';
 
 @Injectable()
@@ -9,13 +10,20 @@ export class JobsService {
   constructor(
     @InjectQueue('audio-processing') private audioQueue: Queue,
     private uploadService: UploadService,
+    private audioService: AudioService,
   ) {}
 
   async getJobStatus(jobId: string): Promise<JobData> {
     const jobData = await this.uploadService.getJobData(jobId);
-    
+
     if (!jobData) {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
+    }
+
+    // A cancelled job is terminal: the Bull job may still finish as
+    // 'completed' after the cancel, and must not resurrect the status.
+    if (jobData.status === JobStatus.CANCELLED) {
+      return jobData;
     }
 
     // Check if there's an active Bull job
@@ -75,20 +83,35 @@ export class JobsService {
 
   async cancelJob(jobId: string): Promise<void> {
     const jobData = await this.uploadService.getJobData(jobId);
-    
+
     if (!jobData) {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }
 
-    // Cancel Bull job if it exists
-    const bullJob = await this.findBullJob(jobId);
-    if (bullJob) {
-      await bullJob.remove();
+    if (jobData.status !== JobStatus.UPLOADED && jobData.status !== JobStatus.PROCESSING) {
+      throw new BadRequestException(
+        `Job ${jobId} cannot be cancelled. Current status: ${jobData.status}`,
+      );
     }
 
-    // Update job status
+    // Mark cancelled first so any in-flight completion cannot override it.
     jobData.status = JobStatus.CANCELLED;
     await this.uploadService.updateJobData(jobData);
+
+    // Kill the FFmpeg process if the job is being processed right now.
+    this.audioService.requestCancel(jobId);
+
+    // Remove the Bull job if it is still waiting in the queue. An active job
+    // holds a lock and cannot be removed — the processor sees the cancel
+    // request and winds the job down itself.
+    const bullJob = await this.findBullJob(jobId);
+    if (bullJob) {
+      try {
+        await bullJob.remove();
+      } catch (error) {
+        // Active job: expected, the kill above ends it.
+      }
+    }
   }
 
   async deleteJob(jobId: string): Promise<void> {
@@ -98,10 +121,17 @@ export class JobsService {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }
 
+    // Stop any in-flight FFmpeg work before deleting its files.
+    this.audioService.requestCancel(jobId);
+
     // Cancel and remove Bull job if it exists
     const bullJob = await this.findBullJob(jobId);
     if (bullJob) {
-      await bullJob.remove();
+      try {
+        await bullJob.remove();
+      } catch (error) {
+        // Active job: the cancel request above winds it down.
+      }
     }
 
     // Cleanup job files
