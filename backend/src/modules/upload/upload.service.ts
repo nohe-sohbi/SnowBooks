@@ -15,16 +15,27 @@ import {
   MEDIA_EXTENSIONS,
 } from '@/common/media-types';
 
+const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 @Injectable()
 export class UploadService {
   private readonly uploadDir: string;
   private readonly tempDir: string;
   private readonly maxFileSize: number;
+  private readonly maxExtractedSize: number;
+  private readonly maxRarSize: number;
+  // Serializes metadata writes per job so concurrent updates never interleave.
+  private readonly metadataWriteChains = new Map<string, Promise<void>>();
 
   constructor(private configService: ConfigService) {
     this.uploadDir = this.configService.get('UPLOAD_DIR') || './uploads';
     this.tempDir = this.configService.get('TEMP_DIR') || './temp';
     this.maxFileSize = parseInt(this.configService.get('MAX_FILE_SIZE')) || 5368709120; // 5GB
+    this.maxExtractedSize =
+      parseInt(this.configService.get('MAX_EXTRACTED_SIZE')) || 10737418240; // 10GB
+    // node-unrar-js buffers the whole archive in memory, so RAR gets a
+    // stricter cap than the general upload limit.
+    this.maxRarSize = parseInt(this.configService.get('MAX_RAR_SIZE')) || 1073741824; // 1GB
   }
 
   public sanitizeFilename(filename: string, baseDir: string = ''): string {
@@ -147,9 +158,24 @@ export class UploadService {
     }
   }
 
+  // Entries in different archive folders can share a basename; give each a
+  // unique on-disk name instead of silently overwriting the previous one.
+  private uniqueExtractedName(name: string, takenNames: Set<string>): string {
+    let candidate = name;
+    const ext = path.extname(name);
+    const stem = path.basename(name, ext);
+    for (let i = 1; takenNames.has(candidate.toLowerCase()); i++) {
+      candidate = `${stem} (${i})${ext}`;
+    }
+    takenNames.add(candidate.toLowerCase());
+    return candidate;
+  }
+
   private async extractMediaFiles(zipPath: string, extractDir: string): Promise<MP3FileInfo[]> {
     return new Promise((resolve, reject) => {
       const mediaFiles: MP3FileInfo[] = [];
+      const takenNames = new Set<string>();
+      let totalExtractedSize = 0;
 
       yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
         if (err) {
@@ -172,8 +198,22 @@ export class UploadService {
             return;
           }
 
+          totalExtractedSize += entry.uncompressedSize;
+          if (totalExtractedSize > this.maxExtractedSize) {
+            zipfile.close();
+            reject(
+              new BadRequestException(
+                `Archive contents exceed the maximum extracted size of ${this.maxExtractedSize} bytes`,
+              ),
+            );
+            return;
+          }
+
           try {
-            const safeName = this.sanitizeFilename(entry.fileName, extractDir);
+            const safeName = this.uniqueExtractedName(
+              this.sanitizeFilename(entry.fileName, extractDir),
+              takenNames,
+            );
             const outputPath = path.join(extractDir, safeName);
 
             zipfile.openReadStream(entry, (err, readStream) => {
@@ -217,6 +257,17 @@ export class UploadService {
 
   private async extractMediaFilesFromRar(rarPath: string, extractDir: string): Promise<MP3FileInfo[]> {
     const mediaFiles: MP3FileInfo[] = [];
+    const takenNames = new Set<string>();
+    let totalExtractedSize = 0;
+
+    // node-unrar-js needs the whole archive in memory, so refuse archives
+    // that would blow up the process instead of letting them OOM it.
+    const { size: rarSize } = await fs.stat(rarPath);
+    if (rarSize > this.maxRarSize) {
+      throw new BadRequestException(
+        `RAR archives are limited to ${this.maxRarSize} bytes; upload a ZIP instead for larger collections`,
+      );
+    }
 
     try {
       const rarBuffer = await fs.readFile(rarPath);
@@ -237,7 +288,17 @@ export class UploadService {
           continue;
         }
 
-        const safeName = this.sanitizeFilename(fileHeader.name, extractDir);
+        totalExtractedSize += fileHeader.unpSize;
+        if (totalExtractedSize > this.maxExtractedSize) {
+          throw new BadRequestException(
+            `Archive contents exceed the maximum extracted size of ${this.maxExtractedSize} bytes`,
+          );
+        }
+
+        const safeName = this.uniqueExtractedName(
+          this.sanitizeFilename(fileHeader.name, extractDir),
+          takenNames,
+        );
         const outputPath = path.join(extractDir, safeName);
         const fileData = extraction as Uint8Array;
         await fs.writeFile(outputPath, fileData);
@@ -261,14 +322,40 @@ export class UploadService {
 
   private async saveJobMetadata(jobData: JobData): Promise<void> {
     const metadataPath = path.join(jobData.uploadPath, 'job-metadata.json');
-    await fs.writeFile(metadataPath, JSON.stringify(jobData, null, 2));
+    const payload = JSON.stringify(jobData, null, 2);
+
+    // Chain writes per job and write atomically (tmp + rename) so a status
+    // read never sees a half-written file, even under rapid progress updates.
+    const previous = this.metadataWriteChains.get(jobData.id) || Promise.resolve();
+    const write = previous
+      .catch(() => {})
+      .then(async () => {
+        const tmpPath = `${metadataPath}.tmp`;
+        await fs.writeFile(tmpPath, payload);
+        await fs.rename(tmpPath, metadataPath);
+      });
+
+    this.metadataWriteChains.set(jobData.id, write);
+    try {
+      await write;
+    } finally {
+      if (this.metadataWriteChains.get(jobData.id) === write) {
+        this.metadataWriteChains.delete(jobData.id);
+      }
+    }
   }
 
   async getJobData(jobId: string): Promise<JobData | null> {
+    // Job IDs are generated as UUIDv4; anything else (e.g. "../other-dir")
+    // must never be turned into a filesystem path.
+    if (!UUID_V4_PATTERN.test(jobId)) {
+      return null;
+    }
+
     try {
       const jobDir = path.join(this.uploadDir, jobId);
       const metadataPath = path.join(jobDir, 'job-metadata.json');
-      
+
       const metadataContent = await fs.readFile(metadataPath, 'utf-8');
       return JSON.parse(metadataContent);
     } catch (error) {

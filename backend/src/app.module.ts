@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 // Import custom modules
 import { UploadModule } from './modules/upload/upload.module';
@@ -27,12 +25,6 @@ import { AppService } from './app.service';
     // Redis and Bull queue configuration
     BullModule.forRootAsync({
       useFactory: () => redisConfig,
-    }),
-
-    // Serve static files for downloads
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/files',
     }),
 
     // Feature modules
