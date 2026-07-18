@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as archiver from 'archiver';
 import { JobData, JobProgress, ProcessingConfig } from '@/common/interfaces/job.interface';
 import { isVideoFile, audioCodecForContainer } from '@/common/media-types';
+import { JobCancelledError } from '@/common/errors';
 
 @Injectable()
 export class AudioService {
@@ -13,6 +14,10 @@ export class AudioService {
   private readonly ffmpegPath: string;
   private readonly maxConcurrentJobs: number;
   private readonly jobTimeout: number;
+  // FFmpeg command currently running for each job, so a cancel request can
+  // kill the process instead of letting it run to completion.
+  private readonly activeCommands = new Map<string, ffmpeg.FfmpegCommand>();
+  private readonly cancelRequests = new Set<string>();
 
   constructor(private configService: ConfigService) {
     this.ffmpegPath = this.configService.get('FFMPEG_PATH') || 'ffmpeg';
@@ -21,6 +26,28 @@ export class AudioService {
 
     // Set FFmpeg path
     ffmpeg.setFfmpegPath(this.ffmpegPath);
+  }
+
+  // Ask a running job to stop: flag it and kill its in-flight FFmpeg process.
+  // The processing loop turns this into a JobCancelledError.
+  requestCancel(jobId: string): void {
+    this.cancelRequests.add(jobId);
+    const command = this.activeCommands.get(jobId);
+    if (command) {
+      this.logger.log(`Killing active FFmpeg process for cancelled job ${jobId}`);
+      command.kill('SIGKILL');
+    }
+  }
+
+  isCancelRequested(jobId: string): boolean {
+    return this.cancelRequests.has(jobId);
+  }
+
+  // Called by the processor once a job reaches a terminal state so a stale
+  // flag can't cancel a future retry of the same job ID.
+  clearCancelRequest(jobId: string): void {
+    this.cancelRequests.delete(jobId);
+    this.activeCommands.delete(jobId);
   }
 
   async processAudioFiles(
@@ -38,6 +65,10 @@ export class AudioService {
     const whiteNoisePath = path.join(process.cwd(), 'assets', 'white-noise.mp3');
 
     for (let i = 0; i < totalFiles; i++) {
+      if (this.cancelRequests.has(jobData.id)) {
+        throw new JobCancelledError(jobData.id);
+      }
+
       const mp3File = jobData.mp3Files[i];
       const outputFileName = `processed_${mp3File.name}`;
       const outputPath = path.join(outputDir, outputFileName);
@@ -55,6 +86,7 @@ export class AudioService {
 
       try {
         await this.processFileWithWhiteNoise(
+          jobData.id,
           mp3File.path,
           whiteNoisePath,
           outputPath,
@@ -69,6 +101,11 @@ export class AudioService {
         processedFiles.push(outputPath);
         this.logger.log(`Processed file ${i + 1}/${totalFiles}: ${mp3File.name}`);
       } catch (error) {
+        if (error instanceof JobCancelledError || this.cancelRequests.has(jobData.id)) {
+          // Drop the half-written output of the killed FFmpeg run.
+          await fs.rm(outputPath, { force: true }).catch(() => {});
+          throw new JobCancelledError(jobData.id);
+        }
         this.logger.error(`Failed to process file ${mp3File.name}:`, error);
         throw new Error(`Failed to process file ${mp3File.name}: ${error.message}`);
       }
@@ -95,6 +132,10 @@ export class AudioService {
       };
     }
 
+    if (this.cancelRequests.has(jobData.id)) {
+      throw new JobCancelledError(jobData.id);
+    }
+
     // Create ZIP file with processed media
     const zipPath = await this.createZipFile(processedFiles, jobData.uploadPath, jobData.originalZipName);
 
@@ -116,6 +157,7 @@ export class AudioService {
   }
 
   private async processFileWithWhiteNoise(
+    jobId: string,
     mediaPath: string,
     whiteNoisePath: string,
     outputPath: string,
@@ -123,11 +165,12 @@ export class AudioService {
     onProgress: (progress: number) => void,
   ): Promise<void> {
     return isVideoFile(mediaPath)
-      ? this.processVideoWithWhiteNoise(mediaPath, whiteNoisePath, outputPath, volume, onProgress)
-      : this.processMP3WithWhiteNoise(mediaPath, whiteNoisePath, outputPath, volume, onProgress);
+      ? this.processVideoWithWhiteNoise(jobId, mediaPath, whiteNoisePath, outputPath, volume, onProgress)
+      : this.processMP3WithWhiteNoise(jobId, mediaPath, whiteNoisePath, outputPath, volume, onProgress);
   }
 
   private async processMP3WithWhiteNoise(
+    jobId: string,
     mp3Path: string,
     whiteNoisePath: string,
     outputPath: string,
@@ -167,9 +210,15 @@ export class AudioService {
           resolve();
         })
         .on('error', (error) => {
+          if (this.cancelRequests.has(jobId)) {
+            reject(new JobCancelledError(jobId));
+            return;
+          }
           this.logger.error(`FFmpeg error: ${error.message}`);
           reject(error);
         });
+
+      this.registerActiveCommand(jobId, command);
 
       // Set timeout for the operation
       const timeout = setTimeout(() => {
@@ -187,6 +236,7 @@ export class AudioService {
   // Mix white noise into a video's audio track while copying the video stream
   // untouched (no re-encode of the picture, so it stays fast and lossless).
   private async processVideoWithWhiteNoise(
+    jobId: string,
     videoPath: string,
     whiteNoisePath: string,
     outputPath: string,
@@ -236,9 +286,15 @@ export class AudioService {
           resolve();
         })
         .on('error', (error) => {
+          if (this.cancelRequests.has(jobId)) {
+            reject(new JobCancelledError(jobId));
+            return;
+          }
           this.logger.error(`FFmpeg error: ${error.message}`);
           reject(error);
         });
+
+      this.registerActiveCommand(jobId, command);
 
       // Set timeout for the operation
       const timeout = setTimeout(() => {
@@ -251,6 +307,19 @@ export class AudioService {
 
       command.run();
     });
+  }
+
+  // Track the running command for a job (and drop it once it finishes) so
+  // requestCancel() can kill the right process.
+  private registerActiveCommand(jobId: string, command: ffmpeg.FfmpegCommand): void {
+    this.activeCommands.set(jobId, command);
+    const unregister = () => {
+      if (this.activeCommands.get(jobId) === command) {
+        this.activeCommands.delete(jobId);
+      }
+    };
+    command.on('end', unregister);
+    command.on('error', unregister);
   }
 
   private async createZipFile(

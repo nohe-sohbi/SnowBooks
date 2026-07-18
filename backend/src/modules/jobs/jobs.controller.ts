@@ -4,6 +4,7 @@ import {
   Post,
   Delete,
   Param,
+  ParseUUIDPipe,
   Body,
   HttpCode,
   HttpStatus,
@@ -16,14 +17,14 @@ export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Get(':id')
-  async getJobStatus(@Param('id') jobId: string) {
+  async getJobStatus(@Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string) {
     return this.jobsService.getJobStatus(jobId);
   }
 
   @Post(':id/start')
   @HttpCode(HttpStatus.ACCEPTED)
   async startProcessing(
-    @Param('id') jobId: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string,
     @Body() config: StartProcessingDto,
   ) {
     await this.jobsService.startProcessing(jobId, config);
@@ -32,14 +33,14 @@ export class JobsController {
 
   @Post(':id/cancel')
   @HttpCode(HttpStatus.OK)
-  async cancelJob(@Param('id') jobId: string) {
+  async cancelJob(@Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string) {
     await this.jobsService.cancelJob(jobId);
     return { message: 'Job cancelled', jobId };
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteJob(@Param('id') jobId: string) {
+  async deleteJob(@Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string) {
     await this.jobsService.deleteJob(jobId);
   }
 

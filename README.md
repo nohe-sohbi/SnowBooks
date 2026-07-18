@@ -114,6 +114,17 @@ Covers the formatting helpers, the screen-reader announcer, and the wizard's
 accessibility wiring. These run automatically in CI on every pull request
 (see `.github/workflows/ci.yml`), alongside `npm run lint` and `npm run build`.
 
+### Backend Unit Tests (Jest)
+```bash
+cd backend
+npm test          # run once
+npm run test:watch # watch mode
+```
+Covers upload sanitization and path-traversal guards, atomic job-metadata
+persistence, the job state machine (start/cancel/delete), FFmpeg cancellation,
+download MIME resolution, and the media-type helpers. CI builds and tests the
+backend on every pull request alongside the frontend.
+
 ### End-to-End Testing
 ```bash
 ./scripts/test-e2e.sh

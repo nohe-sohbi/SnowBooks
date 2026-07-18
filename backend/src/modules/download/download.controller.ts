@@ -2,8 +2,8 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Res,
-  Header,
   StreamableFile,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -15,7 +15,10 @@ export class DownloadController {
   constructor(private readonly downloadService: DownloadService) {}
 
   @Get(':id')
-  async downloadFile(@Param('id') jobId: string, @Res({ passthrough: true }) res: Response) {
+  async downloadFile(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const downloadInfo = await this.downloadService.getDownloadFile(jobId);
     
     // Set response headers
@@ -30,7 +33,7 @@ export class DownloadController {
   }
 
   @Get(':id/info')
-  async getFileInfo(@Param('id') jobId: string) {
+  async getFileInfo(@Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string) {
     return this.downloadService.getFileStats(jobId);
   }
 }

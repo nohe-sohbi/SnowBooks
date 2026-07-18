@@ -8,7 +8,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { JobProgress } from '@/common/interfaces/job.interface';
 
 @WebSocketGateway({
@@ -21,8 +21,10 @@ import { JobProgress } from '@/common/interfaces/job.interface';
   namespace: '/progress',
 })
 export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  // The gateway is bound to the '/progress' namespace, so the injected
+  // server is a Namespace (whose `.sockets` is a Map of connected clients).
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
 
   private readonly logger = new Logger(ProgressGateway.name);
   private readonly jobSubscriptions = new Map<string, Set<string>>(); // jobId -> Set of socketIds
