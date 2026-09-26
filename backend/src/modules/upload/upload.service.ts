@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import { createWriteStream } from 'fs';
@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as yauzl from 'yauzl';
 import { createExtractorFromData } from 'node-unrar-js';
 import { v4 as uuidv4 } from 'uuid';
-import { promisify } from 'util';
 import { MP3FileInfo, JobData, JobStatus } from '@/common/interfaces/job.interface';
 import {
   isArchiveFile,
@@ -19,6 +18,7 @@ const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}
 
 @Injectable()
 export class UploadService {
+  private readonly logger = new Logger(UploadService.name);
   private readonly uploadDir: string;
   private readonly tempDir: string;
   private readonly maxFileSize: number;
@@ -26,6 +26,7 @@ export class UploadService {
   private readonly maxRarSize: number;
   // Serializes metadata writes per job so concurrent updates never interleave.
   private readonly metadataWriteChains = new Map<string, Promise<void>>();
+  private readonly jobDataCache: Map<string, JobData> = new Map();
 
   constructor(private configService: ConfigService) {
     this.uploadDir = this.configService.get('UPLOAD_DIR') || './uploads';
@@ -274,6 +275,7 @@ export class UploadService {
       const extractor = await createExtractorFromData({ data: rarBuffer.buffer.slice(rarBuffer.byteOffset, rarBuffer.byteOffset + rarBuffer.byteLength) as ArrayBuffer });
 
       const { files } = extractor.extract();
+      const writePromises: Promise<void>[] = [];
 
       for (const file of files) {
         const { fileHeader, extraction } = file;
@@ -301,7 +303,8 @@ export class UploadService {
         );
         const outputPath = path.join(extractDir, safeName);
         const fileData = extraction as Uint8Array;
-        await fs.writeFile(outputPath, fileData);
+
+        writePromises.push(fs.writeFile(outputPath, fileData));
 
         mediaFiles.push({
           name: safeName,
@@ -310,6 +313,8 @@ export class UploadService {
           type: getMediaType(safeName),
         });
       }
+
+      await Promise.all(writePromises);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
@@ -321,6 +326,7 @@ export class UploadService {
   }
 
   private async saveJobMetadata(jobData: JobData): Promise<void> {
+    this.jobDataCache.set(jobData.id, jobData);
     const metadataPath = path.join(jobData.uploadPath, 'job-metadata.json');
     const payload = JSON.stringify(jobData, null, 2);
 
@@ -352,12 +358,19 @@ export class UploadService {
       return null;
     }
 
+    const cachedData = this.jobDataCache.get(jobId);
+    if (cachedData) {
+      return cachedData;
+    }
+
     try {
       const jobDir = path.join(this.uploadDir, jobId);
       const metadataPath = path.join(jobDir, 'job-metadata.json');
 
       const metadataContent = await fs.readFile(metadataPath, 'utf-8');
-      return JSON.parse(metadataContent);
+      const jobData = JSON.parse(metadataContent);
+      this.jobDataCache.set(jobId, jobData);
+      return jobData;
     } catch (error) {
       return null;
     }
@@ -370,9 +383,11 @@ export class UploadService {
 
   async cleanupJobDirectory(jobDir: string): Promise<void> {
     try {
+      const jobId = path.basename(jobDir);
+      this.jobDataCache.delete(jobId);
       await fs.rm(jobDir, { recursive: true, force: true });
     } catch (error) {
-      console.error(`Failed to cleanup job directory ${jobDir}:`, error);
+      this.logger.error(`Failed to cleanup job directory ${jobDir}:`, error);
     }
   }
 
@@ -390,12 +405,12 @@ export class UploadService {
 
           if (stats.isDirectory() && stats.mtime < cutoffTime) {
             await this.cleanupJobDirectory(jobPath);
-            console.log(`Cleaned up expired job: ${jobDir}`);
+            this.logger.log(`Cleaned up expired job: ${jobDir}`);
           }
         }),
       );
     } catch (error) {
-      console.error('Failed to cleanup expired jobs:', error);
+      this.logger.error('Failed to cleanup expired jobs:', error);
     }
   }
 }
