@@ -326,7 +326,7 @@ export class UploadService {
   }
 
   private async saveJobMetadata(jobData: JobData): Promise<void> {
-    this.jobDataCache.set(jobData.id, jobData);
+    this.jobDataCache.set(jobData.id, structuredClone(jobData));
     const metadataPath = path.join(jobData.uploadPath, 'job-metadata.json');
     const payload = JSON.stringify(jobData, null, 2);
 
@@ -360,7 +360,7 @@ export class UploadService {
 
     const cachedData = this.jobDataCache.get(jobId);
     if (cachedData) {
-      return cachedData;
+      return structuredClone(cachedData);
     }
 
     try {
@@ -369,7 +369,7 @@ export class UploadService {
 
       const metadataContent = await fs.readFile(metadataPath, 'utf-8');
       const jobData = JSON.parse(metadataContent);
-      this.jobDataCache.set(jobId, jobData);
+      this.jobDataCache.set(jobId, structuredClone(jobData));
       return jobData;
     } catch (error) {
       return null;
