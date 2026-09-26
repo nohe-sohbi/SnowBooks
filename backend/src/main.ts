@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
@@ -36,9 +36,10 @@ async function bootstrap() {
   const port = configService.get('PORT') || 3001;
   await app.listen(port);
 
-  console.log(`🚀 SnowBooks Backend running on port ${port}`);
-  console.log(`📡 WebSocket server ready for real-time progress updates`);
-  console.log(`🎵 FFmpeg audio processing service initialized`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`🚀 SnowBooks Backend running on port ${port}`);
+  logger.log(`📡 WebSocket server ready for real-time progress updates`);
+  logger.log(`🎵 FFmpeg audio processing service initialized`);
 }
 
 bootstrap();
