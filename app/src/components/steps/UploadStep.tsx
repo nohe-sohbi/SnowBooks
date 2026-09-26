@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Loading } from '@/components/ui/loading';
 import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
 import { Upload, RefreshCw, CheckCircle2 } from 'lucide-react';
-import { audioProcessingAPI, type UploadResponse } from '@/services/audioProcessingAPI';
+import { audioProcessingAPI } from '@/services/audioProcessingAPI';
 import { cn } from '@/lib/utils';
 import type MP3File from "@/interface/MP3File";
 
@@ -40,7 +40,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
     try {
       // Upload to backend API with real progress tracking
       setProgress(0);
-      const uploadResponse: UploadResponse = await audioProcessingAPI.uploadZip(zipFile, (percent) => {
+      const uploadResponse = await audioProcessingAPI.uploadZip(zipFile, (percent) => {
         // Map upload progress to 0-50% of overall progress
         setProgress(Math.round(percent * 0.5));
       });
