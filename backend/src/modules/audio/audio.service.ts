@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import * as path from 'path';
 import * as archiver from 'archiver';
 import { JobData, JobProgress, ProcessingConfig } from '@/common/interfaces/job.interface';
@@ -331,7 +332,7 @@ export class AudioService {
     const zipPath = path.join(jobDir, zipFileName);
 
     return new Promise((resolve, reject) => {
-      const output = require('fs').createWriteStream(zipPath);
+      const output = createWriteStream(zipPath);
       const archive = archiver('zip', {
         zlib: { level: 6 }, // Compression level
       });
