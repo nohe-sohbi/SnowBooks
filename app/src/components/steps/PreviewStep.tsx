@@ -11,7 +11,6 @@ import {
     FileAudio,
     HardDrive,
     Headphones,
-    Music,
     Pause,
     Play,
     Square,
@@ -251,7 +250,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
               {/* Currently Playing File Info */}
               <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950 rounded-xl border border-winter-blue-200 dark:border-winter-blue-800">
                 <div className="p-3 rounded-full bg-winter-blue-500 text-white">
-                  <Music className="h-5 w-5" />
+                  <AudioIcon />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h5 className="font-semibold text-winter-blue-900 dark:text-winter-blue-100 truncate">
