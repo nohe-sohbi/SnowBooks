@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -7,6 +7,7 @@ import { JobStatus } from '@/common/interfaces/job.interface';
 
 @Injectable()
 export class DownloadService {
+  private readonly logger = new Logger(DownloadService.name);
   private readonly uploadDir: string;
 
   constructor(
@@ -99,7 +100,7 @@ export class DownloadService {
       await fs.unlink(downloadInfo.filePath);
     } catch (error) {
       // File might already be deleted or not exist, which is fine
-      console.warn(`Could not cleanup download file for job ${jobId}:`, error.message);
+      this.logger.warn(`Could not cleanup download file for job ${jobId}:`, error.message);
     }
   }
 }
