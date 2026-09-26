@@ -94,11 +94,12 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
         .map(socketId => this.server.sockets.get(socketId))
         .filter(socket => socket !== undefined);
       
+      const timestamp = new Date().toISOString();
       for (const socket of sockets) {
         socket.emit('progress-update', {
           jobId,
           progress,
-          timestamp: new Date().toISOString(),
+          timestamp,
         });
       }
       
@@ -115,11 +116,12 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
         .map(socketId => this.server.sockets.get(socketId))
         .filter(socket => socket !== undefined);
       
+      const timestamp = new Date().toISOString();
       for (const socket of sockets) {
         socket.emit('job-completed', {
           jobId,
           result,
-          timestamp: new Date().toISOString(),
+          timestamp,
         });
       }
       
@@ -136,11 +138,12 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
         .map(socketId => this.server.sockets.get(socketId))
         .filter(socket => socket !== undefined);
       
+      const timestamp = new Date().toISOString();
       for (const socket of sockets) {
         socket.emit('job-error', {
           jobId,
           error,
-          timestamp: new Date().toISOString(),
+          timestamp,
         });
       }
       
