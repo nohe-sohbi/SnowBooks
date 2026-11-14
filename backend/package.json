@@ -86,5 +86,18 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "ws": "8.21.0",
+    "engine.io": "6.6.10",
+    "path-to-regexp": "0.1.13",
+    "validator": "13.15.22",
+    "minimatch": "9.0.7",
+    "picomatch": "2.3.2",
+    "socket.io-parser": "4.2.7",
+    "lodash": "4.18.0",
+    "glob": "10.5.0",
+    "brace-expansion": "2.1.6",
+    "body-parser": "1.20.9"
   }
 }
