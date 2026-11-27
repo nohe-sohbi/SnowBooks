@@ -1,29 +1,42 @@
-'use client'
+"use client";
 
-import { useState } from 'react';
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone';
-import { Button } from '@/components/ui/button';
-import { AudioCard, ProcessingCard } from '@/components/ui/card';
-import { ErrorAlert, SuccessAlert } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Loading } from '@/components/ui/loading';
-import { AudioIcon, SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
-import { Upload, RefreshCw, CheckCircle2 } from 'lucide-react';
-import { audioProcessingAPI } from '@/services/audioProcessingAPI';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from "@/components/ui/shadcn-io/dropzone";
+import { Button } from "@/components/ui/button";
+import { AudioCard, ProcessingCard } from "@/components/ui/card";
+import { ErrorAlert, SuccessAlert } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Loading } from "@/components/ui/loading";
+import {
+  AudioIcon,
+  SnowflakeIcon,
+  SuccessIcon,
+  ErrorIcon,
+} from "@/components/ui/icon";
+import { Upload, RefreshCw, CheckCircle2 } from "lucide-react";
+import { audioProcessingAPI } from "@/services/audioProcessingAPI";
+import { cn } from "@/lib/utils";
 import type MP3File from "@/interface/MP3File";
 
-type UploadStatus = 'idle' | 'extracting' | 'ready' | 'error';
+type UploadStatus = "idle" | "extracting" | "ready" | "error";
 
 interface UploadStepProps {
-  onFilesExtracted: (files: MP3File[], originalZipName: string, jobId: string) => void;
+  onFilesExtracted: (
+    files: MP3File[],
+    originalZipName: string,
+    jobId: string,
+  ) => void;
   onError: (error: string) => void;
 }
 
 export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
   const [files, setFiles] = useState<File[]>([]);
-  const [status, setStatus] = useState<UploadStatus>('idle');
-  const [error, setError] = useState<string>('');
+  const [status, setStatus] = useState<UploadStatus>("idle");
+  const [error, setError] = useState<string>("");
   const [progress, setProgress] = useState(0);
   const [fileCount, setFileCount] = useState(0);
 
@@ -32,37 +45,42 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
 
     const zipFile = droppedFiles[0];
     setFiles([zipFile]);
-    setStatus('extracting');
-    setError('');
+    setStatus("extracting");
+    setError("");
     setProgress(0);
     setFileCount(0);
 
     try {
       // Upload to backend API with real progress tracking
       setProgress(0);
-      const uploadResponse = await audioProcessingAPI.uploadZip(zipFile, (percent) => {
-        // Map upload progress to 0-50% of overall progress
-        setProgress(Math.round(percent * 0.5));
-      });
+      const uploadResponse = await audioProcessingAPI.uploadZip(
+        zipFile,
+        (percent) => {
+          // Map upload progress to 0-50% of overall progress
+          setProgress(Math.round(percent * 0.5));
+        },
+      );
 
       setProgress(50);
       setFileCount(uploadResponse.fileCount);
 
       // Get job details to extract MP3 file info
-      const jobData = await audioProcessingAPI.getJobStatus(uploadResponse.jobId);
+      const jobData = await audioProcessingAPI.getJobStatus(
+        uploadResponse.jobId,
+      );
 
       setProgress(80);
 
       // Check if files were found
       if (jobData.mp3Files.length === 0) {
-        setError('No supported audio or video files found');
-        setStatus('error');
-        onError('No supported audio or video files found');
+        setError("No supported audio or video files found");
+        setStatus("error");
+        onError("No supported audio or video files found");
         return;
       }
 
       // Convert backend MP3FileInfo to frontend MP3File format
-      const mp3Files: MP3File[] = jobData.mp3Files.map(fileInfo => ({
+      const mp3Files: MP3File[] = jobData.mp3Files.map((fileInfo) => ({
         name: fileInfo.name,
         size: fileInfo.size,
         duration: fileInfo.duration,
@@ -70,21 +88,25 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
       }));
 
       setProgress(100);
-      setStatus('ready');
-      onFilesExtracted(mp3Files, uploadResponse.originalZipName, uploadResponse.jobId);
-      
+      setStatus("ready");
+      onFilesExtracted(
+        mp3Files,
+        uploadResponse.originalZipName,
+        uploadResponse.jobId,
+      );
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to process archive file';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to process archive file";
       setError(errorMessage);
-      setStatus('error');
+      setStatus("error");
       onError(errorMessage);
     }
   };
 
   const reset = () => {
     setFiles([]);
-    setStatus('idle');
-    setError('');
+    setStatus("idle");
+    setError("");
     setProgress(0);
     setFileCount(0);
   };
@@ -94,47 +116,47 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
       <div className="max-w-3xl mx-auto">
         {/* Winter Audio Studio Upload Area */}
         <AudioCard className="relative overflow-hidden">
-
           <div className="p-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-display font-bold bg-gradient-to-r from-winter-blue-900 to-winter-blue-600 bg-clip-text text-transparent mb-2">
                 Upload Your Audio Collection
               </h3>
               <p className="text-ice-gray-600 dark:text-ice-gray-400 leading-relaxed">
-                Drop an MP3, a video file (film or series episode), or a ZIP/RAR archive to begin the winter processing experience
+                Drop an MP3, a video file (film or series episode), or a ZIP/RAR
+                archive to begin the winter processing experience
               </p>
             </div>
 
             <Dropzone
               accept={{
-                'application/zip': ['.zip'],
-                'application/x-zip-compressed': ['.zip'],
-                'application/x-rar-compressed': ['.rar'],
-                'application/vnd.rar': ['.rar'],
-                'application/octet-stream': ['.zip', '.rar'],
-                'audio/mpeg': ['.mp3'],
-                'video/mp4': ['.mp4', '.m4v'],
-                'video/x-matroska': ['.mkv'],
-                'video/x-msvideo': ['.avi'],
-                'video/quicktime': ['.mov'],
-                'video/webm': ['.webm'],
+                "application/zip": [".zip"],
+                "application/x-zip-compressed": [".zip"],
+                "application/x-rar-compressed": [".rar"],
+                "application/vnd.rar": [".rar"],
+                "application/octet-stream": [".zip", ".rar"],
+                "audio/mpeg": [".mp3"],
+                "video/mp4": [".mp4", ".m4v"],
+                "video/x-matroska": [".mkv"],
+                "video/x-msvideo": [".avi"],
+                "video/quicktime": [".mov"],
+                "video/webm": [".webm"],
               }}
               maxFiles={1}
               maxSize={5 * 1024 * 1024 * 1024} // 5GB
               onDrop={handleDrop}
               onError={(error) => {
-                setStatus('error');
+                setStatus("error");
                 setError(error.message);
                 onError(error.message);
               }}
               src={files}
-              disabled={status === 'extracting'}
+              disabled={status === "extracting"}
               className={cn(
                 "border-2 border-dashed rounded-xl transition-all duration-300",
-                status === 'extracting'
+                status === "extracting"
                   ? "border-winter-blue-300 bg-winter-blue-50 dark:bg-winter-blue-950 opacity-75 cursor-not-allowed"
                   : "border-ice-gray-300 hover:border-winter-blue-400 hover:bg-winter-blue-50 dark:border-ice-gray-600 dark:hover:border-winter-blue-500 dark:hover:bg-winter-blue-950/50",
-                "focus-within:border-winter-blue-500 focus-within:ring-2 focus-within:ring-winter-blue-500 focus-within:ring-offset-2"
+                "focus-within:border-winter-blue-500 focus-within:ring-2 focus-within:ring-winter-blue-500 focus-within:ring-offset-2",
               )}
             >
               <DropzoneEmptyState>
@@ -177,7 +199,7 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
           </div>
         </AudioCard>
 
-        {status === 'extracting' && (
+        {status === "extracting" && (
           <ProcessingCard className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
             <div className="p-6">
               <div className="flex items-start gap-4 mb-6">
@@ -190,9 +212,8 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                   </h4>
                   <p className="text-ice-gray-600 dark:text-ice-gray-400">
                     {fileCount > 0
-                      ? `Discovered ${fileCount} media ${fileCount === 1 ? 'file' : 'files'}`
-                      : 'Scanning and preparing your media files...'
-                    }
+                      ? `Discovered ${fileCount} media ${fileCount === 1 ? "file" : "files"}`
+                      : "Scanning and preparing your media files..."}
                   </p>
                 </div>
               </div>
@@ -203,18 +224,13 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                   <span className="tabular-nums">{Math.round(progress)}%</span>
                 </div>
 
-                <Progress
-                  value={progress}
-                  variant="audio"
-                  className="h-3"
-                />
-
+                <Progress value={progress} variant="audio" className="h-3" />
               </div>
             </div>
           </ProcessingCard>
         )}
-        
-        {status === 'ready' && (
+
+        {status === "ready" && (
           <div className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
             <SuccessAlert
               title="Media Collection Ready!"
@@ -223,13 +239,18 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <SuccessIcon size="sm" />
-                  <span className="font-medium">Successfully prepared {fileCount} media {fileCount === 1 ? 'file' : 'files'}</span>
+                  <span className="font-medium">
+                    Successfully prepared {fileCount} media{" "}
+                    {fileCount === 1 ? "file" : "files"}
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap gap-4 text-sm text-green-700 dark:text-green-300">
                   <div className="flex items-center gap-1">
                     <AudioIcon size="xs" />
-                    <span>{fileCount} media {fileCount === 1 ? 'file' : 'files'}</span>
+                    <span>
+                      {fileCount} media {fileCount === 1 ? "file" : "files"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />
@@ -242,15 +263,16 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                 </div>
 
                 <p className="text-green-600 dark:text-green-400 text-sm leading-relaxed">
-                  Your audio collection is ready! You can now proceed to configure the white noise settings
-                  and create the perfect ambient listening experience.
+                  Your audio collection is ready! You can now proceed to
+                  configure the white noise settings and create the perfect
+                  ambient listening experience.
                 </p>
               </div>
             </SuccessAlert>
           </div>
         )}
 
-        {status === 'error' && (
+        {status === "error" && (
           <div className="mt-8 animate-in slide-in-from-bottom-4 duration-300">
             <ErrorAlert
               title="Upload Failed"
@@ -266,7 +288,8 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                     </p>
 
                     {/* Audio-specific error guidance */}
-                    {(error.toLowerCase().includes('mp3') || error.toLowerCase().includes('audio')) && (
+                    {(error.toLowerCase().includes("mp3") ||
+                      error.toLowerCase().includes("audio")) && (
                       <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
                         <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
                           Audio File Tips:
@@ -274,38 +297,47 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                         <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
                           <li>• Ensure your archive contains only MP3 files</li>
                           <li>• Check that audio files are not corrupted</li>
-                          <li>• Verify file names don't contain special characters</li>
+                          <li>
+                            • Verify file names don't contain special characters
+                          </li>
                           <li>• Try with a smaller archive first</li>
                         </ul>
                       </div>
                     )}
 
-                    {error.toLowerCase().includes('cors') && (
+                    {error.toLowerCase().includes("cors") && (
                       <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
                         <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
                           Server Configuration Issue:
                         </h5>
                         <p className="text-sm text-red-700 dark:text-red-300">
-                          The app cannot reach the backend server. This usually means the API URL or CORS settings need to be updated for your deployment. Check the browser console for details.
+                          The app cannot reach the backend server. This usually
+                          means the API URL or CORS settings need to be updated
+                          for your deployment. Check the browser console for
+                          details.
                         </p>
                       </div>
                     )}
 
-                    {(error.toLowerCase().includes('network') || error.toLowerCase().includes('timed out')) && !error.toLowerCase().includes('cors') && (
-                      <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
-                        <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
-                          Connection Tips:
-                        </h5>
-                        <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
-                          <li>• Check your internet connection is stable</li>
-                          <li>• Switch from mobile data to Wi-Fi if possible</li>
-                          <li>• Try moving closer to your router</li>
-                          <li>• For large files, try a faster connection</li>
-                        </ul>
-                      </div>
-                    )}
+                    {(error.toLowerCase().includes("network") ||
+                      error.toLowerCase().includes("timed out")) &&
+                      !error.toLowerCase().includes("cors") && (
+                        <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
+                          <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
+                            Connection Tips:
+                          </h5>
+                          <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                            <li>• Check your internet connection is stable</li>
+                            <li>
+                              • Switch from mobile data to Wi-Fi if possible
+                            </li>
+                            <li>• Try moving closer to your router</li>
+                            <li>• For large files, try a faster connection</li>
+                          </ul>
+                        </div>
+                      )}
 
-                    {error.toLowerCase().includes('size') && (
+                    {error.toLowerCase().includes("size") && (
                       <div className="p-3 bg-red-50 dark:bg-red-950/50 rounded-lg border border-red-200 dark:border-red-800">
                         <h5 className="font-medium text-red-800 dark:text-red-200 mb-2">
                           File Size Tips:
@@ -313,7 +345,9 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                         <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
                           <li>• Maximum file size is 1GB</li>
                           <li>• Try compressing your audio files</li>
-                          <li>• Split large collections into smaller archives</li>
+                          <li>
+                            • Split large collections into smaller archives
+                          </li>
                           <li>• Remove any non-audio files from the archive</li>
                         </ul>
                       </div>
@@ -322,12 +356,23 @@ export const UploadStep = ({ onFilesExtracted, onError }: UploadStepProps) => {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button onClick={reset} variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button
+                    onClick={reset}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
                     <RefreshCw className="h-4 w-4" />
                     Try Again
                   </Button>
                   <Button
-                    onClick={() => window.open('https://github.com/nohe-sohbi/SnowBooks/issues', '_blank', 'noopener,noreferrer')}
+                    onClick={() =>
+                      window.open(
+                        "https://github.com/nohe-sohbi/SnowBooks/issues",
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
                     variant="ghost"
                     size="sm"
                     className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"

@@ -1,20 +1,30 @@
-import { Injectable, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs/promises';
-import { createWriteStream } from 'fs';
-import * as path from 'path';
-import * as yauzl from 'yauzl';
-import { createExtractorFromData } from 'node-unrar-js';
-import { v4 as uuidv4 } from 'uuid';
-import { MP3FileInfo, JobData, JobStatus } from '@/common/interfaces/job.interface';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as fs from "fs/promises";
+import { createWriteStream } from "fs";
+import * as path from "path";
+import * as yauzl from "yauzl";
+import { createExtractorFromData } from "node-unrar-js";
+import { v4 as uuidv4 } from "uuid";
+import {
+  MP3FileInfo,
+  JobData,
+  JobStatus,
+} from "@/common/interfaces/job.interface";
 import {
   isArchiveFile,
   isMediaFile,
   getMediaType,
   MEDIA_EXTENSIONS,
-} from '@/common/media-types';
+} from "@/common/media-types";
 
-const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V4_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class UploadService {
@@ -29,27 +39,29 @@ export class UploadService {
   private readonly jobDataCache: Map<string, JobData> = new Map();
 
   constructor(private configService: ConfigService) {
-    this.uploadDir = this.configService.get('UPLOAD_DIR') || './uploads';
-    this.tempDir = this.configService.get('TEMP_DIR') || './temp';
-    this.maxFileSize = parseInt(this.configService.get('MAX_FILE_SIZE')) || 5368709120; // 5GB
+    this.uploadDir = this.configService.get("UPLOAD_DIR") || "./uploads";
+    this.tempDir = this.configService.get("TEMP_DIR") || "./temp";
+    this.maxFileSize =
+      parseInt(this.configService.get("MAX_FILE_SIZE")) || 5368709120; // 5GB
     this.maxExtractedSize =
-      parseInt(this.configService.get('MAX_EXTRACTED_SIZE')) || 10737418240; // 10GB
+      parseInt(this.configService.get("MAX_EXTRACTED_SIZE")) || 10737418240; // 10GB
     // node-unrar-js buffers the whole archive in memory, so RAR gets a
     // stricter cap than the general upload limit.
-    this.maxRarSize = parseInt(this.configService.get('MAX_RAR_SIZE')) || 1073741824; // 1GB
+    this.maxRarSize =
+      parseInt(this.configService.get("MAX_RAR_SIZE")) || 1073741824; // 1GB
   }
 
-  public sanitizeFilename(filename: string, baseDir: string = ''): string {
+  public sanitizeFilename(filename: string, baseDir: string = ""): string {
     const base = path.basename(filename).trim();
-    if (!base || base === '.' || base === '..') {
-      throw new BadRequestException('Invalid filename');
+    if (!base || base === "." || base === "..") {
+      throw new BadRequestException("Invalid filename");
     }
 
     if (baseDir) {
       const outputPath = path.join(baseDir, base);
       const relativePath = path.relative(baseDir, outputPath);
-      if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
-        throw new BadRequestException('Path traversal detected');
+      if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+        throw new BadRequestException("Path traversal detected");
       }
     }
 
@@ -63,7 +75,7 @@ export class UploadService {
     // Generate job ID and create directories
     const jobId = uuidv4();
     const jobDir = path.join(this.uploadDir, jobId);
-    const extractDir = path.join(jobDir, 'extracted');
+    const extractDir = path.join(jobDir, "extracted");
 
     try {
       await fs.mkdir(jobDir, { recursive: true });
@@ -79,13 +91,15 @@ export class UploadService {
         await fs.rename(file.path, archivePath);
 
         // Extract media files from archive (ZIP or RAR)
-        const isRar = file.originalname.toLowerCase().endsWith('.rar');
+        const isRar = file.originalname.toLowerCase().endsWith(".rar");
         mediaFiles = isRar
           ? await this.extractMediaFilesFromRar(archivePath, extractDir)
           : await this.extractMediaFiles(archivePath, extractDir);
 
         if (mediaFiles.length === 0) {
-          throw new BadRequestException('No supported audio or video files found in the uploaded archive');
+          throw new BadRequestException(
+            "No supported audio or video files found in the uploaded archive",
+          );
         }
       } else {
         // Direct single media file (e.g. a film or an episode): keep it as-is.
@@ -132,30 +146,35 @@ export class UploadService {
 
   private validateUpload(file: Express.Multer.File): void {
     if (!file) {
-      throw new BadRequestException('No file uploaded');
+      throw new BadRequestException("No file uploaded");
     }
 
     if (file.size > this.maxFileSize) {
-      throw new BadRequestException(`File size exceeds maximum limit of ${this.maxFileSize} bytes`);
+      throw new BadRequestException(
+        `File size exceeds maximum limit of ${this.maxFileSize} bytes`,
+      );
     }
 
     if (!isArchiveFile(file.originalname) && !isMediaFile(file.originalname)) {
       throw new BadRequestException(
-        `Unsupported file type. Allowed: ZIP, RAR archives or media files (${MEDIA_EXTENSIONS.join(', ')})`,
+        `Unsupported file type. Allowed: ZIP, RAR archives or media files (${MEDIA_EXTENSIONS.join(", ")})`,
       );
     }
 
     const allowedMimeTypes = [
-      'application/zip',
-      'application/x-zip-compressed',
-      'application/x-rar-compressed',
-      'application/vnd.rar',
-      'application/octet-stream',
+      "application/zip",
+      "application/x-zip-compressed",
+      "application/x-rar-compressed",
+      "application/vnd.rar",
+      "application/octet-stream",
     ];
     // Browsers report video/* and audio/* for direct media uploads.
-    const isMediaMime = file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/');
+    const isMediaMime =
+      file.mimetype.startsWith("video/") || file.mimetype.startsWith("audio/");
     if (!allowedMimeTypes.includes(file.mimetype) && !isMediaMime) {
-      throw new BadRequestException('Invalid file type. Only ZIP/RAR archives or audio/video files are allowed');
+      throw new BadRequestException(
+        "Invalid file type. Only ZIP/RAR archives or audio/video files are allowed",
+      );
     }
   }
 
@@ -172,7 +191,10 @@ export class UploadService {
     return candidate;
   }
 
-  private async extractMediaFiles(zipPath: string, extractDir: string): Promise<MP3FileInfo[]> {
+  private async extractMediaFiles(
+    zipPath: string,
+    extractDir: string,
+  ): Promise<MP3FileInfo[]> {
     return new Promise((resolve, reject) => {
       const mediaFiles: MP3FileInfo[] = [];
       const takenNames = new Set<string>();
@@ -180,13 +202,13 @@ export class UploadService {
 
       yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
         if (err) {
-          reject(new BadRequestException('Invalid ZIP file'));
+          reject(new BadRequestException("Invalid ZIP file"));
           return;
         }
 
         zipfile.readEntry();
 
-        zipfile.on('entry', async (entry) => {
+        zipfile.on("entry", async (entry) => {
           if (/\/$/.test(entry.fileName)) {
             // Directory entry
             zipfile.readEntry();
@@ -226,7 +248,7 @@ export class UploadService {
               const writeStream = createWriteStream(outputPath);
               readStream.pipe(writeStream);
 
-              writeStream.on('close', () => {
+              writeStream.on("close", () => {
                 mediaFiles.push({
                   name: safeName,
                   size: entry.uncompressedSize,
@@ -236,7 +258,7 @@ export class UploadService {
                 zipfile.readEntry();
               });
 
-              writeStream.on('error', (error) => {
+              writeStream.on("error", (error) => {
                 reject(error);
               });
             });
@@ -245,18 +267,25 @@ export class UploadService {
           }
         });
 
-        zipfile.on('end', () => {
+        zipfile.on("end", () => {
           resolve(mediaFiles);
         });
 
-        zipfile.on('error', (error) => {
-          reject(new InternalServerErrorException(`ZIP extraction failed: ${error.message}`));
+        zipfile.on("error", (error) => {
+          reject(
+            new InternalServerErrorException(
+              `ZIP extraction failed: ${error.message}`,
+            ),
+          );
         });
       });
     });
   }
 
-  private async extractMediaFilesFromRar(rarPath: string, extractDir: string): Promise<MP3FileInfo[]> {
+  private async extractMediaFilesFromRar(
+    rarPath: string,
+    extractDir: string,
+  ): Promise<MP3FileInfo[]> {
     const mediaFiles: MP3FileInfo[] = [];
     const takenNames = new Set<string>();
     let totalExtractedSize = 0;
@@ -272,7 +301,12 @@ export class UploadService {
 
     try {
       const rarBuffer = await fs.readFile(rarPath);
-      const extractor = await createExtractorFromData({ data: rarBuffer.buffer.slice(rarBuffer.byteOffset, rarBuffer.byteOffset + rarBuffer.byteLength) as ArrayBuffer });
+      const extractor = await createExtractorFromData({
+        data: rarBuffer.buffer.slice(
+          rarBuffer.byteOffset,
+          rarBuffer.byteOffset + rarBuffer.byteLength,
+        ) as ArrayBuffer,
+      });
 
       const { files } = extractor.extract();
       const writePromises: Promise<void>[] = [];
@@ -327,12 +361,13 @@ export class UploadService {
 
   private async saveJobMetadata(jobData: JobData): Promise<void> {
     this.jobDataCache.set(jobData.id, structuredClone(jobData));
-    const metadataPath = path.join(jobData.uploadPath, 'job-metadata.json');
+    const metadataPath = path.join(jobData.uploadPath, "job-metadata.json");
     const payload = JSON.stringify(jobData, null, 2);
 
     // Chain writes per job and write atomically (tmp + rename) so a status
     // read never sees a half-written file, even under rapid progress updates.
-    const previous = this.metadataWriteChains.get(jobData.id) || Promise.resolve();
+    const previous =
+      this.metadataWriteChains.get(jobData.id) || Promise.resolve();
     const write = previous
       .catch(() => {})
       .then(async () => {
@@ -365,9 +400,9 @@ export class UploadService {
 
     try {
       const jobDir = path.join(this.uploadDir, jobId);
-      const metadataPath = path.join(jobDir, 'job-metadata.json');
+      const metadataPath = path.join(jobDir, "job-metadata.json");
 
-      const metadataContent = await fs.readFile(metadataPath, 'utf-8');
+      const metadataContent = await fs.readFile(metadataPath, "utf-8");
       const jobData = JSON.parse(metadataContent);
       this.jobDataCache.set(jobId, structuredClone(jobData));
       return jobData;
@@ -392,7 +427,8 @@ export class UploadService {
   }
 
   async cleanupExpiredJobs(): Promise<void> {
-    const cleanupInterval = parseInt(this.configService.get('FILE_CLEANUP_INTERVAL')) || 86400000; // 24 hours
+    const cleanupInterval =
+      parseInt(this.configService.get("FILE_CLEANUP_INTERVAL")) || 86400000; // 24 hours
     const cutoffTime = new Date(Date.now() - cleanupInterval);
 
     try {
@@ -410,7 +446,7 @@ export class UploadService {
         }),
       );
     } catch (error) {
-      this.logger.error('Failed to cleanup expired jobs:', error);
+      this.logger.error("Failed to cleanup expired jobs:", error);
     }
   }
 }

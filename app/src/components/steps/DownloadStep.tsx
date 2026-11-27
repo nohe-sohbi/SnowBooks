@@ -1,16 +1,22 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { ProcessingCard } from '@/components/ui/card';
-import { SuccessAlert, ErrorAlert } from '@/components/ui/alert';
-import { Loading } from '@/components/ui/loading';
-import { SnowflakeIcon, SuccessIcon, ErrorIcon } from '@/components/ui/icon';
-import { Download, CheckCircle2, RefreshCw, Gift, FileArchive } from 'lucide-react';
-import { audioProcessingAPI } from '@/services/audioProcessingAPI';
-import { formatSize } from '@/utils/formatters';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ProcessingCard } from "@/components/ui/card";
+import { SuccessAlert, ErrorAlert } from "@/components/ui/alert";
+import { Loading } from "@/components/ui/loading";
+import { SnowflakeIcon, SuccessIcon, ErrorIcon } from "@/components/ui/icon";
+import {
+  Download,
+  CheckCircle2,
+  RefreshCw,
+  Gift,
+  FileArchive,
+} from "lucide-react";
+import { audioProcessingAPI } from "@/services/audioProcessingAPI";
+import { formatSize } from "@/utils/formatters";
+import { cn } from "@/lib/utils";
 
 interface DownloadStepProps {
   jobId: string;
@@ -24,12 +30,12 @@ interface FileInfo {
   fileCount?: number;
 }
 
-type ExportStatus = 'idle' | 'creating' | 'downloading' | 'completed' | 'error';
+type ExportStatus = "idle" | "creating" | "downloading" | "completed" | "error";
 
-export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
-  const [status, setStatus] = useState<ExportStatus>('idle');
-  const [error, setError] = useState<string>('');
-  const [downloadedFileName, setDownloadedFileName] = useState<string>('');
+export const DownloadStep = ({ jobId, originalZipName }: DownloadStepProps) => {
+  const [status, setStatus] = useState<ExportStatus>("idle");
+  const [error, setError] = useState<string>("");
+  const [downloadedFileName, setDownloadedFileName] = useState<string>("");
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
 
@@ -40,7 +46,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
         const info = await audioProcessingAPI.getDownloadInfo(jobId);
         setFileInfo(info);
       } catch (error) {
-        console.error('Failed to load file info:', error);
+        console.error("Failed to load file info:", error);
         // Don't set error state here, just log it
       }
     };
@@ -52,8 +58,8 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
 
   const downloadProcessedFiles = async () => {
     try {
-      setStatus('downloading');
-      setError('');
+      setStatus("downloading");
+      setError("");
       setDownloadProgress(0);
 
       // Get file info if not already loaded
@@ -65,7 +71,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
 
       // Simulate download progress for better UX
       const progressInterval = setInterval(() => {
-        setDownloadProgress(prev => Math.min(prev + 10, 90));
+        setDownloadProgress((prev) => Math.min(prev + 10, 90));
       }, 200);
 
       // Download the processed ZIP file
@@ -76,9 +82,11 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      const fileName = info?.fileName || `${originalZipName?.replace(/\.zip$/i, '') || 'processed-audio'}-with-white-noise.zip`;
+      const fileName =
+        info?.fileName ||
+        `${originalZipName?.replace(/\.zip$/i, "") || "processed-audio"}-with-white-noise.zip`;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
@@ -86,23 +94,22 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
       window.URL.revokeObjectURL(url);
 
       setDownloadedFileName(fileName);
-      setStatus('completed');
-
+      setStatus("completed");
     } catch (error) {
-      console.error('Download failed:', error);
-      setError(error instanceof Error ? error.message : 'Download failed');
-      setStatus('error');
+      console.error("Download failed:", error);
+      setError(error instanceof Error ? error.message : "Download failed");
+      setStatus("error");
       setDownloadProgress(0);
     }
   };
 
   const getStatusIcon = () => {
     switch (status) {
-      case 'downloading':
+      case "downloading":
         return <Loading size="lg" />;
-      case 'completed':
+      case "completed":
         return <SuccessIcon size="xl" />;
-      case 'error':
+      case "error":
         return <ErrorIcon size="xl" />;
       default:
         return <Gift className="h-8 w-8 text-warm-amber-500" />;
@@ -111,45 +118,44 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
 
   const getStatusColor = () => {
     switch (status) {
-      case 'downloading':
-        return 'text-winter-blue-600 dark:text-winter-blue-400';
-      case 'completed':
-        return 'text-green-600 dark:text-green-400';
-      case 'error':
-        return 'text-red-600 dark:text-red-400';
+      case "downloading":
+        return "text-winter-blue-600 dark:text-winter-blue-400";
+      case "completed":
+        return "text-green-600 dark:text-green-400";
+      case "error":
+        return "text-red-600 dark:text-red-400";
       default:
-        return 'text-warm-amber-600 dark:text-warm-amber-400';
+        return "text-warm-amber-600 dark:text-warm-amber-400";
     }
   };
 
   const getStatusText = () => {
     switch (status) {
-      case 'downloading':
+      case "downloading":
         return `Preparing your winter audio collection... ${downloadProgress}%`;
-      case 'completed':
+      case "completed":
         return `Successfully downloaded: ${downloadedFileName}`;
-      case 'error':
+      case "error":
         return `Download encountered an issue: ${error}`;
       default:
-        return 'Your winter-enhanced audio collection is ready for download';
+        return "Your winter-enhanced audio collection is ready for download";
     }
   };
 
   const getDownloadStage = () => {
-    if (status !== 'downloading') return null;
+    if (status !== "downloading") return null;
 
-    if (downloadProgress < 30) return 'Gathering winter-enhanced files...';
-    if (downloadProgress < 70) return 'Compressing audio collection...';
-    if (downloadProgress < 95) return 'Finalizing download package...';
-    return 'Completing download...';
+    if (downloadProgress < 30) return "Gathering winter-enhanced files...";
+    if (downloadProgress < 70) return "Compressing audio collection...";
+    if (downloadProgress < 95) return "Finalizing download package...";
+    return "Completing download...";
   };
 
-  const isProcessing = status === 'downloading';
+  const isProcessing = status === "downloading";
 
   return (
     <div className="space-y-8">
       <div className="max-w-5xl mx-auto">
-
         {/* Winter-Themed Download Interface */}
         <ProcessingCard className="mb-8">
           <div className="p-8">
@@ -157,23 +163,24 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   {getStatusIcon()}
-                  {status === 'downloading' && (
+                  {status === "downloading" && (
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-warm-amber-500 rounded-full animate-pulse" />
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className={cn("text-2xl font-semibold", getStatusColor())}>
-                    {status === 'idle' && 'Ready to Download'}
-                    {status === 'downloading' && 'Preparing Download'}
-                    {status === 'completed' && 'Download Complete'}
-                    {status === 'error' && 'Download Error'}
+                  <h4
+                    className={cn("text-2xl font-semibold", getStatusColor())}
+                  >
+                    {status === "idle" && "Ready to Download"}
+                    {status === "downloading" && "Preparing Download"}
+                    {status === "completed" && "Download Complete"}
+                    {status === "error" && "Download Error"}
                   </h4>
                   <p className="text-ice-gray-600 dark:text-ice-gray-400">
                     {fileInfo
-                      ? `${formatSize(fileInfo.fileSize)} • ${fileInfo.fileCount || 'Multiple'} files • Winter enhanced`
-                      : 'Your winter-enhanced audio collection awaits'
-                    }
+                      ? `${formatSize(fileInfo.fileSize)} • ${fileInfo.fileCount || "Multiple"} files • Winter enhanced`
+                      : "Your winter-enhanced audio collection awaits"}
                   </p>
                   {getDownloadStage() && (
                     <p className="text-sm text-winter-blue-600 dark:text-winter-blue-400 font-medium">
@@ -185,7 +192,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
 
               {/* Download Actions */}
               <div className="flex gap-4">
-                {status !== 'completed' && status !== 'downloading' && (
+                {status !== "completed" && status !== "downloading" && (
                   <Button
                     onClick={downloadProcessedFiles}
                     disabled={isProcessing}
@@ -197,7 +204,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                   </Button>
                 )}
 
-                {status === 'downloading' && (
+                {status === "downloading" && (
                   <Button
                     disabled
                     size="lg"
@@ -208,9 +215,9 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                   </Button>
                 )}
 
-                {status === 'error' && (
+                {status === "error" && (
                   <Button
-                    onClick={() => setStatus('idle')}
+                    onClick={() => setStatus("idle")}
                     variant="outline"
                     size="lg"
                     className="border-winter-blue-300 dark:border-winter-blue-600 text-winter-blue-600 dark:text-winter-blue-400 hover:bg-winter-blue-50 dark:hover:bg-winter-blue-950 min-w-[140px]"
@@ -224,10 +231,14 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
 
             {/* Status Description */}
             <div className="text-center mb-6">
-              <p className={cn(
-                "text-lg leading-relaxed",
-                status === 'error' ? 'text-red-600 dark:text-red-400' : 'text-ice-gray-600 dark:text-ice-gray-400'
-              )}>
+              <p
+                className={cn(
+                  "text-lg leading-relaxed",
+                  status === "error"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-ice-gray-600 dark:text-ice-gray-400",
+                )}
+              >
                 {getStatusText()}
               </p>
             </div>
@@ -244,7 +255,6 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                   </span>
                 </div>
 
-
                 <Progress
                   value={downloadProgress}
                   variant="audio"
@@ -256,8 +266,14 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse" />
-                      <div className="w-2 h-2 bg-warm-amber-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                      <div className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+                      <div
+                        className="w-2 h-2 bg-warm-amber-500 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.5s" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse"
+                        style={{ animationDelay: "1s" }}
+                      />
                     </div>
                     <span className="text-sm font-medium text-ice-gray-700 dark:text-ice-gray-300">
                       {getDownloadStage()}
@@ -268,7 +284,7 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
             )}
 
             {/* Success State */}
-            {status === 'completed' && (
+            {status === "completed" && (
               <div className="animate-in slide-in-from-bottom-4 duration-300">
                 <SuccessAlert
                   title="Download Complete!"
@@ -277,7 +293,9 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <Download className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      <span className="font-medium">Your winter-enhanced audio collection has been saved</span>
+                      <span className="font-medium">
+                        Your winter-enhanced audio collection has been saved
+                      </span>
                     </div>
 
                     <div className="flex flex-wrap gap-4 text-sm text-green-700 dark:text-green-300">
@@ -296,7 +314,8 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                     </div>
 
                     <p className="text-green-600 dark:text-green-400 text-sm leading-relaxed">
-                      Your files have been saved to your downloads folder. Enjoy your winter-enhanced audio experience!
+                      Your files have been saved to your downloads folder. Enjoy
+                      your winter-enhanced audio experience!
                     </p>
                   </div>
                 </SuccessAlert>
@@ -306,11 +325,11 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
         </ProcessingCard>
 
         {/* Error State */}
-        {status === 'error' && (
+        {status === "error" && (
           <div className="mb-8 animate-in slide-in-from-bottom-4 duration-300">
             <ErrorAlert
               title="Download Error"
-              retry={() => setStatus('idle')}
+              retry={() => setStatus("idle")}
               className="border-l-4 border-l-red-500"
             >
               <div className="space-y-4">
@@ -328,8 +347,13 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
                       </h5>
                       <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
                         <li>• Check your internet connection and try again</li>
-                        <li>• Ensure you have sufficient storage space for the download</li>
-                        <li>• Verify that your browser allows file downloads</li>
+                        <li>
+                          • Ensure you have sufficient storage space for the
+                          download
+                        </li>
+                        <li>
+                          • Verify that your browser allows file downloads
+                        </li>
                         <li>• Try refreshing the page if the issue persists</li>
                       </ul>
                     </div>
@@ -339,8 +363,6 @@ export const DownloadStep = ({ jobId, originalZipName}: DownloadStepProps) => {
             </ErrorAlert>
           </div>
         )}
-
-
       </div>
     </div>
   );

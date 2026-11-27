@@ -1,13 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as ffmpeg from 'fluent-ffmpeg';
-import * as fs from 'fs/promises';
-import { createWriteStream } from 'fs';
-import * as path from 'path';
-import * as archiver from 'archiver';
-import { JobData, JobProgress, ProcessingConfig } from '@/common/interfaces/job.interface';
-import { isVideoFile, audioCodecForContainer } from '@/common/media-types';
-import { JobCancelledError } from '@/common/errors';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as ffmpeg from "fluent-ffmpeg";
+import * as fs from "fs/promises";
+import { createWriteStream } from "fs";
+import * as path from "path";
+import * as archiver from "archiver";
+import {
+  JobData,
+  JobProgress,
+  ProcessingConfig,
+} from "@/common/interfaces/job.interface";
+import { isVideoFile, audioCodecForContainer } from "@/common/media-types";
+import { JobCancelledError } from "@/common/errors";
 
 @Injectable()
 export class AudioService {
@@ -21,9 +25,11 @@ export class AudioService {
   private readonly cancelRequests = new Set<string>();
 
   constructor(private configService: ConfigService) {
-    this.ffmpegPath = this.configService.get('FFMPEG_PATH') || 'ffmpeg';
-    this.maxConcurrentJobs = parseInt(this.configService.get('MAX_CONCURRENT_JOBS')) || 3;
-    this.jobTimeout = parseInt(this.configService.get('JOB_TIMEOUT')) || 1800000; // 30 minutes
+    this.ffmpegPath = this.configService.get("FFMPEG_PATH") || "ffmpeg";
+    this.maxConcurrentJobs =
+      parseInt(this.configService.get("MAX_CONCURRENT_JOBS")) || 3;
+    this.jobTimeout =
+      parseInt(this.configService.get("JOB_TIMEOUT")) || 1800000; // 30 minutes
 
     // Set FFmpeg path
     ffmpeg.setFfmpegPath(this.ffmpegPath);
@@ -35,8 +41,10 @@ export class AudioService {
     this.cancelRequests.add(jobId);
     const command = this.activeCommands.get(jobId);
     if (command) {
-      this.logger.log(`Killing active FFmpeg process for cancelled job ${jobId}`);
-      command.kill('SIGKILL');
+      this.logger.log(
+        `Killing active FFmpeg process for cancelled job ${jobId}`,
+      );
+      command.kill("SIGKILL");
     }
   }
 
@@ -56,14 +64,18 @@ export class AudioService {
     config: ProcessingConfig,
     onProgress: (progress: JobProgress) => void,
   ): Promise<{ outputPath: string; processedFiles: string[] }> {
-    const outputDir = path.join(jobData.uploadPath, 'processed');
+    const outputDir = path.join(jobData.uploadPath, "processed");
     await fs.mkdir(outputDir, { recursive: true });
 
     const processedFiles: string[] = [];
     const totalFiles = jobData.mp3Files.length;
 
     // Load white noise file from assets directory
-    const whiteNoisePath = path.join(process.cwd(), 'assets', 'white-noise.mp3');
+    const whiteNoisePath = path.join(
+      process.cwd(),
+      "assets",
+      "white-noise.mp3",
+    );
 
     for (let i = 0; i < totalFiles; i++) {
       if (this.cancelRequests.has(jobData.id)) {
@@ -94,27 +106,37 @@ export class AudioService {
           config.whiteNoiseVolume,
           (fileProgress) => {
             progress.fileProgress = fileProgress;
-            progress.totalProgress = Math.round(((i + fileProgress / 100) / totalFiles) * 100);
+            progress.totalProgress = Math.round(
+              ((i + fileProgress / 100) / totalFiles) * 100,
+            );
             onProgress(progress);
           },
         );
 
         processedFiles.push(outputPath);
-        this.logger.log(`Processed file ${i + 1}/${totalFiles}: ${mp3File.name}`);
+        this.logger.log(
+          `Processed file ${i + 1}/${totalFiles}: ${mp3File.name}`,
+        );
       } catch (error) {
-        if (error instanceof JobCancelledError || this.cancelRequests.has(jobData.id)) {
+        if (
+          error instanceof JobCancelledError ||
+          this.cancelRequests.has(jobData.id)
+        ) {
           // Drop the half-written output of the killed FFmpeg run.
           await fs.rm(outputPath, { force: true }).catch(() => {});
           throw new JobCancelledError(jobData.id);
         }
         this.logger.error(`Failed to process file ${mp3File.name}:`, error);
-        throw new Error(`Failed to process file ${mp3File.name}: ${error.message}`);
+        throw new Error(
+          `Failed to process file ${mp3File.name}: ${error.message}`,
+        );
       }
     }
 
     // A single directly-uploaded media file (e.g. a film) is returned as-is.
     // Archives — and any multi-file job — are bundled back into a ZIP.
-    const isSingleDirectFile = jobData.isArchive === false && processedFiles.length === 1;
+    const isSingleDirectFile =
+      jobData.isArchive === false && processedFiles.length === 1;
 
     if (isSingleDirectFile) {
       const finalProgress: JobProgress = {
@@ -138,12 +160,16 @@ export class AudioService {
     }
 
     // Create ZIP file with processed media
-    const zipPath = await this.createZipFile(processedFiles, jobData.uploadPath, jobData.originalZipName);
+    const zipPath = await this.createZipFile(
+      processedFiles,
+      jobData.uploadPath,
+      jobData.originalZipName,
+    );
 
     // Final progress update
     const finalProgress: JobProgress = {
       currentFileIndex: totalFiles - 1,
-      currentFileName: 'Creating ZIP file...',
+      currentFileName: "Creating ZIP file...",
       fileProgress: 100,
       totalProgress: 100,
       processedFiles: totalFiles,
@@ -166,8 +192,22 @@ export class AudioService {
     onProgress: (progress: number) => void,
   ): Promise<void> {
     return isVideoFile(mediaPath)
-      ? this.processVideoWithWhiteNoise(jobId, mediaPath, whiteNoisePath, outputPath, volume, onProgress)
-      : this.processMP3WithWhiteNoise(jobId, mediaPath, whiteNoisePath, outputPath, volume, onProgress);
+      ? this.processVideoWithWhiteNoise(
+          jobId,
+          mediaPath,
+          whiteNoisePath,
+          outputPath,
+          volume,
+          onProgress,
+        )
+      : this.processMP3WithWhiteNoise(
+          jobId,
+          mediaPath,
+          whiteNoisePath,
+          outputPath,
+          volume,
+          onProgress,
+        );
   }
 
   private async processMP3WithWhiteNoise(
@@ -184,33 +224,38 @@ export class AudioService {
         .input(whiteNoisePath)
         .complexFilter([
           // Get duration of the main audio file
-          '[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[main]',
+          "[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[main]",
           // Loop white noise to match main audio duration and apply volume
           `[1:a]aloop=loop=-1:size=2e+09,aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,volume=${volume}[noise]`,
           // Mix main audio with white noise
-          '[main][noise]amix=inputs=2:duration=first:dropout_transition=2[out]'
+          "[main][noise]amix=inputs=2:duration=first:dropout_transition=2[out]",
         ])
         .outputOptions([
-          '-map', '[out]',
-          '-c:a', 'libmp3lame',
-          '-b:a', '192k',
-          '-ar', '44100',
-          '-ac', '2'
+          "-map",
+          "[out]",
+          "-c:a",
+          "libmp3lame",
+          "-b:a",
+          "192k",
+          "-ar",
+          "44100",
+          "-ac",
+          "2",
         ])
         .output(outputPath)
-        .on('start', (commandLine) => {
+        .on("start", (commandLine) => {
           this.logger.debug(`FFmpeg command: ${commandLine}`);
         })
-        .on('progress', (progress) => {
+        .on("progress", (progress) => {
           if (progress.percent) {
             onProgress(Math.round(progress.percent));
           }
         })
-        .on('end', () => {
+        .on("end", () => {
           this.logger.debug(`FFmpeg processing completed: ${outputPath}`);
           resolve();
         })
-        .on('error', (error) => {
+        .on("error", (error) => {
           if (this.cancelRequests.has(jobId)) {
             reject(new JobCancelledError(jobId));
             return;
@@ -223,12 +268,12 @@ export class AudioService {
 
       // Set timeout for the operation
       const timeout = setTimeout(() => {
-        command.kill('SIGKILL');
-        reject(new Error('FFmpeg operation timed out'));
+        command.kill("SIGKILL");
+        reject(new Error("FFmpeg operation timed out"));
       }, this.jobTimeout);
 
-      command.on('end', () => clearTimeout(timeout));
-      command.on('error', () => clearTimeout(timeout));
+      command.on("end", () => clearTimeout(timeout));
+      command.on("error", () => clearTimeout(timeout));
 
       command.run();
     });
@@ -248,7 +293,7 @@ export class AudioService {
     const audioCodec = audioCodecForContainer(outputPath);
     // libopus only supports 48 kHz; AAC is happy at 44.1 kHz. The rate must
     // match in both the filter graph and the encoder or the encode fails.
-    const sampleRate = audioCodec === 'libopus' ? 48000 : 44100;
+    const sampleRate = audioCodec === "libopus" ? 48000 : 44100;
 
     return new Promise((resolve, reject) => {
       const command = ffmpeg()
@@ -261,32 +306,40 @@ export class AudioService {
           // Loop white noise to cover the whole film and apply the configured volume
           `[1:a]aloop=loop=-1:size=2e+09,aformat=sample_fmts=fltp:sample_rates=${sampleRate}:channel_layouts=stereo,volume=${volume}[noise]`,
           // Mix; duration=first keeps the result as long as the film's audio
-          '[main][noise]amix=inputs=2:duration=first:dropout_transition=2[out]'
+          "[main][noise]amix=inputs=2:duration=first:dropout_transition=2[out]",
         ])
         .outputOptions([
-          '-map', '0:v:0', // keep the first video stream
-          '-map', '[out]', // use the mixed audio
-          '-c:v', 'copy',  // copy the picture untouched (fast, lossless)
-          '-c:a', audioCodec,
-          '-b:a', '192k',
-          '-ar', String(sampleRate),
-          '-ac', '2',
-          '-movflags', '+faststart', // ignored by non-MP4 containers
+          "-map",
+          "0:v:0", // keep the first video stream
+          "-map",
+          "[out]", // use the mixed audio
+          "-c:v",
+          "copy", // copy the picture untouched (fast, lossless)
+          "-c:a",
+          audioCodec,
+          "-b:a",
+          "192k",
+          "-ar",
+          String(sampleRate),
+          "-ac",
+          "2",
+          "-movflags",
+          "+faststart", // ignored by non-MP4 containers
         ])
         .output(outputPath)
-        .on('start', (commandLine) => {
+        .on("start", (commandLine) => {
           this.logger.debug(`FFmpeg command: ${commandLine}`);
         })
-        .on('progress', (progress) => {
+        .on("progress", (progress) => {
           if (progress.percent) {
             onProgress(Math.round(progress.percent));
           }
         })
-        .on('end', () => {
+        .on("end", () => {
           this.logger.debug(`FFmpeg video processing completed: ${outputPath}`);
           resolve();
         })
-        .on('error', (error) => {
+        .on("error", (error) => {
           if (this.cancelRequests.has(jobId)) {
             reject(new JobCancelledError(jobId));
             return;
@@ -299,12 +352,12 @@ export class AudioService {
 
       // Set timeout for the operation
       const timeout = setTimeout(() => {
-        command.kill('SIGKILL');
-        reject(new Error('FFmpeg operation timed out'));
+        command.kill("SIGKILL");
+        reject(new Error("FFmpeg operation timed out"));
       }, this.jobTimeout);
 
-      command.on('end', () => clearTimeout(timeout));
-      command.on('error', () => clearTimeout(timeout));
+      command.on("end", () => clearTimeout(timeout));
+      command.on("error", () => clearTimeout(timeout));
 
       command.run();
     });
@@ -312,15 +365,18 @@ export class AudioService {
 
   // Track the running command for a job (and drop it once it finishes) so
   // requestCancel() can kill the right process.
-  private registerActiveCommand(jobId: string, command: ffmpeg.FfmpegCommand): void {
+  private registerActiveCommand(
+    jobId: string,
+    command: ffmpeg.FfmpegCommand,
+  ): void {
     this.activeCommands.set(jobId, command);
     const unregister = () => {
       if (this.activeCommands.get(jobId) === command) {
         this.activeCommands.delete(jobId);
       }
     };
-    command.on('end', unregister);
-    command.on('error', unregister);
+    command.on("end", unregister);
+    command.on("error", unregister);
   }
 
   private async createZipFile(
@@ -333,16 +389,18 @@ export class AudioService {
 
     return new Promise((resolve, reject) => {
       const output = createWriteStream(zipPath);
-      const archive = archiver('zip', {
+      const archive = archiver("zip", {
         zlib: { level: 6 }, // Compression level
       });
 
-      output.on('close', () => {
-        this.logger.log(`ZIP file created: ${zipPath} (${archive.pointer()} bytes)`);
+      output.on("close", () => {
+        this.logger.log(
+          `ZIP file created: ${zipPath} (${archive.pointer()} bytes)`,
+        );
         resolve(zipPath);
       });
 
-      archive.on('error', (error) => {
+      archive.on("error", (error) => {
         this.logger.error(`ZIP creation error: ${error.message}`);
         reject(error);
       });

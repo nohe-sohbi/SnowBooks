@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { UploadService } from '../upload/upload.service';
-import { JobStatus } from '@/common/interfaces/job.interface';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { UploadService } from "../upload/upload.service";
+import { JobStatus } from "@/common/interfaces/job.interface";
 
 @Injectable()
 export class DownloadService {
@@ -14,23 +19,29 @@ export class DownloadService {
     private configService: ConfigService,
     private uploadService: UploadService,
   ) {
-    this.uploadDir = this.configService.get('UPLOAD_DIR') || './uploads';
+    this.uploadDir = this.configService.get("UPLOAD_DIR") || "./uploads";
   }
 
-  async getDownloadFile(jobId: string): Promise<{ filePath: string; fileName: string; mimeType: string }> {
+  async getDownloadFile(
+    jobId: string,
+  ): Promise<{ filePath: string; fileName: string; mimeType: string }> {
     // Get job data
     const jobData = await this.uploadService.getJobData(jobId);
-    
+
     if (!jobData) {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }
 
     if (jobData.status !== JobStatus.COMPLETED) {
-      throw new BadRequestException(`Job ${jobId} is not completed. Current status: ${jobData.status}`);
+      throw new BadRequestException(
+        `Job ${jobId} is not completed. Current status: ${jobData.status}`,
+      );
     }
 
     if (!jobData.outputPath) {
-      throw new BadRequestException(`No output file available for job ${jobId}`);
+      throw new BadRequestException(
+        `No output file available for job ${jobId}`,
+      );
     }
 
     // Check if output file exists
@@ -52,10 +63,10 @@ export class DownloadService {
 
   async getFileStats(jobId: string) {
     const downloadInfo = await this.getDownloadFile(jobId);
-    
+
     try {
       const stats = await fs.stat(downloadInfo.filePath);
-      
+
       return {
         fileName: downloadInfo.fileName,
         fileSize: stats.size,
@@ -70,27 +81,27 @@ export class DownloadService {
 
   private getMimeType(fileName: string): string {
     const ext = path.extname(fileName).toLowerCase();
-    
+
     switch (ext) {
-      case '.zip':
-        return 'application/zip';
-      case '.mp3':
-        return 'audio/mpeg';
-      case '.wav':
-        return 'audio/wav';
-      case '.mp4':
-      case '.m4v':
-        return 'video/mp4';
-      case '.mkv':
-        return 'video/x-matroska';
-      case '.avi':
-        return 'video/x-msvideo';
-      case '.mov':
-        return 'video/quicktime';
-      case '.webm':
-        return 'video/webm';
+      case ".zip":
+        return "application/zip";
+      case ".mp3":
+        return "audio/mpeg";
+      case ".wav":
+        return "audio/wav";
+      case ".mp4":
+      case ".m4v":
+        return "video/mp4";
+      case ".mkv":
+        return "video/x-matroska";
+      case ".avi":
+        return "video/x-msvideo";
+      case ".mov":
+        return "video/quicktime";
+      case ".webm":
+        return "video/webm";
       default:
-        return 'application/octet-stream';
+        return "application/octet-stream";
     }
   }
 
@@ -100,7 +111,10 @@ export class DownloadService {
       await fs.unlink(downloadInfo.filePath);
     } catch (error) {
       // File might already be deleted or not exist, which is fine
-      this.logger.warn(`Could not cleanup download file for job ${jobId}:`, error.message);
+      this.logger.warn(
+        `Could not cleanup download file for job ${jobId}:`,
+        error.message,
+      );
     }
   }
 }

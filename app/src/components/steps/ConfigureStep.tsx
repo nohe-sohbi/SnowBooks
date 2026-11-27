@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
-import { AudioCard, ProcessingCard } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { AudioIcon } from '@/components/ui/icon';
-import { VolumeX, Volume1, Volume2, Info, Sliders, Waves } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { AudioCard, ProcessingCard } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { AudioIcon } from "@/components/ui/icon";
+import { VolumeX, Volume1, Volume2, Info, Sliders, Waves } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ConfigureStepProps {
   volume: number;
@@ -14,9 +14,13 @@ interface ConfigureStepProps {
   fileCount: number;
 }
 
-const STORAGE_KEY = 'snowbooks-white-noise-volume';
+const STORAGE_KEY = "snowbooks-white-noise-volume";
 
-export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureStepProps) => {
+export const ConfigureStep = ({
+  volume,
+  onVolumeChange,
+  fileCount,
+}: ConfigureStepProps) => {
   const [localVolume, setLocalVolume] = useState(volume);
 
   useEffect(() => {
@@ -41,29 +45,30 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
   };
 
   const getVolumeIcon = () => {
-    if (localVolume === 0) return <VolumeX className="h-8 w-8 text-ice-gray-400" />;
-    if (localVolume < 0.3) return <Volume1 className="h-8 w-8 text-winter-blue-500" />;
-    if (localVolume < 0.7) return <Volume2 className="h-8 w-8 text-winter-blue-600" />;
+    if (localVolume === 0)
+      return <VolumeX className="h-8 w-8 text-ice-gray-400" />;
+    if (localVolume < 0.3)
+      return <Volume1 className="h-8 w-8 text-winter-blue-500" />;
+    if (localVolume < 0.7)
+      return <Volume2 className="h-8 w-8 text-winter-blue-600" />;
     return <Volume2 className="h-8 w-8 text-warm-amber-500" />;
   };
 
   const getVolumeColor = () => {
-    if (localVolume === 0) return 'text-ice-gray-500';
-    if (localVolume < 0.3) return 'text-winter-blue-500';
-    if (localVolume < 0.7) return 'text-winter-blue-600';
-    return 'text-warm-amber-500';
+    if (localVolume === 0) return "text-ice-gray-500";
+    if (localVolume < 0.3) return "text-winter-blue-500";
+    if (localVolume < 0.7) return "text-winter-blue-600";
+    return "text-warm-amber-500";
   };
 
   const getVolumeDescription = () => {
-    if (localVolume === 0) return 'Silent - No white noise will be added';
-    if (localVolume < 0.2) return 'Whisper - Very subtle background ambience';
-    if (localVolume < 0.4) return 'Gentle - Light winter atmosphere';
-    if (localVolume < 0.6) return 'Balanced - Comfortable listening experience';
-    if (localVolume < 0.8) return 'Immersive - Rich winter soundscape';
-    return 'Enveloping - Full ambient experience';
+    if (localVolume === 0) return "Silent - No white noise will be added";
+    if (localVolume < 0.2) return "Whisper - Very subtle background ambience";
+    if (localVolume < 0.4) return "Gentle - Light winter atmosphere";
+    if (localVolume < 0.6) return "Balanced - Comfortable listening experience";
+    if (localVolume < 0.8) return "Immersive - Rich winter soundscape";
+    return "Enveloping - Full ambient experience";
   };
-
-
 
   return (
     <div className="space-y-8">
@@ -84,7 +89,8 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                 Configure Winter Ambience
               </h3>
               <p className="text-ice-gray-600 dark:text-ice-gray-400 leading-relaxed max-w-2xl mx-auto">
-                Fine-tune the perfect balance of white noise to create your ideal winter audio atmosphere
+                Fine-tune the perfect balance of white noise to create your
+                ideal winter audio atmosphere
               </p>
             </div>
 
@@ -97,7 +103,12 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                 </div>
 
                 <div className="text-center">
-                  <div className={cn("text-5xl font-display font-bold tabular-nums mb-2", getVolumeColor())}>
+                  <div
+                    className={cn(
+                      "text-5xl font-display font-bold tabular-nums mb-2",
+                      getVolumeColor(),
+                    )}
+                  >
                     {Math.round(localVolume * 100)}%
                   </div>
                   <p className="text-ice-gray-600 dark:text-ice-gray-400 font-medium">
@@ -110,10 +121,12 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
 
                 <div className="relative">
                   <AudioIcon size="xl" className="text-winter-blue-500" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-winter-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                  <div
+                    className="absolute -top-1 -right-1 w-3 h-3 bg-winter-blue-500 rounded-full animate-pulse"
+                    style={{ animationDelay: "0.5s" }}
+                  />
                 </div>
               </div>
-
             </div>
 
             {/* Information Card */}
@@ -128,11 +141,16 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                   </h4>
                   <div className="text-sm text-winter-blue-700 dark:text-winter-blue-300 space-y-2">
                     <p>
-                      White noise will be carefully mixed with your <strong>{fileCount} MP3 files</strong> to create
-                      a consistent, immersive winter atmosphere that masks distracting background sounds.
+                      White noise will be carefully mixed with your{" "}
+                      <strong>{fileCount} MP3 files</strong> to create a
+                      consistent, immersive winter atmosphere that masks
+                      distracting background sounds.
                     </p>
                     <div className="flex items-center gap-2 text-warm-amber-600 dark:text-warm-amber-400">
-                      <span className="font-medium">Recommended: Start with "Gentle" (30%) and adjust to your preference</span>
+                      <span className="font-medium">
+                        Recommended: Start with "Gentle" (30%) and adjust to
+                        your preference
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -169,7 +187,7 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                         className="flex-1 h-1 mx-0.5 bg-white/20 rounded-full"
                         style={{
                           opacity: i / 20 <= localVolume ? 0.6 : 0.2,
-                          height: `${Math.sin((i / 20) * Math.PI * 2) * 4 + 6}px`
+                          height: `${Math.sin((i / 20) * Math.PI * 2) * 4 + 6}px`,
                         }}
                       />
                     ))}
@@ -183,7 +201,9 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                   max="1"
                   step="0.01"
                   value={localVolume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    handleVolumeChange(parseFloat(e.target.value))
+                  }
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   aria-label={`Volume slider, currently ${Math.round(localVolume * 100)}%`}
                   aria-valuemin={0}
@@ -197,7 +217,7 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
                   className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-ice-gray-100 border-2 border-winter-blue-500 rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:scale-110 cursor-pointer"
                   style={{
                     left: `calc(${localVolume * 100}% - 12px)`,
-                    boxShadow: '0 4px 12px rgba(30, 58, 138, 0.3)'
+                    boxShadow: "0 4px 12px rgba(30, 58, 138, 0.3)",
                   }}
                 >
                   <div className="absolute inset-1 bg-gradient-to-br from-winter-blue-400 to-warm-amber-400 rounded-full" />
@@ -228,10 +248,7 @@ export const ConfigureStep = ({ volume, onVolumeChange, fileCount }: ConfigureSt
             </div>
           </div>
         </ProcessingCard>
-
-
       </div>
-
-      </div>
+    </div>
   );
 };

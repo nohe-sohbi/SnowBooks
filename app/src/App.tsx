@@ -1,10 +1,12 @@
-
 import FileUploader from "./components/FileUploader.tsx";
 import { WinterAtmosphere } from "./components/WinterAtmosphere";
 
 // Decorative audio waveform that gently breathes, ties the hero to "audio".
 function Waveform() {
-  const bars = [10, 18, 28, 16, 34, 22, 44, 30, 52, 36, 60, 40, 52, 30, 44, 22, 34, 16, 28, 18, 10];
+  const bars = [
+    10, 18, 28, 16, 34, 22, 44, 30, 52, 36, 60, 40, 52, 30, 44, 22, 34, 16, 28,
+    18, 10,
+  ];
   return (
     <svg
       width="320"
@@ -15,7 +17,14 @@ function Waveform() {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id="wf" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="wf"
+          x1="0"
+          y1="0"
+          x2="320"
+          y2="0"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#60a5fa" />
           <stop offset="0.6" stopColor="#3b82f6" />
           <stop offset="1" stopColor="#f59e0b" />
@@ -60,8 +69,18 @@ function App() {
       <WinterAtmosphere />
 
       {/* Screen reader live regions */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only" id="announcements" />
-      <div aria-live="assertive" aria-atomic="true" className="sr-only" id="urgent-announcements" />
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        id="announcements"
+      />
+      <div
+        aria-live="assertive"
+        aria-atomic="true"
+        className="sr-only"
+        id="urgent-announcements"
+      />
 
       <div className="relative z-10">
         {/* Hero */}
@@ -71,7 +90,8 @@ function App() {
               className="animate-rise mb-6 inline-flex items-center gap-2 rounded-full glass-frost px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-winter-blue-700"
               style={{ animationDelay: "0ms" }}
             >
-              <span className="text-warm-amber-500">❄</span> Ambient audiobook studio
+              <span className="text-warm-amber-500">❄</span> Ambient audiobook
+              studio
             </p>
 
             <h1
@@ -96,14 +116,17 @@ function App() {
               className="animate-rise mx-auto mt-4 max-w-xl text-base leading-relaxed text-ice-gray-500"
               style={{ animationDelay: "220ms" }}
             >
-              Drop in a ZIP of MP3 chapters, set the white-noise intensity, preview
-              the mix, and download your calmer collection.{" "}
+              Drop in a ZIP of MP3 chapters, set the white-noise intensity,
+              preview the mix, and download your calmer collection.{" "}
               <span className="font-display italic text-ice-gray-700">
                 Made for reading while it snows.
               </span>
             </p>
 
-            <div className="animate-rise mt-9 flex justify-center" style={{ animationDelay: "240ms" }}>
+            <div
+              className="animate-rise mt-9 flex justify-center"
+              style={{ animationDelay: "240ms" }}
+            >
               <Waveform />
             </div>
           </div>
@@ -111,7 +134,10 @@ function App() {
 
         {/* Main application */}
         <main className="px-3 pb-16 sm:px-4" id="main-content" role="main">
-          <div className="animate-rise mx-auto max-w-5xl" style={{ animationDelay: "320ms" }}>
+          <div
+            className="animate-rise mx-auto max-w-5xl"
+            style={{ animationDelay: "320ms" }}
+          >
             <h2 className="sr-only">Audio Processing Workflow</h2>
             <FileUploader />
           </div>

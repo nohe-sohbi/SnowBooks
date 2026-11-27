@@ -14,7 +14,7 @@ services:
       - NODE_ENV=production
       - LOG_LEVEL=info
       - MAX_CONCURRENT_JOBS=5
-      - FILE_CLEANUP_INTERVAL=1800000  # 30 minutes
+      - FILE_CLEANUP_INTERVAL=1800000 # 30 minutes
     volumes:
       - backend_uploads:/app/uploads
       - backend_temp:/app/temp
@@ -22,10 +22,10 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: '1.0'
+          cpus: "1.0"
         reservations:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
 
   frontend:
     build:
@@ -37,10 +37,10 @@ services:
       resources:
         limits:
           memory: 128M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 64M
-          cpus: '0.25'
+          cpus: "0.25"
 
   # Nginx reverse proxy for production
   nginx:

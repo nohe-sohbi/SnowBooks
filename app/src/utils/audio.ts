@@ -12,15 +12,20 @@ class AudioContextManager {
   }
 
   async getContext(): Promise<AudioContext> {
-    if (!this.audioContext || this.audioContext.state === 'closed' || this.isClosing) {
+    if (
+      !this.audioContext ||
+      this.audioContext.state === "closed" ||
+      this.isClosing
+    ) {
       const AudioContextCtor =
         window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
       this.audioContext = new AudioContextCtor();
       this.isClosing = false;
     }
 
-    if (this.audioContext.state === 'suspended') {
+    if (this.audioContext.state === "suspended") {
       await this.audioContext.resume();
     }
 
@@ -42,7 +47,7 @@ export const createMixedAudioPreview = async (
   mp3Blob: Blob,
   whiteNoiseBlob: Blob,
   whiteNoiseVolume: number,
-  previewDuration: number = 30
+  previewDuration: number = 30,
 ): Promise<Blob | null> => {
   try {
     const manager = AudioContextManager.getInstance();
@@ -50,8 +55,12 @@ export const createMixedAudioPreview = async (
 
     // Load both audio files
     const [mp3Buffer, whiteNoiseBuffer] = await Promise.all([
-      mp3Blob.arrayBuffer().then(buffer => audioContext.decodeAudioData(buffer)),
-      whiteNoiseBlob.arrayBuffer().then(buffer => audioContext.decodeAudioData(buffer))
+      mp3Blob
+        .arrayBuffer()
+        .then((buffer) => audioContext.decodeAudioData(buffer)),
+      whiteNoiseBlob
+        .arrayBuffer()
+        .then((buffer) => audioContext.decodeAudioData(buffer)),
     ]);
 
     // Calculate the duration for the preview (min of requested duration and MP3 duration)
@@ -63,7 +72,7 @@ export const createMixedAudioPreview = async (
     const outputBuffer = audioContext.createBuffer(
       Math.max(mp3Buffer.numberOfChannels, whiteNoiseBuffer.numberOfChannels),
       frameCount,
-      sampleRate
+      sampleRate,
     );
 
     // Mix the audio
@@ -72,23 +81,24 @@ export const createMixedAudioPreview = async (
 
       // Get MP3 channel data (or use channel 0 if mono)
       const mp3Data = mp3Buffer.getChannelData(
-        Math.min(channel, mp3Buffer.numberOfChannels - 1)
+        Math.min(channel, mp3Buffer.numberOfChannels - 1),
       );
 
       // Get white noise channel data (or use channel 0 if mono)
       const whiteNoiseData = whiteNoiseBuffer.getChannelData(
-        Math.min(channel, whiteNoiseBuffer.numberOfChannels - 1)
+        Math.min(channel, whiteNoiseBuffer.numberOfChannels - 1),
       );
 
       // Mix the audio samples
       for (let i = 0; i < frameCount; i++) {
         const mp3Sample = i < mp3Data.length ? mp3Data[i] : 0;
-        const whiteNoiseSample = i < whiteNoiseData.length
-          ? whiteNoiseData[i % whiteNoiseData.length]
-          : 0;
+        const whiteNoiseSample =
+          i < whiteNoiseData.length
+            ? whiteNoiseData[i % whiteNoiseData.length]
+            : 0;
 
         // Mix: original audio + white noise at specified volume
-        outputData[i] = mp3Sample + (whiteNoiseSample * whiteNoiseVolume);
+        outputData[i] = mp3Sample + whiteNoiseSample * whiteNoiseVolume;
 
         // Prevent clipping
         if (outputData[i] > 1) outputData[i] = 1;
@@ -108,10 +118,10 @@ export const createMixedAudioPreview = async (
       }
     };
 
-    writeString(0, 'RIFF');
+    writeString(0, "RIFF");
     view.setUint32(4, 36 + length, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
     view.setUint32(16, 16, true);
     view.setUint16(20, 1, true);
     view.setUint16(22, outputBuffer.numberOfChannels, true);
@@ -119,23 +129,29 @@ export const createMixedAudioPreview = async (
     view.setUint32(28, sampleRate * outputBuffer.numberOfChannels * 2, true);
     view.setUint16(32, outputBuffer.numberOfChannels * 2, true);
     view.setUint16(34, 16, true);
-    writeString(36, 'data');
+    writeString(36, "data");
     view.setUint32(40, length, true);
 
     // Write audio data
     let offset = 44;
     for (let i = 0; i < outputBuffer.length; i++) {
-      for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-        const sample = Math.max(-1, Math.min(1, outputBuffer.getChannelData(channel)[i]));
-        view.setInt16(offset, sample * 0x7FFF, true);
+      for (
+        let channel = 0;
+        channel < outputBuffer.numberOfChannels;
+        channel++
+      ) {
+        const sample = Math.max(
+          -1,
+          Math.min(1, outputBuffer.getChannelData(channel)[i]),
+        );
+        view.setInt16(offset, sample * 0x7fff, true);
         offset += 2;
       }
     }
 
-    return new Blob([arrayBuffer], { type: 'audio/wav' });
-
+    return new Blob([arrayBuffer], { type: "audio/wav" });
   } catch (error) {
-    console.error('Failed to create mixed audio preview:', error);
+    console.error("Failed to create mixed audio preview:", error);
     return null;
   }
 };

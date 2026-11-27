@@ -6,21 +6,25 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
-import { Namespace, Socket } from 'socket.io';
-import { JobProgress } from '@/common/interfaces/job.interface';
+} from "@nestjs/websockets";
+import { Logger } from "@nestjs/common";
+import { Namespace, Socket } from "socket.io";
+import { JobProgress } from "@/common/interfaces/job.interface";
 
 @WebSocketGateway({
   cors: {
-    origin: (process.env.WS_CORS_ORIGIN || 'http://localhost:5173').includes(',')
-      ? (process.env.WS_CORS_ORIGIN || '').split(',').map(o => o.trim())
-      : process.env.WS_CORS_ORIGIN || 'http://localhost:5173',
+    origin: (process.env.WS_CORS_ORIGIN || "http://localhost:5173").includes(
+      ",",
+    )
+      ? (process.env.WS_CORS_ORIGIN || "").split(",").map((o) => o.trim())
+      : process.env.WS_CORS_ORIGIN || "http://localhost:5173",
     credentials: true,
   },
-  namespace: '/progress',
+  namespace: "/progress",
 })
-export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ProgressGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   // The gateway is bound to the '/progress' namespace, so the injected
   // server is a Namespace (whose `.sockets` is a Map of connected clients).
   @WebSocketServer()
@@ -35,7 +39,7 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-    
+
     // Remove client from all job subscriptions
     for (const [jobId, subscribers] of this.jobSubscriptions.entries()) {
       subscribers.delete(client.id);
@@ -45,109 +49,115 @@ export class ProgressGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
   }
 
-  @SubscribeMessage('subscribe-to-job')
+  @SubscribeMessage("subscribe-to-job")
   handleSubscribeToJob(
     @MessageBody() data: { jobId: string },
     @ConnectedSocket() client: Socket,
   ) {
     const { jobId } = data;
-    
+
     if (!this.jobSubscriptions.has(jobId)) {
       this.jobSubscriptions.set(jobId, new Set());
     }
-    
+
     this.jobSubscriptions.get(jobId).add(client.id);
-    
+
     this.logger.log(`Client ${client.id} subscribed to job ${jobId}`);
-    
+
     // Send acknowledgment
-    client.emit('subscription-confirmed', { jobId });
+    client.emit("subscription-confirmed", { jobId });
   }
 
-  @SubscribeMessage('unsubscribe-from-job')
+  @SubscribeMessage("unsubscribe-from-job")
   handleUnsubscribeFromJob(
     @MessageBody() data: { jobId: string },
     @ConnectedSocket() client: Socket,
   ) {
     const { jobId } = data;
-    
+
     if (this.jobSubscriptions.has(jobId)) {
       this.jobSubscriptions.get(jobId).delete(client.id);
-      
+
       if (this.jobSubscriptions.get(jobId).size === 0) {
         this.jobSubscriptions.delete(jobId);
       }
     }
-    
+
     this.logger.log(`Client ${client.id} unsubscribed from job ${jobId}`);
-    
+
     // Send acknowledgment
-    client.emit('unsubscription-confirmed', { jobId });
+    client.emit("unsubscription-confirmed", { jobId });
   }
 
   // Method to send progress updates to subscribed clients
   sendProgressUpdate(jobId: string, progress: JobProgress) {
     const subscribers = this.jobSubscriptions.get(jobId);
-    
+
     if (subscribers && subscribers.size > 0) {
       const sockets = Array.from(subscribers)
-        .map(socketId => this.server.sockets.get(socketId))
-        .filter(socket => socket !== undefined);
-      
+        .map((socketId) => this.server.sockets.get(socketId))
+        .filter((socket) => socket !== undefined);
+
       const timestamp = new Date().toISOString();
       for (const socket of sockets) {
-        socket.emit('progress-update', {
+        socket.emit("progress-update", {
           jobId,
           progress,
           timestamp,
         });
       }
-      
-      this.logger.debug(`Sent progress update for job ${jobId} to ${sockets.length} clients`);
+
+      this.logger.debug(
+        `Sent progress update for job ${jobId} to ${sockets.length} clients`,
+      );
     }
   }
 
   // Method to send completion notification
   sendJobCompletion(jobId: string, result: any) {
     const subscribers = this.jobSubscriptions.get(jobId);
-    
+
     if (subscribers && subscribers.size > 0) {
       const sockets = Array.from(subscribers)
-        .map(socketId => this.server.sockets.get(socketId))
-        .filter(socket => socket !== undefined);
-      
+        .map((socketId) => this.server.sockets.get(socketId))
+        .filter((socket) => socket !== undefined);
+
       const timestamp = new Date().toISOString();
       for (const socket of sockets) {
-        socket.emit('job-completed', {
+        socket.emit("job-completed", {
           jobId,
           result,
           timestamp,
         });
       }
-      
-      this.logger.log(`Sent completion notification for job ${jobId} to ${sockets.length} clients`);
+
+      this.logger.log(
+        `Sent completion notification for job ${jobId} to ${sockets.length} clients`,
+      );
     }
   }
 
   // Method to send error notification
   sendJobError(jobId: string, error: string) {
     const subscribers = this.jobSubscriptions.get(jobId);
-    
+
     if (subscribers && subscribers.size > 0) {
       const sockets = Array.from(subscribers)
-        .map(socketId => this.server.sockets.get(socketId))
-        .filter(socket => socket !== undefined);
-      
+        .map((socketId) => this.server.sockets.get(socketId))
+        .filter((socket) => socket !== undefined);
+
       const timestamp = new Date().toISOString();
       for (const socket of sockets) {
-        socket.emit('job-error', {
+        socket.emit("job-error", {
           jobId,
           error,
           timestamp,
         });
       }
-      
-      this.logger.error(`Sent error notification for job ${jobId} to ${sockets.length} clients: ${error}`);
+
+      this.logger.error(
+        `Sent error notification for job ${jobId} to ${sockets.length} clients: ${error}`,
+      );
     }
   }
 

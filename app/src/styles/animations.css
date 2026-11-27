@@ -42,7 +42,6 @@
   @apply focus:outline-none focus:ring-2 focus:ring-winter-blue-400;
 }
 
-
 /* Waveform Animations */
 
 /* Focus States */
@@ -50,7 +49,6 @@
   @apply focus:outline-none focus:ring-2 focus:ring-winter-blue-400 focus:ring-offset-2;
   @apply dark:focus:ring-winter-blue-500 dark:focus:ring-offset-ice-gray-900;
 }
-
 
 /* Smooth State Transitions */
 .state-transition {
@@ -60,7 +58,6 @@
 .state-transition-fast {
   @apply transition-all duration-150 ease-out;
 }
-
 
 /* Hover Glow Effects */
 .glow-winter {
@@ -85,19 +82,18 @@
   @apply hover:scale-105 active:scale-95;
 }
 
-
 /* Pulse Animations */
 /* Border Animations */
 @keyframes border-glow {
-  0%, 100% {
-    border-color: theme('colors.winter-blue.300');
-    box-shadow: 0 0 0 0 theme('colors.winter-blue.400/0');
+  0%,
+  100% {
+    border-color: theme("colors.winter-blue.300");
+    box-shadow: 0 0 0 0 theme("colors.winter-blue.400/0");
   }
   50% {
-    border-color: theme('colors.winter-blue.400');
-    box-shadow: 0 0 0 4px theme('colors.winter-blue.400/20');
+    border-color: theme("colors.winter-blue.400");
+    box-shadow: 0 0 0 4px theme("colors.winter-blue.400/20");
   }
 }
-
 
 /* Utility Classes */

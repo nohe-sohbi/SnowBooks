@@ -4,6 +4,6 @@
 export class JobCancelledError extends Error {
   constructor(jobId: string) {
     super(`Job ${jobId} was cancelled`);
-    this.name = 'JobCancelledError';
+    this.name = "JobCancelledError";
   }
 }

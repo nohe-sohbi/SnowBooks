@@ -1,14 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue, Job } from 'bull';
-import { UploadService } from '../upload/upload.service';
-import { AudioService } from '../audio/audio.service';
-import { JobData, JobStatus, ProcessingConfig } from '@/common/interfaces/job.interface';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bull";
+import { Queue, Job } from "bull";
+import { UploadService } from "../upload/upload.service";
+import { AudioService } from "../audio/audio.service";
+import {
+  JobData,
+  JobStatus,
+  ProcessingConfig,
+} from "@/common/interfaces/job.interface";
 
 @Injectable()
 export class JobsService {
   constructor(
-    @InjectQueue('audio-processing') private audioQueue: Queue,
+    @InjectQueue("audio-processing") private audioQueue: Queue,
     private uploadService: UploadService,
     private audioService: AudioService,
   ) {}
@@ -32,14 +40,14 @@ export class JobsService {
       // Update status based on Bull job state
       const bullJobState = await bullJob.getState();
       switch (bullJobState) {
-        case 'waiting':
-        case 'active':
+        case "waiting":
+        case "active":
           jobData.status = JobStatus.PROCESSING;
           break;
-        case 'completed':
+        case "completed":
           jobData.status = JobStatus.COMPLETED;
           break;
-        case 'failed':
+        case "failed":
           jobData.status = JobStatus.FAILED;
           if (bullJob.failedReason) {
             jobData.error = bullJob.failedReason;
@@ -51,15 +59,20 @@ export class JobsService {
     return jobData;
   }
 
-  async startProcessing(jobId: string, config: ProcessingConfig): Promise<void> {
+  async startProcessing(
+    jobId: string,
+    config: ProcessingConfig,
+  ): Promise<void> {
     const jobData = await this.uploadService.getJobData(jobId);
-    
+
     if (!jobData) {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }
 
     if (jobData.status !== JobStatus.UPLOADED) {
-      throw new BadRequestException(`Job ${jobId} is not in a valid state for processing. Current status: ${jobData.status}`);
+      throw new BadRequestException(
+        `Job ${jobId} is not in a valid state for processing. Current status: ${jobData.status}`,
+      );
     }
 
     // Update job data with processing config
@@ -68,17 +81,21 @@ export class JobsService {
     await this.uploadService.updateJobData(jobData);
 
     // Add job to Bull queue
-    await this.audioQueue.add('process-audio', {
-      jobId,
-      config,
-    }, {
-      jobId, // Use jobId as Bull job ID for easy lookup
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000,
+    await this.audioQueue.add(
+      "process-audio",
+      {
+        jobId,
+        config,
       },
-    });
+      {
+        jobId, // Use jobId as Bull job ID for easy lookup
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
+      },
+    );
   }
 
   async cancelJob(jobId: string): Promise<void> {
@@ -88,7 +105,10 @@ export class JobsService {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }
 
-    if (jobData.status !== JobStatus.UPLOADED && jobData.status !== JobStatus.PROCESSING) {
+    if (
+      jobData.status !== JobStatus.UPLOADED &&
+      jobData.status !== JobStatus.PROCESSING
+    ) {
       throw new BadRequestException(
         `Job ${jobId} cannot be cancelled. Current status: ${jobData.status}`,
       );
@@ -116,7 +136,7 @@ export class JobsService {
 
   async deleteJob(jobId: string): Promise<void> {
     const jobData = await this.uploadService.getJobData(jobId);
-    
+
     if (!jobData) {
       throw new NotFoundException(`Job with ID ${jobId} not found`);
     }

@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import {memo, useEffect, useMemo, useRef, useState} from 'react';
-import {Button} from '@/components/ui/button';
-import {AudioCard, ProcessingCard} from '@/components/ui/card';
-import {Progress} from '@/components/ui/progress';
-import {Loading} from '@/components/ui/loading';
-import {AudioIcon, SnowflakeIcon} from '@/components/ui/icon';
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { AudioCard, ProcessingCard } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Loading } from "@/components/ui/loading";
+import { AudioIcon, SnowflakeIcon } from "@/components/ui/icon";
 import {
-    Clock,
-    FileAudio,
-    HardDrive,
-    Headphones,
-    Pause,
-    Play,
-    Square,
-    Volume2,
-    VolumeX,
-    Waves
-} from 'lucide-react';
-import {formatDuration, formatSize} from '@/utils/formatters';
-import {createMixedAudioPreview} from '@/utils/audio';
-import {cn} from '@/lib/utils';
+  Clock,
+  FileAudio,
+  HardDrive,
+  Headphones,
+  Pause,
+  Play,
+  Square,
+  Volume2,
+  VolumeX,
+  Waves,
+} from "lucide-react";
+import { formatDuration, formatSize } from "@/utils/formatters";
+import { createMixedAudioPreview } from "@/utils/audio";
+import { cn } from "@/lib/utils";
 import type MP3File from "@/interface/MP3File";
 
 interface PreviewStepProps {
@@ -29,19 +29,30 @@ interface PreviewStepProps {
   whiteNoiseVolume: number;
 }
 
-const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: PreviewStepProps) => {
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+const PreviewStepComponent = ({
+  mp3Files,
+  whiteNoiseBlob,
+  whiteNoiseVolume,
+}: PreviewStepProps) => {
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(
+    null,
+  );
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
 
   // Memoize expensive calculations to prevent unnecessary re-renders
   const { totalSize, totalDuration } = useMemo(() => {
     const totalSize = mp3Files.reduce((sum, file) => sum + file.size, 0);
-    const totalDuration = mp3Files.reduce((sum, file) => sum + (file.duration || 0), 0);
+    const totalDuration = mp3Files.reduce(
+      (sum, file) => sum + (file.duration || 0),
+      0,
+    );
     return { totalSize, totalDuration };
   }, [mp3Files]);
 
@@ -93,7 +104,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
           file.blob,
           whiteNoiseBlob,
           whiteNoiseVolume,
-          30
+          30,
         );
         if (mixedBlob) {
           audioBlob = mixedBlob;
@@ -104,23 +115,23 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
       audio.src = URL.createObjectURL(audioBlob);
 
       // Set up audio event listeners
-      audio.addEventListener('loadedmetadata', () => {
+      audio.addEventListener("loadedmetadata", () => {
         setDuration(Math.min(audio.duration, 30)); // 30 second limit
       });
 
-      audio.addEventListener('timeupdate', () => {
+      audio.addEventListener("timeupdate", () => {
         setCurrentTime(audio.currentTime);
       });
 
-      audio.addEventListener('play', () => {
+      audio.addEventListener("play", () => {
         setIsPlaying(true);
       });
 
-      audio.addEventListener('pause', () => {
+      audio.addEventListener("pause", () => {
         setIsPlaying(false);
       });
 
-      audio.addEventListener('ended', () => {
+      audio.addEventListener("ended", () => {
         stopCurrentAudio();
       });
 
@@ -144,9 +155,8 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
           stopCurrentAudio();
         }
       }, 30000);
-
     } catch (error) {
-      console.error('Failed to preview audio:', error);
+      console.error("Failed to preview audio:", error);
       setPlayingIndex(null);
       setLoadingIndex(null);
     }
@@ -182,7 +192,8 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                 Preview Your Winter Audio Collection
               </h3>
               <p className="text-ice-gray-600 dark:text-ice-gray-400 leading-relaxed max-w-2xl mx-auto">
-                Listen to your audio files with the configured white noise to ensure the perfect winter atmosphere
+                Listen to your audio files with the configured white noise to
+                ensure the perfect winter atmosphere
               </p>
             </div>
 
@@ -259,17 +270,20 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                   <div className="flex items-center gap-3 text-sm text-winter-blue-600 dark:text-winter-blue-400">
                     <span>{formatSize(mp3Files[playingIndex]?.size || 0)}</span>
                     <span>•</span>
-                    <span>{formatDuration(mp3Files[playingIndex]?.duration || 0)}</span>
+                    <span>
+                      {formatDuration(mp3Files[playingIndex]?.duration || 0)}
+                    </span>
                     {whiteNoiseVolume > 0 && (
                       <>
                         <span>•</span>
-                        <span>White noise: {Math.round(whiteNoiseVolume * 100)}%</span>
+                        <span>
+                          White noise: {Math.round(whiteNoiseVolume * 100)}%
+                        </span>
                       </>
                     )}
                   </div>
                 </div>
               </div>
-
 
               {/* Audio Controls */}
               <div className="flex items-center gap-6">
@@ -294,8 +308,12 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                     className="h-2"
                   />
                   <div className="flex justify-between text-sm text-ice-gray-600 dark:text-ice-gray-400">
-                    <span className="font-mono">{formatDuration(currentTime)}</span>
-                    <span className="font-mono">{formatDuration(Math.min(duration, 30))}</span>
+                    <span className="font-mono">
+                      {formatDuration(currentTime)}
+                    </span>
+                    <span className="font-mono">
+                      {formatDuration(Math.min(duration, 30))}
+                    </span>
                   </div>
                 </div>
 
@@ -312,7 +330,8 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
 
               {/* Preview Limit Notice */}
               <div className="mt-4 text-center text-xs text-ice-gray-500 dark:text-ice-gray-400">
-                Preview limited to 30 seconds • {Math.max(0, 30 - Math.floor(currentTime))}s remaining
+                Preview limited to 30 seconds •{" "}
+                {Math.max(0, 30 - Math.floor(currentTime))}s remaining
               </div>
             </div>
           </ProcessingCard>
@@ -334,14 +353,12 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                 <h4 className="font-semibold text-winter-blue-900 dark:text-winter-blue-100 mb-2">
                   {whiteNoiseVolume > 0
                     ? `Winter White Noise: ${Math.round(whiteNoiseVolume * 100)}% Volume`
-                    : 'No White Noise (Silent Mode)'
-                  }
+                    : "No White Noise (Silent Mode)"}
                 </h4>
                 <p className="text-sm text-ice-gray-600 dark:text-ice-gray-400">
                   {whiteNoiseVolume > 0
-                    ? 'Your audio files will be enhanced with winter white noise at the configured volume level'
-                    : 'Audio files will be processed without white noise enhancement'
-                  }
+                    ? "Your audio files will be enhanced with winter white noise at the configured volume level"
+                    : "Audio files will be processed without white noise enhancement"}
                 </p>
               </div>
 
@@ -381,7 +398,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                       "group relative p-6 rounded-xl border-2 transition-all duration-300 hover:scale-[1.02]",
                       isCurrentlyPlaying
                         ? "border-winter-blue-500 bg-gradient-to-r from-winter-blue-50 to-warm-amber-50 dark:from-winter-blue-950 dark:to-warm-amber-950 shadow-lg"
-                        : "border-ice-gray-200 dark:border-ice-gray-700 bg-gradient-to-r from-ice-gray-50 to-ice-gray-100 dark:from-ice-gray-900 dark:to-ice-gray-800 hover:border-winter-blue-300 dark:hover:border-winter-blue-600"
+                        : "border-ice-gray-200 dark:border-ice-gray-700 bg-gradient-to-r from-ice-gray-50 to-ice-gray-100 dark:from-ice-gray-900 dark:to-ice-gray-800 hover:border-winter-blue-300 dark:hover:border-winter-blue-600",
                     )}
                   >
                     {/* Playing Indicator */}
@@ -389,31 +406,42 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                       <div className="absolute top-2 right-2">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse" />
-                          <div className="w-2 h-2 bg-warm-amber-500 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                          <div className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+                          <div
+                            className="w-2 h-2 bg-warm-amber-500 rounded-full animate-pulse"
+                            style={{ animationDelay: "0.5s" }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-winter-blue-500 rounded-full animate-pulse"
+                            style={{ animationDelay: "1s" }}
+                          />
                         </div>
                       </div>
                     )}
 
                     <div className="flex items-center gap-6">
                       {/* File Icon */}
-                      <div className={cn(
-                        "p-4 rounded-full transition-all duration-300",
-                        isCurrentlyPlaying
-                          ? "bg-winter-blue-500 text-white shadow-lg"
-                          : "bg-ice-gray-200 dark:bg-ice-gray-700 text-ice-gray-600 dark:text-ice-gray-400 group-hover:bg-winter-blue-100 dark:group-hover:bg-winter-blue-900"
-                      )}>
+                      <div
+                        className={cn(
+                          "p-4 rounded-full transition-all duration-300",
+                          isCurrentlyPlaying
+                            ? "bg-winter-blue-500 text-white shadow-lg"
+                            : "bg-ice-gray-200 dark:bg-ice-gray-700 text-ice-gray-600 dark:text-ice-gray-400 group-hover:bg-winter-blue-100 dark:group-hover:bg-winter-blue-900",
+                        )}
+                      >
                         <AudioIcon size="lg" />
                       </div>
 
                       {/* File Info */}
                       <div className="flex-1 min-w-0 space-y-2">
-                        <h5 className={cn(
-                          "font-semibold text-lg truncate",
-                          isCurrentlyPlaying
-                            ? "text-winter-blue-900 dark:text-winter-blue-100"
-                            : "text-ice-gray-900 dark:text-ice-gray-100"
-                        )} title={file.name}>
+                        <h5
+                          className={cn(
+                            "font-semibold text-lg truncate",
+                            isCurrentlyPlaying
+                              ? "text-winter-blue-900 dark:text-winter-blue-100"
+                              : "text-ice-gray-900 dark:text-ice-gray-100",
+                          )}
+                          title={file.name}
+                        >
                           {file.name}
                         </h5>
 
@@ -436,14 +464,17 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
 
                           {whiteNoiseVolume > 0 && (
                             <div className="flex items-center gap-1">
-                              <SnowflakeIcon size="xs" className="text-warm-amber-500" />
+                              <SnowflakeIcon
+                                size="xs"
+                                className="text-warm-amber-500"
+                              />
                               <span className="text-warm-amber-600 dark:text-warm-amber-400 text-xs">
-                                +{Math.round(whiteNoiseVolume * 100)}% white noise
+                                +{Math.round(whiteNoiseVolume * 100)}% white
+                                noise
                               </span>
                             </div>
                           )}
                         </div>
-
                       </div>
 
                       {/* Play Button */}
@@ -455,7 +486,7 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
                           "h-12 w-12 rounded-full transition-all duration-200 shadow-md hover:shadow-lg",
                           isCurrentlyPlaying
                             ? "bg-gradient-to-br from-warm-amber-500 to-warm-amber-600 hover:from-warm-amber-600 hover:to-warm-amber-700 text-white"
-                            : "bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 hover:from-winter-blue-600 hover:to-winter-blue-700 text-white"
+                            : "bg-gradient-to-br from-winter-blue-500 to-winter-blue-600 hover:from-winter-blue-600 hover:to-winter-blue-700 text-white",
                         )}
                         title={
                           isCurrentlyPlaying
@@ -485,7 +516,6 @@ const PreviewStepComponent = ({ mp3Files, whiteNoiseBlob, whiteNoiseVolume }: Pr
             </div>
           </div>
         </AudioCard>
-
       </div>
     </div>
   );

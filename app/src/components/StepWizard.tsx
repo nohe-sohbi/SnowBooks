@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ChevronRightIcon, ChevronLeftIcon } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronRightIcon, ChevronLeftIcon } from "lucide-react";
 
 interface Step {
   id: string;
@@ -35,7 +35,7 @@ export const StepWizard = ({
   previousDisabled = false,
   nextLabel = "Next",
   previousLabel = "Previous",
-  showNavigation = true
+  showNavigation = true,
 }: StepWizardProps) => {
   const currentStepData = steps[currentStep];
   const isFirstStep = currentStep === 0;
@@ -43,7 +43,11 @@ export const StepWizard = ({
   return (
     <div className="space-y-8">
       {/* Modern Clean Step Progress */}
-      <nav className="relative mb-8" role="navigation" aria-label="Audio processing steps">
+      <nav
+        className="relative mb-8"
+        role="navigation"
+        aria-label="Audio processing steps"
+      >
         {/* Progress indicator for screen readers */}
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           Step {currentStep + 1} of {steps.length}: {currentStepData.title}
@@ -59,19 +63,18 @@ export const StepWizard = ({
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             />
           </div>
-
-
         </div>
       </nav>
-
-
 
       {/* Current Step Content */}
       <section className="min-h-[400px]" aria-labelledby="current-step-title">
         <div className="space-y-8">
           {/* Clean Step Header */}
           <div className="text-center space-y-4">
-            <h3 id="current-step-title" className="text-3xl font-bold text-gray-900">
+            <h3
+              id="current-step-title"
+              className="text-3xl font-bold text-gray-900"
+            >
               {currentStepData.title}
             </h3>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -80,9 +83,7 @@ export const StepWizard = ({
           </div>
 
           {/* Step Content */}
-          <div className="max-w-5xl mx-auto">
-            {currentStepData.component}
-          </div>
+          <div className="max-w-5xl mx-auto">{currentStepData.component}</div>
         </div>
       </section>
 
@@ -99,11 +100,7 @@ export const StepWizard = ({
             {previousLabel}
           </Button>
 
-          <Button
-            onClick={onNext}
-            disabled={nextDisabled}
-            size="sm"
-          >
+          <Button onClick={onNext} disabled={nextDisabled} size="sm">
             {nextLabel}
             <ChevronRightIcon className="w-4 h-4 ml-2" />
           </Button>

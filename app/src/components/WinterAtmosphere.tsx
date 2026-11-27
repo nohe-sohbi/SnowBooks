@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 // Fixed, behind-everything atmosphere layer for the frosted winter daylight look:
 // drifting snow, soft floating light orbs (warm + cool) and a faint film grain.
@@ -25,19 +25,25 @@ function makeFlake(i: number) {
 }
 
 export function WinterAtmosphere() {
-  const flakes = useMemo(() => Array.from({ length: SNOW_COUNT }, (_, i) => makeFlake(i)), []);
+  const flakes = useMemo(
+    () => Array.from({ length: SNOW_COUNT }, (_, i) => makeFlake(i)),
+    [],
+  );
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+    >
       {/* Floating light orbs add depth over the body gradient */}
       <div className="animate-float absolute -top-24 right-[-7rem] h-[30rem] w-[30rem] rounded-full bg-warm-amber-300/25 blur-3xl" />
       <div
         className="animate-float absolute left-[-9rem] top-1/3 h-[28rem] w-[28rem] rounded-full bg-winter-blue-300/25 blur-3xl"
-        style={{ animationDelay: '-3.5s' }}
+        style={{ animationDelay: "-3.5s" }}
       />
       <div
         className="animate-float absolute bottom-[-6rem] right-1/4 h-[22rem] w-[22rem] rounded-full bg-winter-blue-200/30 blur-3xl"
-        style={{ animationDelay: '-1.5s' }}
+        style={{ animationDelay: "-1.5s" }}
       />
 
       {/* Faint grain to remove the flat-white feel */}
@@ -55,8 +61,8 @@ export function WinterAtmosphere() {
               height: `${f.size}px`,
               animationDuration: `${f.duration}s`,
               animationDelay: `${f.delay}s`,
-              '--snow-drift': `${f.drift}px`,
-              '--snow-opacity': f.opacity,
+              "--snow-drift": `${f.drift}px`,
+              "--snow-opacity": f.opacity,
             } as React.CSSProperties
           }
         />

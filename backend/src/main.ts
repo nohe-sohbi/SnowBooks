@@ -1,8 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { AppModule } from './app.module';
-import { IoAdapter } from '@nestjs/platform-socket.io';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { AppModule } from "./app.module";
+import { IoAdapter } from "@nestjs/platform-socket.io";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,25 +18,25 @@ async function bootstrap() {
   );
 
   // CORS configuration — supports comma-separated origins
-  const corsOrigin = configService.get('CORS_ORIGIN') || '';
-  const origins = corsOrigin.includes(',')
-    ? corsOrigin.split(',').map((o: string) => o.trim())
+  const corsOrigin = configService.get("CORS_ORIGIN") || "";
+  const origins = corsOrigin.includes(",")
+    ? corsOrigin.split(",").map((o: string) => o.trim())
     : corsOrigin;
   app.enableCors({
     origin: origins,
-    credentials: configService.get('CORS_CREDENTIALS') === 'true',
+    credentials: configService.get("CORS_CREDENTIALS") === "true",
   });
 
   // WebSocket adapter
   app.useWebSocketAdapter(new IoAdapter(app));
 
   // Global prefix for API routes
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix("api");
 
-  const port = configService.get('PORT') || 3001;
+  const port = configService.get("PORT") || 3001;
   await app.listen(port);
 
-  const logger = new Logger('Bootstrap');
+  const logger = new Logger("Bootstrap");
   logger.log(`🚀 SnowBooks Backend running on port ${port}`);
   logger.log(`📡 WebSocket server ready for real-time progress updates`);
   logger.log(`🎵 FFmpeg audio processing service initialized`);
