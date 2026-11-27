@@ -4,7 +4,7 @@ export interface MP3FileInfo {
   duration?: number;
   path: string;
   // 'audio' (mixed + re-encoded) or 'video' (stream copied, audio track mixed).
-  type?: 'audio' | 'video';
+  type?: "audio" | "video";
 }
 
 export interface JobData {
@@ -35,15 +35,15 @@ export interface JobProgress {
 }
 
 export enum JobStatus {
-  UPLOADED = 'uploaded',
-  PROCESSING = 'processing',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
+  UPLOADED = "uploaded",
+  PROCESSING = "processing",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
 }
 
 export interface ProcessingConfig {
   whiteNoiseVolume: number;
-  outputFormat?: 'mp3' | 'wav';
-  quality?: 'low' | 'medium' | 'high';
+  outputFormat?: "mp3" | "wav";
+  quality?: "low" | "medium" | "high";
 }

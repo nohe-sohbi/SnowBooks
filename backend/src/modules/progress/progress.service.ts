@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { ProgressGateway } from './progress.gateway';
-import { JobProgress } from '@/common/interfaces/job.interface';
+import { Injectable } from "@nestjs/common";
+import { ProgressGateway } from "./progress.gateway";
+import { JobProgress } from "@/common/interfaces/job.interface";
 
 @Injectable()
 export class ProgressService {

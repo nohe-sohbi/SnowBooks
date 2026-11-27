@@ -1,8 +1,8 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { AlertCircle, CheckCircle, Info, X } from "lucide-react"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { AlertCircle, CheckCircle, Info, X } from "lucide-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
   "relative w-full rounded-lg border px-4 py-3 text-sm transition-all duration-200 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
@@ -10,13 +10,16 @@ const alertVariants = cva(
     variants: {
       variant: {
         // Error alerts with red gradients and winter styling
-        destructive: "border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-900 shadow-sm [&>svg]:text-red-600 dark:border-red-800 dark:from-red-950 dark:to-red-900 dark:text-red-100 dark:[&>svg]:text-red-400",
-        
+        destructive:
+          "border-red-200 bg-gradient-to-r from-red-50 to-red-100 text-red-900 shadow-sm [&>svg]:text-red-600 dark:border-red-800 dark:from-red-950 dark:to-red-900 dark:text-red-100 dark:[&>svg]:text-red-400",
+
         // Success alerts with green gradients
-        success: "border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 text-green-900 shadow-sm [&>svg]:text-green-600 dark:border-green-800 dark:from-green-950 dark:to-emerald-950 dark:text-green-100 dark:[&>svg]:text-green-400",
-        
+        success:
+          "border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 text-green-900 shadow-sm [&>svg]:text-green-600 dark:border-green-800 dark:from-green-950 dark:to-emerald-950 dark:text-green-100 dark:[&>svg]:text-green-400",
+
         // Default winter theme
-        default: "border-ice-gray-200 bg-gradient-to-r from-ice-gray-50 to-white text-ice-gray-900 shadow-sm [&>svg]:text-ice-gray-600 dark:border-ice-gray-700 dark:from-ice-gray-900 dark:to-ice-gray-800 dark:text-ice-gray-100 dark:[&>svg]:text-ice-gray-400",
+        default:
+          "border-ice-gray-200 bg-gradient-to-r from-ice-gray-50 to-white text-ice-gray-900 shadow-sm [&>svg]:text-ice-gray-600 dark:border-ice-gray-700 dark:from-ice-gray-900 dark:to-ice-gray-800 dark:text-ice-gray-100 dark:[&>svg]:text-ice-gray-400",
       },
       size: {
         sm: "px-3 py-2 text-xs",
@@ -28,32 +31,44 @@ const alertVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
-)
+  },
+);
 
 const getAlertIcon = (variant: string) => {
   switch (variant) {
     case "destructive":
-      return AlertCircle
+      return AlertCircle;
     case "success":
-      return CheckCircle
+      return CheckCircle;
     default:
-      return Info
+      return Info;
   }
-}
+};
 
 interface AlertProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof alertVariants> {
-  dismissible?: boolean
-  onDismiss?: () => void
-  icon?: React.ComponentType<{ className?: string }>
+  dismissible?: boolean;
+  onDismiss?: () => void;
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
-  ({ className, variant, size, dismissible = false, onDismiss, icon, children, ...props }, ref) => {
-    const IconComponent = icon || getAlertIcon(variant || "default")
-    
+  (
+    {
+      className,
+      variant,
+      size,
+      dismissible = false,
+      onDismiss,
+      icon,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const IconComponent = icon || getAlertIcon(variant || "default");
+
     return (
       <div
         ref={ref}
@@ -62,9 +77,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
         {...props}
       >
         <IconComponent className="h-4 w-4" />
-        <div className="flex-1">
-          {children}
-        </div>
+        <div className="flex-1">{children}</div>
         {dismissible && (
           <button
             onClick={onDismiss}
@@ -75,10 +88,10 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           </button>
         )}
       </div>
-    )
-  }
-)
-Alert.displayName = "Alert"
+    );
+  },
+);
+Alert.displayName = "Alert";
 
 const AlertTitle = React.forwardRef<
   HTMLParagraphElement,
@@ -89,8 +102,8 @@ const AlertTitle = React.forwardRef<
     className={cn("mb-1 font-semibold leading-none tracking-tight", className)}
     {...props}
   />
-))
-AlertTitle.displayName = "AlertTitle"
+));
+AlertTitle.displayName = "AlertTitle";
 
 const AlertDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -101,8 +114,8 @@ const AlertDescription = React.forwardRef<
     className={cn("text-sm leading-relaxed [&_p]:leading-relaxed", className)}
     {...props}
   />
-))
-AlertDescription.displayName = "AlertDescription"
+));
+AlertDescription.displayName = "AlertDescription";
 
 // Specialized alert components for audio studio use
 const ErrorAlert = React.forwardRef<
@@ -128,8 +141,8 @@ const ErrorAlert = React.forwardRef<
       )}
     </AlertDescription>
   </Alert>
-))
-ErrorAlert.displayName = "ErrorAlert"
+));
+ErrorAlert.displayName = "ErrorAlert";
 
 const SuccessAlert = React.forwardRef<
   HTMLDivElement,
@@ -144,8 +157,8 @@ const SuccessAlert = React.forwardRef<
     {title && <AlertTitle>{title}</AlertTitle>}
     <AlertDescription>{children}</AlertDescription>
   </Alert>
-))
-SuccessAlert.displayName = "SuccessAlert"
+));
+SuccessAlert.displayName = "SuccessAlert";
 
 export {
   Alert,
@@ -154,4 +167,4 @@ export {
   ErrorAlert,
   SuccessAlert,
   alertVariants,
-}
+};

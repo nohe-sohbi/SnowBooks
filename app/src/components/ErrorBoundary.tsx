@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import React, { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { ErrorAlert } from '@/components/ui/alert';
-import { RefreshCwIcon, Bug, HelpCircle } from 'lucide-react';
+import React, { Component, type ErrorInfo, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { ErrorAlert } from "@/components/ui/alert";
+import { RefreshCwIcon, Bug, HelpCircle } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -22,7 +22,7 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -31,8 +31,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+
     // Call the optional onError callback
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -54,12 +54,16 @@ export class ErrorBoundary extends Component<Props, State> {
         title = "Something went wrong",
         description,
         showRetry = true,
-        showDetails = import.meta.env.DEV
+        showDetails = import.meta.env.DEV,
       } = this.props;
 
-      const errorMessage = description || this.state.error?.message || 'An unexpected error occurred';
-      const isAudioError = this.state.error?.message?.toLowerCase().includes('audio') ||
-                          this.state.error?.message?.toLowerCase().includes('processing');
+      const errorMessage =
+        description ||
+        this.state.error?.message ||
+        "An unexpected error occurred";
+      const isAudioError =
+        this.state.error?.message?.toLowerCase().includes("audio") ||
+        this.state.error?.message?.toLowerCase().includes("processing");
 
       // Winter Audio Studio themed error UI
       return (
@@ -85,7 +89,9 @@ export class ErrorBoundary extends Component<Props, State> {
                   <ul className="text-sm text-winter-blue-700 dark:text-winter-blue-300 space-y-1">
                     <li>• Ensure your audio files are in MP3 format</li>
                     <li>• Try processing fewer files at once</li>
-                    <li>• Check that your ZIP file contains valid audio files</li>
+                    <li>
+                      • Check that your ZIP file contains valid audio files
+                    </li>
                     <li>• Close other browser tabs to free up memory</li>
                   </ul>
                 </div>
@@ -125,16 +131,26 @@ export class ErrorBoundary extends Component<Props, State> {
               </summary>
               <div className="mt-3 space-y-2">
                 <div className="text-sm">
-                  <strong className="text-ice-gray-900 dark:text-ice-gray-100">Error:</strong>
-                  <span className="ml-2 text-red-600 dark:text-red-400">{this.state.error.name}</span>
+                  <strong className="text-ice-gray-900 dark:text-ice-gray-100">
+                    Error:
+                  </strong>
+                  <span className="ml-2 text-red-600 dark:text-red-400">
+                    {this.state.error.name}
+                  </span>
                 </div>
                 <div className="text-sm">
-                  <strong className="text-ice-gray-900 dark:text-ice-gray-100">Message:</strong>
-                  <span className="ml-2 text-ice-gray-700 dark:text-ice-gray-300">{this.state.error.message}</span>
+                  <strong className="text-ice-gray-900 dark:text-ice-gray-100">
+                    Message:
+                  </strong>
+                  <span className="ml-2 text-ice-gray-700 dark:text-ice-gray-300">
+                    {this.state.error.message}
+                  </span>
                 </div>
                 {this.state.error.stack && (
                   <div className="text-xs">
-                    <strong className="text-ice-gray-900 dark:text-ice-gray-100">Stack Trace:</strong>
+                    <strong className="text-ice-gray-900 dark:text-ice-gray-100">
+                      Stack Trace:
+                    </strong>
                     <pre className="mt-1 p-2 bg-ice-gray-200 dark:bg-ice-gray-800 rounded text-ice-gray-800 dark:text-ice-gray-200 overflow-x-auto whitespace-pre-wrap">
                       {this.state.error.stack}
                     </pre>
@@ -155,15 +171,15 @@ export class ErrorBoundary extends Component<Props, State> {
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
   fallback?: ReactNode,
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  onError?: (error: Error, errorInfo: ErrorInfo) => void,
 ) => {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary fallback={fallback} onError={onError}>
       <Component {...props} />
     </ErrorBoundary>
   );
-  
+
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 };

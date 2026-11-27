@@ -1,17 +1,17 @@
-import { Process, Processor } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
-import { AudioService } from './audio.service';
-import { ProgressService } from '../progress/progress.service';
-import { UploadService } from '../upload/upload.service';
-import { JobStatus } from '@/common/interfaces/job.interface';
-import { JobCancelledError } from '@/common/errors';
+import { Process, Processor } from "@nestjs/bull";
+import { Logger } from "@nestjs/common";
+import { Job } from "bull";
+import { AudioService } from "./audio.service";
+import { ProgressService } from "../progress/progress.service";
+import { UploadService } from "../upload/upload.service";
+import { JobStatus } from "@/common/interfaces/job.interface";
+import { JobCancelledError } from "@/common/errors";
 
 // Progress metadata is persisted to disk at most this often; WebSocket
 // updates still go out on every FFmpeg tick.
 const PROGRESS_PERSIST_INTERVAL_MS = 1000;
 
-@Processor('audio-processing')
+@Processor("audio-processing")
 export class AudioProcessor {
   private readonly logger = new Logger(AudioProcessor.name);
 
@@ -21,7 +21,7 @@ export class AudioProcessor {
     private uploadService: UploadService,
   ) {}
 
-  @Process('process-audio')
+  @Process("process-audio")
   async handleAudioProcessing(job: Job) {
     const { jobId, config } = job.data;
     this.logger.log(`Starting audio processing for job ${jobId}`);
@@ -53,7 +53,10 @@ export class AudioProcessor {
           // Persist progress to job metadata, throttled: FFmpeg emits many
           // ticks per second and each persist is a disk write.
           const now = Date.now();
-          if (now - lastPersistedAt >= PROGRESS_PERSIST_INTERVAL_MS || progress.totalProgress >= 100) {
+          if (
+            now - lastPersistedAt >= PROGRESS_PERSIST_INTERVAL_MS ||
+            progress.totalProgress >= 100
+          ) {
             lastPersistedAt = now;
             jobData.progress = progress;
             void this.uploadService.updateJobData(jobData);
@@ -77,7 +80,6 @@ export class AudioProcessor {
 
       this.logger.log(`Audio processing completed for job ${jobId}`);
       return result;
-
     } catch (error) {
       if (error instanceof JobCancelledError) {
         this.logger.log(`Audio processing cancelled for job ${jobId}`);

@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bull';
-import { JobsController } from './jobs.controller';
-import { JobsService } from './jobs.service';
-import { UploadModule } from '../upload/upload.module';
-import { AudioModule } from '../audio/audio.module';
+import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bull";
+import { JobsController } from "./jobs.controller";
+import { JobsService } from "./jobs.service";
+import { UploadModule } from "../upload/upload.module";
+import { AudioModule } from "../audio/audio.module";
 
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'audio-processing',
+      name: "audio-processing",
     }),
     UploadModule,
     AudioModule,

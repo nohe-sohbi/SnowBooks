@@ -1,10 +1,12 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 // Local SVG icon component type to avoid depending on lucide-react's types
 // Accepts standard SVG props and may optionally forward refs via props.ref
-export type SvgIconLike = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement | null
+export type SvgIconLike = (
+  props: React.SVGProps<SVGSVGElement>,
+) => React.ReactElement | null;
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const iconVariants = cva(
   "inline-flex shrink-0 transition-colors duration-200",
@@ -13,31 +15,32 @@ const iconVariants = cva(
       variant: {
         // Default winter theme
         default: "text-ice-gray-600 dark:text-ice-gray-400",
-        
+
         // Primary winter blue
         primary: "text-winter-blue-600 dark:text-winter-blue-400",
-        
+
         // Secondary ice blue
         secondary: "text-winter-blue-500 dark:text-winter-blue-300",
-        
+
         // Accent warm amber
         accent: "text-warm-amber-600 dark:text-warm-amber-400",
-        
+
         // Success green
         success: "text-green-600 dark:text-green-400",
-        
+
         // Warning amber
         warning: "text-warm-amber-600 dark:text-warm-amber-400",
-        
+
         // Error red
         destructive: "text-red-600 dark:text-red-400",
-        
+
         // Muted gray
         muted: "text-ice-gray-400 dark:text-ice-gray-500",
-        
+
         // Interactive states
-        interactive: "text-ice-gray-600 hover:text-winter-blue-600 dark:text-ice-gray-400 dark:hover:text-winter-blue-400",
-        
+        interactive:
+          "text-ice-gray-600 hover:text-winter-blue-600 dark:text-ice-gray-400 dark:hover:text-winter-blue-400",
+
         // Current/active state
         current: "text-winter-blue-700 dark:text-winter-blue-300",
       },
@@ -62,27 +65,30 @@ const iconVariants = cva(
       size: "default",
       state: "default",
     },
-  }
-)
+  },
+);
 
 interface IconProps
   extends Omit<React.SVGProps<SVGSVGElement>, "size">,
     VariantProps<typeof iconVariants> {
-  icon: SvgIconLike
-  label?: string
+  icon: SvgIconLike;
+  label?: string;
 }
 
 const Icon = React.forwardRef<SVGSVGElement, IconProps>(
-  ({ className, variant, size, state, icon: IconComponent, label, ...props }, ref) => (
+  (
+    { className, variant, size, state, icon: IconComponent, label, ...props },
+    ref,
+  ) => (
     <IconComponent
       ref={ref}
       className={cn(iconVariants({ variant, size, state }), className)}
       aria-label={label}
       {...props}
     />
-  )
-)
-Icon.displayName = "Icon"
+  ),
+);
+Icon.displayName = "Icon";
 
 // Predefined icon components for common use cases
 type CommonIconProps = Omit<IconProps, "icon">;
@@ -108,11 +114,11 @@ export const AudioIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
         <path d="M18 5v14" />
         <path d="M22 10v4" />
       </svg>
-    )
-    return <Icon ref={ref} icon={AudioWaveIcon} variant="primary" {...props} />
-  }
-)
-AudioIcon.displayName = "AudioIcon"
+    );
+    return <Icon ref={ref} icon={AudioWaveIcon} variant="primary" {...props} />;
+  },
+);
+AudioIcon.displayName = "AudioIcon";
 
 export const SnowflakeIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
   (props, ref) => {
@@ -134,11 +140,13 @@ export const SnowflakeIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
         <path d="m5 7 5 5-5 5" />
         <path d="m19 7-5 5 5 5" />
       </svg>
-    )
-    return <Icon ref={ref} icon={SnowflakeIconSvg} variant="accent" {...props} />
-  }
-)
-SnowflakeIcon.displayName = "SnowflakeIcon"
+    );
+    return (
+      <Icon ref={ref} icon={SnowflakeIconSvg} variant="accent" {...props} />
+    );
+  },
+);
+SnowflakeIcon.displayName = "SnowflakeIcon";
 
 // Status Icons with predefined variants
 export const SuccessIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
@@ -157,11 +165,13 @@ export const SuccessIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
         <polyline points="22,4 12,14.01 9,11.01" />
       </svg>
-    )
-    return <Icon ref={ref} icon={CheckCircleIcon} variant={variant} {...props} />
-  }
-)
-SuccessIcon.displayName = "SuccessIcon"
+    );
+    return (
+      <Icon ref={ref} icon={CheckCircleIcon} variant={variant} {...props} />
+    );
+  },
+);
+SuccessIcon.displayName = "SuccessIcon";
 
 export const ErrorIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
   ({ variant = "destructive", ...props }, ref) => {
@@ -180,12 +190,12 @@ export const ErrorIcon = React.forwardRef<SVGSVGElement, CommonIconProps>(
         <line x1="12" y1="8" x2="12" y2="12" />
         <line x1="12" y1="16" x2="12.01" y2="16" />
       </svg>
-    )
-    return <Icon ref={ref} icon={AlertCircleIcon} variant={variant} {...props} />
-  }
-)
-ErrorIcon.displayName = "ErrorIcon"
+    );
+    return (
+      <Icon ref={ref} icon={AlertCircleIcon} variant={variant} {...props} />
+    );
+  },
+);
+ErrorIcon.displayName = "ErrorIcon";
 
-
-
-export { Icon, iconVariants }
+export { Icon, iconVariants };

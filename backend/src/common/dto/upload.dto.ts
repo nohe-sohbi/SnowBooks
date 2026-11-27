@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsOptional, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+} from "class-validator";
 
 export class UploadResponseDto {
   @IsString()
@@ -34,9 +41,9 @@ export class StartProcessingDto {
 
   @IsOptional()
   @IsString()
-  outputFormat?: 'mp3' | 'wav' = 'mp3';
+  outputFormat?: "mp3" | "wav" = "mp3";
 
   @IsOptional()
   @IsString()
-  quality?: 'low' | 'medium' | 'high' = 'medium';
+  quality?: "low" | "medium" | "high" = "medium";
 }

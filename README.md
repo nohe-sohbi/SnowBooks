@@ -40,6 +40,7 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 ## 🏗️ Architecture
 
 ### Frontend (React + TypeScript)
+
 - **Framework**: React 18 with TypeScript
 - **UI Library**: shadcn/ui components with Tailwind CSS
 - **Build Tool**: Vite for fast development and optimized builds
@@ -47,6 +48,7 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 - **State Management**: React hooks with custom API service layer
 
 ### Backend (NestJS + TypeScript)
+
 - **Framework**: NestJS with TypeScript
 - **Queue System**: Redis + Bull for background job processing
 - **Audio Processing**: Native FFmpeg for high-quality audio mixing
@@ -55,6 +57,7 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 - **API Documentation**: Swagger/OpenAPI integration
 
 ### Infrastructure
+
 - **Database**: Redis for job queue and session storage
 - **Containerization**: Docker with multi-stage builds
 - **Reverse Proxy**: Nginx for production deployment
@@ -63,6 +66,7 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Docker and Docker Compose
 - Node.js 18+ (for local development)
 - FFmpeg (included in Docker images)
@@ -70,12 +74,14 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 ### Development Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repository-url>
    cd SnowBooks
    ```
 
 2. **Run the setup script**:
+
    ```bash
    ./scripts/dev-setup.sh
    ```
@@ -88,11 +94,13 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 ### Manual Setup
 
 1. **Start services**:
+
    ```bash
    docker compose up -d
    ```
 
 2. **View logs**:
+
    ```bash
    docker compose logs -f
    ```
@@ -105,38 +113,45 @@ A four-step flow, from a ZIP of chapters to a winter-enhanced download.
 ## 🧪 Testing
 
 ### Frontend Unit Tests (Vitest)
+
 ```bash
 cd app
 npm test          # run once
 npm run test:watch # watch mode
 ```
+
 Covers the formatting helpers, the screen-reader announcer, and the wizard's
 accessibility wiring. These run automatically in CI on every pull request
 (see `.github/workflows/ci.yml`), alongside `npm run lint` and `npm run build`.
 
 ### Backend Unit Tests (Jest)
+
 ```bash
 cd backend
 npm test          # run once
 npm run test:watch # watch mode
 ```
+
 Covers upload sanitization and path-traversal guards, atomic job-metadata
 persistence, the job state machine (start/cancel/delete), FFmpeg cancellation,
 download MIME resolution, and the media-type helpers. CI builds and tests the
 backend on every pull request alongside the frontend.
 
 ### End-to-End Testing
+
 ```bash
 ./scripts/test-e2e.sh
 ```
 
 ### Manual Testing
+
 1. Upload a ZIP file containing MP3 files
 2. Configure white noise volume (0-100%)
 3. Start processing and monitor real-time progress
 4. Download the processed ZIP file
 
 ### API Testing
+
 ```bash
 # Health check
 curl http://localhost:3001/api/health
@@ -181,6 +196,7 @@ SnowBooks/
 ### Environment Variables
 
 #### Backend (.env)
+
 ```env
 PORT=3001
 NODE_ENV=development
@@ -194,6 +210,7 @@ CORS_ORIGIN=http://localhost:5173
 ```
 
 #### Frontend (.env)
+
 ```env
 VITE_API_URL=http://localhost:3001/api
 VITE_WS_URL=http://localhost:3001
@@ -203,6 +220,7 @@ VITE_NODE_ENV=development
 ## 🚀 Production Deployment
 
 ### Using Docker Compose
+
 ```bash
 # Build and start production services
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -212,6 +230,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d nginx
 ```
 
 ### Environment Setup
+
 1. Configure production environment variables
 2. Set up SSL certificates for HTTPS
 3. Configure reverse proxy settings
@@ -222,6 +241,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d nginx
 ### Local Development (without Docker)
 
 #### Backend
+
 ```bash
 cd backend
 npm install
@@ -229,6 +249,7 @@ npm run start:dev
 ```
 
 #### Frontend
+
 ```bash
 cd app
 npm install
@@ -236,6 +257,7 @@ npm run dev
 ```
 
 #### Redis
+
 ```bash
 # Using Docker
 docker run -d -p 6379:6379 redis:7-alpine
@@ -245,6 +267,7 @@ redis-server
 ```
 
 ### Debugging
+
 - Backend debugging port: 9229 (when using Docker)
 - Frontend hot reload: Enabled by default
 - Redis CLI: `docker compose exec redis redis-cli`
@@ -252,11 +275,13 @@ redis-server
 ## 📊 Monitoring
 
 ### Health Checks
+
 - Backend: `GET /api/health`
 - Frontend: HTTP 200 on root path
 - Redis: `PING` command
 
 ### Logs
+
 ```bash
 # All services
 docker compose logs -f

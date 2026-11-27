@@ -12,21 +12,21 @@
   outline: 3px solid rgb(59 130 246); /* Winter blue 500 - 4.5:1 contrast */
   outline-offset: 2px;
   border-radius: 8px;
-  box-shadow: 0 0 0 1px rgb(255 255 255), 0 0 0 4px rgb(59 130 246 / 0.3);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255),
+    0 0 0 4px rgb(59 130 246 / 0.3);
 }
-
 
 /* Dark mode focus indicators */
 .dark .focus-winter:focus-visible {
   outline: 3px solid rgb(147 197 253); /* Winter blue 300 - 4.5:1 contrast on dark */
-  box-shadow: 0 0 0 1px rgb(15 23 42), 0 0 0 4px rgb(147 197 253 / 0.3);
+  box-shadow:
+    0 0 0 1px rgb(15 23 42),
+    0 0 0 4px rgb(147 197 253 / 0.3);
 }
-
 
 /* ===== SKIP LINKS ===== */
 /* Skip to main content for keyboard navigation */
-
-
 
 /* ===== HIGH CONTRAST MODE SUPPORT ===== */
 /* Ensure visibility in Windows High Contrast Mode */
@@ -36,11 +36,11 @@
   .btn-winter-secondary {
     border: 2px solid ButtonText;
   }
-  
+
   .card-winter-hover {
     border: 2px solid ButtonText;
   }
-  
+
   .focus-winter:focus-visible,
   .focus-winter-amber:focus-visible {
     outline: 3px solid Highlight;
@@ -54,7 +54,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-waveform,
-
   .pulse-audio,
   .scale-hover,
   .btn-winter-hover,
@@ -64,7 +63,7 @@
     transition: none !important;
     transform: none !important;
   }
-  
+
   .state-transition,
   .state-transition-fast {
     transition: none !important;
@@ -100,19 +99,11 @@
 /* ===== ARIA LIVE REGIONS ===== */
 /* Styling for screen reader announcements */
 
-
-
-
 /* ===== KEYBOARD NAVIGATION INDICATORS ===== */
 /* Visual indicators for keyboard navigation */
 
-
 /* ===== COLOR CONTRAST UTILITIES ===== */
 /* Ensure WCAG AA compliance for all text combinations */
-
-
-
-
 
 /* ===== TOUCH TARGET SIZING ===== */
 /* Ensure minimum 44px touch targets for mobile accessibility */
@@ -135,27 +126,8 @@
 /* ===== FORM ACCESSIBILITY ===== */
 /* Enhanced form control accessibility */
 
-
-
-
-
-
-
-
 /* ===== AUDIO ACCESSIBILITY ===== */
 /* Accessibility for audio controls and feedback */
 
-
-
-
-
-
-
-
 /* ===== PROGRESS ACCESSIBILITY ===== */
 /* Accessible progress indicators */
-
-
-
-
-

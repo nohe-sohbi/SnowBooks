@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { announce, type AnnouncementUrgency } from '@/utils/announcer';
+import { useCallback } from "react";
+import { announce, type AnnouncementUrgency } from "@/utils/announcer";
 
 /**
  * React hook exposing a stable `announce` callback for screen-reader updates.
@@ -9,7 +9,7 @@ import { announce, type AnnouncementUrgency } from '@/utils/announcer';
  */
 export function useAnnouncer() {
   return useCallback(
-    (message: string, urgency: AnnouncementUrgency = 'polite') => {
+    (message: string, urgency: AnnouncementUrgency = "polite") => {
       announce(message, urgency);
     },
     [],

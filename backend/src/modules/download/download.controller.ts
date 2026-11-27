@@ -5,26 +5,26 @@ import {
   ParseUUIDPipe,
   Res,
   StreamableFile,
-} from '@nestjs/common';
-import { Response } from 'express';
-import { createReadStream } from 'fs';
-import { DownloadService } from './download.service';
+} from "@nestjs/common";
+import { Response } from "express";
+import { createReadStream } from "fs";
+import { DownloadService } from "./download.service";
 
-@Controller('download')
+@Controller("download")
 export class DownloadController {
   constructor(private readonly downloadService: DownloadService) {}
 
-  @Get(':id')
+  @Get(":id")
   async downloadFile(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string,
+    @Param("id", new ParseUUIDPipe({ version: "4" })) jobId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     const downloadInfo = await this.downloadService.getDownloadFile(jobId);
-    
+
     // Set response headers
     res.set({
-      'Content-Type': downloadInfo.mimeType,
-      'Content-Disposition': `attachment; filename="${downloadInfo.fileName}"`,
+      "Content-Type": downloadInfo.mimeType,
+      "Content-Disposition": `attachment; filename="${downloadInfo.fileName}"`,
     });
 
     // Create and return streamable file
@@ -32,8 +32,10 @@ export class DownloadController {
     return new StreamableFile(file);
   }
 
-  @Get(':id/info')
-  async getFileInfo(@Param('id', new ParseUUIDPipe({ version: '4' })) jobId: string) {
+  @Get(":id/info")
+  async getFileInfo(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) jobId: string,
+  ) {
     return this.downloadService.getFileStats(jobId);
   }
 }

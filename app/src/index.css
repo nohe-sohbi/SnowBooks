@@ -10,7 +10,14 @@
 
 :root {
   /* Winter Audio Studio Typography */
-  font-family: 'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    "Hanken Grotesk",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   line-height: 1.6;
   font-weight: 400;
 
@@ -156,26 +163,49 @@ a {
     @apply text-ice-gray-800;
     margin: 0;
     min-height: 100vh;
-    font-family: 'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family:
+      "Hanken Grotesk",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
     /* Winter daylight: warm amber glow + cool ice glow over a snow-sky gradient */
     background-color: #f4f8fd;
-    background-image:
-      radial-gradient(1100px 620px at 80% -10%, rgba(245, 158, 11, 0.12), transparent 60%),
-      radial-gradient(1000px 720px at 10% 6%, rgba(59, 130, 246, 0.13), transparent 55%),
+    background-image: radial-gradient(
+        1100px 620px at 80% -10%,
+        rgba(245, 158, 11, 0.12),
+        transparent 60%
+      ),
+      radial-gradient(
+        1000px 720px at 10% 6%,
+        rgba(59, 130, 246, 0.13),
+        transparent 55%
+      ),
       linear-gradient(180deg, #fcfdff 0%, #eef4fb 45%, #e6eef8 100%);
     background-attachment: fixed;
   }
 
   /* Typography Hierarchy, Fraunces (literary) for big titles, Hanken for UI labels */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply tracking-tight;
   }
-  h1, h2, h3 {
-    font-family: 'Fraunces', ui-serif, Georgia, serif;
+  h1,
+  h2,
+  h3 {
+    font-family: "Fraunces", ui-serif, Georgia, serif;
     font-weight: 600;
   }
-  h4, h5, h6 {
-    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  h4,
+  h5,
+  h6 {
+    font-family: "Hanken Grotesk", system-ui, sans-serif;
     font-weight: 600;
   }
 
@@ -194,7 +224,8 @@ a {
     line-height: 1.3;
   }
 
-  code, pre {
+  code,
+  pre {
     @apply font-mono text-sm;
   }
 
@@ -221,7 +252,11 @@ a {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 .glass-frost-tint {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(219, 234, 254, 0.42));
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.62),
+    rgba(219, 234, 254, 0.42)
+  );
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -230,7 +265,11 @@ a {
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 .glass-frost-amber {
-  background: linear-gradient(160deg, rgba(255, 251, 235, 0.7), rgba(254, 243, 199, 0.45));
+  background: linear-gradient(
+    160deg,
+    rgba(255, 251, 235, 0.7),
+    rgba(254, 243, 199, 0.45)
+  );
   backdrop-filter: blur(18px) saturate(150%);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   border: 1px solid rgba(253, 230, 138, 0.7);
@@ -258,19 +297,32 @@ a {
   will-change: transform, opacity;
 }
 @keyframes snowfall {
-  0%   { transform: translate3d(0, -4vh, 0); opacity: 0; }
-  8%   { opacity: var(--snow-opacity, 0.7); }
-  92%  { opacity: var(--snow-opacity, 0.7); }
-  100% { transform: translate3d(var(--snow-drift, 24px), 104vh, 0); opacity: 0; }
+  0% {
+    transform: translate3d(0, -4vh, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--snow-opacity, 0.7);
+  }
+  92% {
+    opacity: var(--snow-opacity, 0.7);
+  }
+  100% {
+    transform: translate3d(var(--snow-drift, 24px), 104vh, 0);
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .snowflake { display: none; }
-  *, *::before, *::after {
+  .snowflake {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
 }
 
 /* Winter Audio Studio Custom Styles */
-

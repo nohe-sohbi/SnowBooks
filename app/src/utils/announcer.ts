@@ -7,15 +7,15 @@
 // These regions existed but nothing ever wrote to them, so the app was silent
 // to assistive technology. This module is the single place that updates them.
 
-export type AnnouncementUrgency = 'polite' | 'assertive';
+export type AnnouncementUrgency = "polite" | "assertive";
 
 export const ANNOUNCER_REGION_IDS: Record<AnnouncementUrgency, string> = {
-  polite: 'announcements',
-  assertive: 'urgent-announcements',
+  polite: "announcements",
+  assertive: "urgent-announcements",
 };
 
 const scheduleFrame = (cb: () => void): void => {
-  if (typeof requestAnimationFrame === 'function') {
+  if (typeof requestAnimationFrame === "function") {
     requestAnimationFrame(cb);
   } else {
     setTimeout(cb, 0);
@@ -31,16 +31,16 @@ const scheduleFrame = (cb: () => void): void => {
  */
 export function announce(
   message: string,
-  urgency: AnnouncementUrgency = 'polite',
+  urgency: AnnouncementUrgency = "polite",
 ): void {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   const trimmed = message?.trim();
   if (!trimmed) return;
 
   const region = document.getElementById(ANNOUNCER_REGION_IDS[urgency]);
   if (!region) return;
 
-  region.textContent = '';
+  region.textContent = "";
   scheduleFrame(() => {
     region.textContent = trimmed;
   });
@@ -48,5 +48,5 @@ export function announce(
 
 /** Convenience wrapper for assertive (interrupting) announcements. */
 export function announceUrgent(message: string): void {
-  announce(message, 'assertive');
+  announce(message, "assertive");
 }
